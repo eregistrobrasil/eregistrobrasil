@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-16">
+  <h1 class="text-3xl font-bold text-gray-900 mb-8">Termos de Uso</h1>
+  <div class="bg-white rounded-2xl border border-gray-200 p-10 prose prose-slate max-w-none">
+    <p class="text-gray-500 text-sm mb-6">Última atualização: Janeiro de 2025</p>
+
+    <h2>1. Aceitação dos Termos</h2>
+    <p>Ao utilizar os serviços do E-Registro Brasil, você concorda com os presentes Termos de Uso. Caso não concorde, não utilize nossos serviços.</p>
+
+    <h2>2. Descrição dos Serviços</h2>
+    <p>O E-Registro Brasil presta serviços de correspondência cartorial, auxiliando na solicitação e obtenção de certidões e documentos em cartórios de todo o Brasil.</p>
+
+    <h2>3. Responsabilidades do Usuário</h2>
+    <p>O usuário é responsável pela veracidade das informações fornecidas. Dados incorretos podem acarretar atraso ou impossibilidade de emissão do documento solicitado.</p>
+
+    <h2>4. Prazo de Entrega</h2>
+    <p>Os prazos informados são estimados e podem variar conforme o cartório competente. O E-Registro Brasil não se responsabiliza por atrasos decorrentes de fatores externos.</p>
+
+    <h2>5. Política de Reembolso</h2>
+    <p>Em caso de impossibilidade de emissão do documento por dados incorretos fornecidos pelo cliente, não haverá reembolso das taxas pagas ao cartório.</p>
+
+    <h2>6. Privacidade</h2>
+    <p>Seus dados são tratados conforme nossa <a href="{% url 'pages:privacy' %}" class="text-primary hover:underline">Política de Privacidade</a>.</p>
+
+    <h2>7. Foro</h2>
+    <p>Fica eleito o foro da Comarca de São Paulo/SP para dirimir quaisquer controvérsias oriundas destes termos.</p>
+  </div>
+</div>
+{% endblock %}

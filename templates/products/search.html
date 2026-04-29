@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold text-gray-900 mb-2">Resultados para "{{ query }}"</h1>
+  <p class="text-gray-500 text-sm mb-8">{{ paginator.count }} resultado{% if paginator.count != 1 %}s{% endif %} encontrado{% if paginator.count != 1 %}s{% endif %}</p>
+
+  {% if products %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    {% for product in products %}
+    <a href="{{ product.get_absolute_url }}"
+       class="bg-white rounded-xl border border-gray-200 hover:border-primary hover:shadow-lg transition-all group p-5">
+      <span class="text-xs font-medium text-primary/70 uppercase tracking-wide">{{ product.category.name }}</span>
+      <h3 class="font-semibold text-gray-900 group-hover:text-primary transition-colors mt-1">{{ product.name }}</h3>
+      {% if product.short_description %}
+      <p class="text-xs text-gray-500 mt-1 line-clamp-2">{{ product.short_description }}</p>
+      {% endif %}
+      <p class="text-base font-bold text-accent mt-3">R$ {{ product.price }}</p>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-20 text-gray-400">
+    <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+    </svg>
+    <p class="text-lg mb-2">Nenhum resultado encontrado.</p>
+    <p class="text-sm">Tente outras palavras ou <a href="{% url 'products:home' %}" class="text-primary hover:underline">veja todos os serviços</a>.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

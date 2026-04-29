@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4">
+  <div class="w-full max-w-md bg-white rounded-2xl border border-gray-200 p-10 text-center">
+    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+      <svg class="w-10 h-10 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-gray-900 mb-3">Pagamento Aprovado!</h1>
+    <p class="text-gray-500 text-sm mb-2">Seu pedido <strong class="text-gray-900">#{{ order.short_id }}</strong> foi confirmado com sucesso.</p>
+    <p class="text-gray-500 text-sm">Você receberá um e-mail com a confirmação e o prazo de entrega.</p>
+    <div class="mt-8 space-y-3">
+      <a href="{% url 'orders:order_detail' order.pk %}"
+         class="block w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary-dark transition-colors text-sm">
+        Ver meu pedido
+      </a>
+      <a href="{% url 'products:home' %}" class="block text-sm text-gray-500 hover:text-primary transition-colors">Voltar para a loja</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

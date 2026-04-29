@@ -1,0 +1,29 @@
+# ─────────────────────────────────────────────
+# e-Registro Brasil — Dependências Python
+# ─────────────────────────────────────────────
+
+# Framework
+Django==5.2
+
+# Banco de dados
+psycopg2-binary==2.9.10
+
+# Servidor WSGI
+gunicorn==23.0.0
+
+# Arquivos estáticos em produção
+whitenoise==6.9.0
+
+# Imagens
+Pillow==11.1.0
+
+# Mercado Pago
+mercadopago==2.3.0
+
+# Redis / Cache / Celery
+redis==5.2.1
+celery==5.4.0
+django-redis==5.4.0
+
+# REST (futuras integrações)
+djangorestframework==3.15.2

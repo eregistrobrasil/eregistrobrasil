@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-16">
+  <h1 class="text-3xl font-bold text-gray-900 mb-8">Política de Privacidade</h1>
+  <div class="bg-white rounded-2xl border border-gray-200 p-10 prose prose-slate max-w-none">
+    <p class="text-gray-500 text-sm mb-6">Última atualização: Janeiro de 2025</p>
+
+    <h2>1. Dados Coletados</h2>
+    <p>Coletamos nome, e-mail, CPF e telefone para fins de identificação e prestação dos serviços contratados.</p>
+
+    <h2>2. Uso dos Dados</h2>
+    <p>Os dados são utilizados exclusivamente para processamento dos pedidos, comunicação sobre o andamento dos serviços e, com seu consentimento, envio de informações relevantes.</p>
+
+    <h2>3. Compartilhamento</h2>
+    <p>Não vendemos ou compartilhamos seus dados pessoais com terceiros, exceto quando necessário para a prestação do serviço (ex: cartórios) ou por obrigação legal.</p>
+
+    <h2>4. Segurança</h2>
+    <p>Adotamos medidas técnicas e organizacionais para proteger seus dados contra acesso não autorizado.</p>
+
+    <h2>5. Seus Direitos (LGPD)</h2>
+    <p>Você tem direito a acessar, corrigir, excluir ou portar seus dados. Entre em contato via <a href="{% url 'pages:contact' %}" class="text-primary hover:underline">formulário de contato</a> para exercer esses direitos.</p>
+
+    <h2>6. Cookies</h2>
+    <p>Utilizamos cookies de sessão essenciais para o funcionamento do site. Não utilizamos cookies de rastreamento de terceiros.</p>
+  </div>
+</div>
+{% endblock %}

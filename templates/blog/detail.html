@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-10">
+  <!-- Breadcrumb -->
+  <nav class="text-sm text-gray-500 mb-6 flex items-center gap-1.5">
+    <a href="{% url 'blog:list' %}" class="hover:text-primary transition-colors">Blog</a>
+    <span>/</span>
+    <span class="text-gray-800 truncate">{{ post.title }}</span>
+  </nav>
+
+  {% if post.category %}
+  <span class="inline-block text-xs font-medium text-primary bg-primary/10 px-3 py-1 rounded-full mb-4">{{ post.category.name }}</span>
+  {% endif %}
+
+  <h1 class="text-3xl font-bold text-gray-900 leading-tight mb-4">{{ post.title }}</h1>
+  <p class="text-sm text-gray-400 mb-8">Publicado em {{ post.created_at|date:"d \d\e F \d\e Y" }}</p>
+
+  {% if post.cover_image %}
+  <div class="rounded-2xl overflow-hidden mb-8">
+    <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" class="w-full object-cover">
+  </div>
+  {% endif %}
+
+  <div class="prose prose-slate max-w-none">
+    {{ post.content|linebreaks }}
+  </div>
+
+  <div class="mt-12 pt-6 border-t border-gray-200">
+    <a href="{% url 'blog:list' %}" class="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Voltar para o Blog
+    </a>
+  </div>
+</div>
+{% endblock %}

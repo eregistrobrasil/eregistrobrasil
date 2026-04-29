@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-10">
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Blog</h1>
+      <p class="text-gray-500 text-sm mt-1">Informações e dicas sobre documentação</p>
+    </div>
+  </div>
+
+  <!-- Filtro por categoria -->
+  {% if blog_categories %}
+  <div class="flex gap-2 flex-wrap mb-8">
+    <a href="{% url 'blog:list' %}"
+       class="px-4 py-1.5 rounded-full text-sm font-medium border transition-colors
+         {% if not selected_category %}bg-primary text-white border-primary{% else %}bg-white text-gray-600 border-gray-300 hover:border-primary hover:text-primary{% endif %}">
+      Todos
+    </a>
+    {% for cat in blog_categories %}
+    <a href="{% url 'blog:list' %}?categoria={{ cat.slug }}"
+       class="px-4 py-1.5 rounded-full text-sm font-medium border transition-colors
+         {% if selected_category == cat.slug %}bg-primary text-white border-primary{% else %}bg-white text-gray-600 border-gray-300 hover:border-primary hover:text-primary{% endif %}">
+      {{ cat.name }}
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if posts %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+    {% for post in posts %}
+    <article class="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
+      {% if post.cover_image %}
+      <div class="aspect-video overflow-hidden">
+        <img src="{{ post.cover_image.url }}" alt="{{ post.title }}"
+             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+      </div>
+      {% else %}
+      <div class="aspect-video bg-gradient-to-br from-primary to-blue-800 flex items-center justify-center">
+        <svg class="w-12 h-12 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+        </svg>
+      </div>
+      {% endif %}
+      <div class="p-6">
+        {% if post.category %}
+        <span class="inline-block text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full mb-3">{{ post.category.name }}</span>
+        {% endif %}
+        <h2 class="font-bold text-gray-900 text-lg leading-snug mb-2 group-hover:text-primary transition-colors">
+          <a href="{% url 'blog:detail' post.slug %}">{{ post.title }}</a>
+        </h2>
+        <p class="text-gray-500 text-sm line-clamp-3">{{ post.excerpt|default:post.content|truncatewords:20 }}</p>
+        <div class="flex items-center justify-between mt-4">
+          <span class="text-xs text-gray-400">{{ post.created_at|date:"d/m/Y" }}</span>
+          <a href="{% url 'blog:detail' post.slug %}" class="text-xs text-primary font-medium hover:underline">Ler mais →</a>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+
+  {% if is_paginated %}
+  <div class="flex justify-center gap-2">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-50">Anterior</a>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+    <a href="?page={{ num }}"
+       class="px-3 py-2 rounded-lg border text-sm
+         {% if page_obj.number == num %}border-primary bg-primary text-white{% else %}border-gray-300 text-gray-700 hover:bg-gray-50{% endif %}">{{ num }}</a>
+    {% endfor %}
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-50">Próxima</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="text-center py-20 text-gray-400">
+    <p class="text-sm">Nenhum post encontrado.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

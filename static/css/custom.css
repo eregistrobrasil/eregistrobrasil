@@ -1,0 +1,70 @@
+/* custom.css — E-Registro Brasil */
+
+/* Logo responsiva */
+.site-logo {
+  height: 72px !important;
+  width: auto !important;
+  display: block;
+}
+@media (min-width: 640px) {
+  .site-logo {
+    height: 120px !important;
+  }
+}
+
+/* Header top row alinhamento com logo grande */
+.header-inner {
+  min-height: 80px;
+}
+@media (min-width: 640px) {
+  .header-inner {
+    min-height: 136px;
+  }
+}
+
+/* Form inputs padrão */
+.form-input {
+  @apply w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700 focus:border-transparent transition-all;
+}
+
+/* Animações sutis */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+/* Gradiente hero */
+.hero-gradient {
+  background: linear-gradient(135deg, #1B4F72 0%, #154360 60%, #0a2d45 100%);
+}
+
+/* Card hover */
+.product-card {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.product-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+/* Badge de desconto */
+.badge-discount {
+  @apply inline-block bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full;
+}
+
+/* Scrollbar customizado */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #1B4F72; }
+
+/* Line clamp */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

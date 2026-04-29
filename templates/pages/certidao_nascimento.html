@@ -1,0 +1,328 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta_description %}Solicite a 2ª via da Certidão de Nascimento com agilidade e segurança. Selecione seu estado, cidade e cartório.{% endblock %}
+
+{% block extra_head %}
+  <!-- Select2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <style>
+    /* Select2 customization */
+    .select2-container--default .select2-selection--single {
+      height: 2.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      background-color: #fff;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.95rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .select2-container--default .select2-selection--single:focus-within,
+    .select2-container--default.select2-container--open .select2-selection--single {
+      border-color: #1B4F72;
+      box-shadow: 0 0 0 3px rgba(27,79,114,0.15);
+      outline: none;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+      color: #374151;
+      line-height: 2.25rem;
+      padding-left: 0.25rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+      height: 2.75rem;
+      right: 0.5rem;
+    }
+    .select2-dropdown {
+      border-radius: 0.5rem;
+      border-color: #d1d5db;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+      background-color: #1B4F72;
+    }
+    .select2-search--dropdown .select2-search__field {
+      border-radius: 0.375rem;
+      border-color: #d1d5db;
+      padding: 0.4rem 0.6rem;
+    }
+    .select2-container { width: 100% !important; }
+
+    /* Page fade-in */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeInUp 0.5s ease both; }
+    .animate-delay-1 { animation-delay: 0.1s; }
+    .animate-delay-2 { animation-delay: 0.2s; }
+    .animate-delay-3 { animation-delay: 0.3s; }
+
+    /* Field focus ring */
+    .field-input:focus {
+      border-color: #1B4F72;
+      box-shadow: 0 0 0 3px rgba(27,79,114,0.15);
+      outline: none;
+    }
+
+    /* Skeleton loader for cidades */
+    .skeleton {
+      background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+      border-radius: 0.5rem;
+      height: 2.75rem;
+    }
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<section class="py-10 px-4 max-w-6xl mx-auto">
+
+  <!-- Breadcrumb -->
+  <nav class="text-sm text-gray-500 mb-6 animate-fade-in" aria-label="Breadcrumb">
+    <ol class="flex items-center gap-2 flex-wrap">
+      <li><a href="/" class="hover:text-primary transition-colors">Início</a></li>
+      <li class="text-gray-400">/</li>
+      <li><a href="/servicos/" class="hover:text-primary transition-colors">Serviços</a></li>
+      <li class="text-gray-400">/</li>
+      <li class="text-primary font-medium">Certidão de Nascimento</li>
+    </ol>
+  </nav>
+
+  <!-- Main Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+
+    <!-- ===== Coluna Esquerda: Imagem + Formulário ===== -->
+    <div class="space-y-6 animate-fade-in animate-delay-1">
+
+      <!-- Imagem -->
+      <div class="rounded-2xl overflow-hidden shadow-md border border-gray-200 bg-white">
+        <img
+          src="{% static 'img/certidao-de-nascimento.png' %}"
+          alt="Certidão de Nascimento"
+          class="w-full object-cover max-h-72"
+        />
+      </div>
+
+      <!-- Formulário -->
+      <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-5">
+        <h2 class="text-lg font-semibold text-primary border-b border-gray-100 pb-3">
+          Dados do Cartório
+        </h2>
+
+        <form id="certidao-form" novalidate class="space-y-5">
+          {% csrf_token %}
+
+          <!-- Estado -->
+          <div class="animate-fade-in animate-delay-1">
+            <label for="select-estado" class="block text-sm font-medium text-gray-700 mb-1">
+              Estado <span class="text-red-500">*</span>
+            </label>
+            <select id="select-estado" name="estado" class="select2-estado w-full" required>
+              <option value="">Selecione um estado</option>
+              {% for estado in estados %}
+                <option value="{{ estado.uf }}">{{ estado.uf }} — {{ estado.nome }}</option>
+              {% endfor %}
+            </select>
+            <p id="estado-error" class="hidden text-xs text-red-500 mt-1">Selecione um estado.</p>
+          </div>
+
+          <!-- Cidade -->
+          <div class="animate-fade-in animate-delay-2">
+            <label for="select-cidade" class="block text-sm font-medium text-gray-700 mb-1">
+              Cidade <span class="text-red-500">*</span>
+            </label>
+            <div id="cidade-wrapper">
+              <select id="select-cidade" name="cidade" class="select2-cidade w-full" required disabled>
+                <option value="">Selecione primeiro o estado</option>
+              </select>
+            </div>
+            <div id="cidade-skeleton" class="skeleton hidden"></div>
+            <p id="cidade-error" class="hidden text-xs text-red-500 mt-1">Selecione uma cidade.</p>
+          </div>
+
+          <!-- Nome do Cartório -->
+          <div class="animate-fade-in animate-delay-3">
+            <label for="nome-cartorio" class="block text-sm font-medium text-gray-700 mb-1">
+              Nome do Cartório <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="nome-cartorio"
+              name="cartorio"
+              class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all duration-200"
+              placeholder="Ex: 1º Cartório de Registro Civil"
+              required
+              autocomplete="off"
+            />
+            <p id="cartorio-error" class="hidden text-xs text-red-500 mt-1">Informe o nome do cartório.</p>
+          </div>
+
+          <!-- Botão -->
+          <button
+            type="submit"
+            class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
+            </svg>
+            Solicitar Certidão
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===== Coluna Direita: Informações ===== -->
+    <div class="space-y-6 animate-fade-in animate-delay-2">
+
+      <!-- Título + Descrição -->
+      <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-8">
+        <div class="flex items-start gap-4 mb-5">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-primary leading-tight">Certidão de Nascimento</h1>
+            <p class="text-sm text-gray-400 mt-0.5 font-medium uppercase tracking-wide">2ª Via Oficial</p>
+          </div>
+        </div>
+
+        <p class="text-gray-600 leading-relaxed text-base">
+          A <strong class="text-gray-800">Certidão de Nascimento</strong> é o documento que comprova a cidadania de uma pessoa.
+          Emitida pelos cartórios de registro civil, ela registra oficialmente o nascimento de um indivíduo e é fundamental
+          para o exercício de direitos civis no Brasil.
+        </p>
+      </div>
+
+      <!-- Como funciona -->
+      <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-8">
+        <h3 class="text-lg font-semibold text-primary mb-5">Como funciona?</h3>
+        <ol class="space-y-4">
+          {% for passo in passos %}
+          <li class="flex items-start gap-3">
+            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center mt-0.5">{{ forloop.counter }}</span>
+            <div>
+              <p class="font-medium text-gray-800 text-sm">{{ passo.titulo }}</p>
+              <p class="text-gray-500 text-xs mt-0.5">{{ passo.descricao }}</p>
+            </div>
+          </li>
+          {% endfor %}
+        </ol>
+      </div>
+
+      <!-- Informação adicional -->
+      <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 flex gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+        </svg>
+        <p class="text-sm text-blue-700">
+          O prazo para emissão varia conforme o cartório. Nossa equipe acompanha todo o processo e mantém você informado por e-mail.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+  <!-- jQuery (requerido pelo Select2) -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <!-- Select2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+  <script>
+    $(function () {
+      // Inicializa Select2 para Estado
+      $('#select-estado').select2({
+        placeholder: 'Selecione um estado',
+        allowClear: true,
+        language: { noResults: () => 'Nenhum estado encontrado' },
+      });
+
+      // Inicializa Select2 para Cidade (desativado inicialmente)
+      $('#select-cidade').select2({
+        placeholder: 'Selecione primeiro o estado',
+        allowClear: true,
+        language: { noResults: () => 'Nenhuma cidade encontrada' },
+      });
+
+      // Ao mudar estado → carregar cidades via API
+      $('#select-estado').on('change', function () {
+        const uf = $(this).val();
+        const $wrapper = $('#cidade-wrapper');
+        const $skeleton = $('#cidade-skeleton');
+        const $cidade = $('#select-cidade');
+
+        // Limpa e desativa
+        $cidade.empty().append('<option value="">Carregando cidades...</option>');
+        $cidade.prop('disabled', true).trigger('change');
+        $wrapper.addClass('hidden');
+        $skeleton.removeClass('hidden');
+
+        if (!uf) {
+          $skeleton.addClass('hidden');
+          $wrapper.removeClass('hidden');
+          $cidade.empty().append('<option value="">Selecione primeiro o estado</option>');
+          $cidade.trigger('change');
+          return;
+        }
+
+        $.getJSON('{% url "pages:cidades_por_estado" %}', { uf: uf })
+          .done(function (data) {
+            $cidade.empty().append('<option value="">Selecione uma cidade</option>');
+            data.cidades.forEach(function (c) {
+              $cidade.append($('<option>').val(c).text(c));
+            });
+            $cidade.prop('disabled', false);
+          })
+          .fail(function () {
+            $cidade.empty().append('<option value="">Erro ao carregar cidades</option>');
+          })
+          .always(function () {
+            $skeleton.addClass('hidden');
+            $wrapper.removeClass('hidden');
+            $cidade.trigger('change');
+            // Re-inicializa Select2 com busca ativa
+            $cidade.select2({
+              placeholder: 'Digite para buscar cidade...',
+              allowClear: true,
+              language: { noResults: () => 'Nenhuma cidade encontrada' },
+            });
+          });
+      });
+
+      // Validação básica no submit
+      $('#certidao-form').on('submit', function (e) {
+        e.preventDefault();
+        let valid = true;
+
+        function setError(fieldId, errorId, show) {
+          $('#' + errorId).toggleClass('hidden', !show);
+          if (show) valid = false;
+        }
+
+        setError('select-estado', 'estado-error', !$('#select-estado').val());
+        setError('select-cidade', 'cidade-error', !$('#select-cidade').val() || $('#select-cidade').prop('disabled'));
+        setError('nome-cartorio', 'cartorio-error', !$('#nome-cartorio').val().trim());
+
+        if (valid) {
+          // Aqui pode submeter via fetch/AJAX ou redirecionar
+          const btn = $(this).find('button[type=submit]');
+          btn.html('<svg class="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>');
+          btn.prop('disabled', true);
+          // Simulação de envio — adapte para sua lógica real
+          setTimeout(() => {
+            btn.html('Solicitação enviada! ✓').removeClass('bg-primary hover:bg-primary-dark').addClass('bg-accent');
+          }, 1500);
+        }
+      });
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold text-gray-900 mb-2">Pagamento</h1>
+  <p class="text-gray-500 text-sm mb-8">Pedido #{{ order.short_id }} — Total: <strong class="text-accent">R$ {{ order.total }}</strong></p>
+
+  <div class="bg-white rounded-2xl border border-gray-200 p-8">
+    {% if preference_id and mp_public_key %}
+    <!-- Mercado Pago Checkout Pro -->
+    <p class="text-sm text-gray-600 mb-6 text-center">Clique abaixo para pagar com segurança via Mercado Pago (cartão, Pix ou boleto):</p>
+    <div id="wallet_container" class="flex justify-center"></div>
+    <p class="text-xs text-center text-gray-400 mt-4 flex items-center justify-center gap-1">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+      </svg>
+      Ambiente seguro — seus dados estão protegidos
+    </p>
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <script>
+      const mp = new MercadoPago('{{ mp_public_key }}', {locale: 'pt-BR'});
+      mp.bricks().create("wallet", "wallet_container", {
+        initialization: { preferenceId: '{{ preference_id }}' },
+        customization: { texts: { valueProp: 'smart_option' } }
+      });
+    </script>
+    {% else %}
+    <div class="text-center py-8">
+      <svg class="w-16 h-16 text-yellow-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+      </svg>
+      <h2 class="text-lg font-semibold text-gray-900 mb-2">Pagamento não configurado</h2>
+      <p class="text-gray-500 text-sm">As credenciais do Mercado Pago ainda não foram configuradas.<br>Entre em contato pelo WhatsApp para finalizar seu pedido.</p>
+      <a href="https://wa.me/5511999999999?text=Olá!%20Quero%20pagar%20o%20pedido%20%23{{ order.short_id }}"
+         target="_blank" rel="noopener"
+         class="inline-block mt-6 bg-accent text-white font-bold px-6 py-3 rounded-xl hover:bg-accent-light transition-colors">
+        Falar no WhatsApp
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

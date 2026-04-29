@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold text-gray-900 mb-8">Meus Pedidos</h1>
+
+  {% if orders %}
+  <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+    <div class="divide-y divide-gray-100">
+      {% for order in orders %}
+      <div class="px-6 py-5 flex items-center justify-between hover:bg-gray-50 transition-colors">
+        <div>
+          <p class="font-semibold text-gray-900">#{{ order.short_id }}</p>
+          <p class="text-xs text-gray-500 mt-0.5">{{ order.created_at|date:"d/m/Y H:i" }}</p>
+        </div>
+        <div class="text-center hidden sm:block">
+          <p class="text-sm font-bold text-gray-900">R$ {{ order.total }}</p>
+          <p class="text-xs text-gray-500">{{ order.items.count }} item{% if order.items.count != 1 %}s{% endif %}</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium
+            {% if order.status == 'completed' %}bg-green-100 text-green-800
+            {% elif order.status == 'paid' or order.status == 'processing' %}bg-blue-100 text-blue-800
+            {% elif order.status == 'pending' %}bg-yellow-100 text-yellow-800
+            {% else %}bg-gray-100 text-gray-600{% endif %}">
+            {{ order.get_status_display }}
+          </span>
+          <a href="{% url 'orders:order_detail' order.pk %}"
+             class="text-sm text-primary hover:underline">Ver</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Paginação -->
+  {% if is_paginated %}
+  <div class="flex justify-center gap-2 mt-8">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}"
+       class="px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Anterior</a>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+    <a href="?page={{ num }}"
+       class="px-3 py-2 rounded-lg border text-sm transition-colors
+         {% if page_obj.number == num %}border-primary bg-primary text-white{% else %}border-gray-300 text-gray-700 hover:bg-gray-50{% endif %}">
+      {{ num }}
+    </a>
+    {% endfor %}
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}"
+       class="px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Próxima</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="text-center py-20 text-gray-400">
+    <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+    </svg>
+    <p class="text-sm">Nenhum pedido encontrado.</p>
+    <a href="{% url 'products:home' %}" class="inline-block mt-3 text-sm text-primary hover:underline">Ver serviços</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

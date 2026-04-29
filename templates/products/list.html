@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <!-- Breadcrumb -->
+  <nav class="text-sm text-gray-500 mb-6">
+    <a href="{% url 'products:home' %}" class="hover:text-primary">Início</a>
+    <span class="mx-2">/</span>
+    <span class="text-gray-800 font-medium">{{ category.name }}</span>
+  </nav>
+
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">{{ category.name }}</h1>
+      {% if category.description %}
+      <p class="text-gray-500 mt-1">{{ category.description }}</p>
+      {% endif %}
+    </div>
+    <span class="text-sm text-gray-400">{{ paginator.count }} serviço{% if paginator.count != 1 %}s{% endif %}</span>
+  </div>
+
+  {% if products %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    {% for product in products %}
+    <a href="{{ product.get_absolute_url }}"
+       class="bg-white rounded-xl border border-gray-200 hover:border-primary hover:shadow-lg transition-all group p-5">
+      <div class="flex items-start gap-4">
+        <div class="w-12 h-12 rounded-xl bg-primary/10 flex-shrink-0 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+          <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-semibold text-gray-900 group-hover:text-primary transition-colors">{{ product.name }}</h3>
+          {% if product.short_description %}
+          <p class="text-xs text-gray-500 mt-1 line-clamp-2">{{ product.short_description }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- Paginação -->
+  {% if is_paginated %}
+  <div class="flex justify-center mt-10 gap-2">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}"
+       class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm hover:bg-primary hover:text-white hover:border-primary transition-colors">
+      Anterior
+    </a>
+    {% endif %}
+    {% for num in paginator.page_range %}
+    <a href="?page={{ num }}"
+       class="px-4 py-2 rounded-lg text-sm transition-colors {% if num == page_obj.number %}bg-primary text-white{% else %}bg-white border border-gray-300 hover:bg-primary hover:text-white hover:border-primary{% endif %}">
+      {{ num }}
+    </a>
+    {% endfor %}
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}"
+       class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm hover:bg-primary hover:text-white hover:border-primary transition-colors">
+      Próxima
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% else %}
+  <div class="text-center py-20 text-gray-400">
+    <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+    </svg>
+    <p>Nenhum serviço disponível nesta categoria.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

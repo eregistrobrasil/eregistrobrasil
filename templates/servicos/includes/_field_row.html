@@ -1,0 +1,10 @@
+<!-- _field_row.html: renderiza um campo de formulário com label, widget e erros -->
+<div>
+  <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+    {{ field.label }}{% if required %} <span class="text-red-500" aria-hidden="true">*</span>{% endif %}
+  </label>
+  {{ field }}
+  {% if field.errors %}
+    <p class="text-xs text-red-500 mt-1" role="alert">{{ field.errors.0 }}</p>
+  {% endif %}
+</div>

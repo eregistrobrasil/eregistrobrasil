@@ -1,3 +1,4 @@
+import re
 from django import forms
 
 
@@ -18,3 +19,300 @@ class ContactForm(forms.Form):
         label='Mensagem',
         widget=forms.Textarea(attrs={'rows': 5, 'placeholder': 'Sua mensagem...', 'class': 'form-input'})
     )
+
+
+_INPUT_CLASS = (
+    'field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 '
+    'text-sm placeholder-gray-400 transition-all duration-200'
+)
+
+
+class CertidaoCartorioForm(forms.Form):
+    estado = forms.CharField(
+        label='Estado',
+        max_length=2,
+        error_messages={'required': 'Selecione um estado.'},
+    )
+    cidade = forms.CharField(
+        label='Cidade',
+        max_length=100,
+        error_messages={'required': 'Selecione uma cidade.'},
+    )
+    cartorio = forms.CharField(
+        label='Nome do Cartório',
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'id': 'nome-cartorio',
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: 1º Cartório de Registro Civil',
+            'autocomplete': 'off',
+        }),
+    )
+
+    def clean_cartorio(self):
+        value = self.cleaned_data.get('cartorio', '').strip()
+        return value or 'Cartório não informado'
+
+
+class CertidaoRegistroForm(forms.Form):
+    nome_completo = forms.CharField(
+        label='Nome Completo',
+        max_length=200,
+        error_messages={'required': 'Informe o nome completo.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Nome completo da pessoa',
+            'autocomplete': 'name',
+        }),
+    )
+    nome_mae = forms.CharField(
+        label='Nome Completo da Mãe',
+        max_length=200,
+        error_messages={'required': 'Informe o nome completo da mãe.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Nome completo da mãe',
+        }),
+    )
+    nome_pai = forms.CharField(
+        label='Nome Completo do Pai',
+        max_length=200,
+        error_messages={'required': 'Informe o nome completo do pai.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Nome completo do pai',
+        }),
+    )
+    data_nascimento = forms.DateField(
+        label='Data de Nascimento',
+        input_formats=['%d/%m/%Y', '%Y-%m-%d'],
+        error_messages={
+            'required': 'Informe a data de nascimento.',
+            'invalid': 'Data inválida. Use o formato DD/MM/AAAA.',
+        },
+        widget=forms.TextInput(attrs={
+            'id': 'id_data_nascimento',
+            'class': _INPUT_CLASS,
+            'placeholder': 'DD/MM/AAAA',
+            'autocomplete': 'bday',
+            'inputmode': 'numeric',
+            'maxlength': '10',
+        }),
+    )
+    numero_livro = forms.CharField(
+        label='Número do Livro',
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: A-10 (opcional)',
+        }),
+    )
+    numero_folha = forms.CharField(
+        label='Número da Folha',
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: 123 (opcional)',
+        }),
+    )
+    numero_termo = forms.CharField(
+        label='Número do Termo',
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: 456 (opcional)',
+        }),
+    )
+
+
+# ─────────────────────────────────────────────
+#  Helpers reutilizáveis
+# ─────────────────────────────────────────────
+
+def _date_field(label, required=True, msg_label=None):
+    lbl = msg_label or label.lower()
+    return forms.DateField(
+        label=label,
+        required=required,
+        input_formats=['%d/%m/%Y', '%Y-%m-%d'],
+        error_messages={
+            'required': f'Informe {lbl}.',
+            'invalid': 'Data inválida. Use o formato DD/MM/AAAA.',
+        },
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'DD/MM/AAAA',
+            'inputmode': 'numeric',
+            'maxlength': '10',
+        }),
+    )
+
+
+def _char_field(label, placeholder='', required=True, max_length=200, msg_label=None):
+    lbl = msg_label or label.lower()
+    kw = {
+        'label': label,
+        'max_length': max_length,
+        'required': required,
+        'widget': forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': placeholder or label,
+        }),
+    }
+    if required:
+        kw['error_messages'] = {'required': f'Informe {lbl}.'}
+    return forms.CharField(**kw)
+
+
+def _livro_folha_termo():
+    return {
+        'numero_livro': forms.CharField(
+            label='Número do Livro', max_length=50, required=False,
+            widget=forms.TextInput(attrs={'class': _INPUT_CLASS, 'placeholder': 'Ex: A-10 (opcional)'}),
+        ),
+        'numero_folha': forms.CharField(
+            label='Número da Folha', max_length=50, required=False,
+            widget=forms.TextInput(attrs={'class': _INPUT_CLASS, 'placeholder': 'Ex: 123 (opcional)'}),
+        ),
+        'numero_termo': forms.CharField(
+            label='Número do Termo', max_length=50, required=False,
+            widget=forms.TextInput(attrs={'class': _INPUT_CLASS, 'placeholder': 'Ex: 456 (opcional)'}),
+        ),
+    }
+
+
+def _cpf_field():
+    return forms.CharField(
+        label='CPF',
+        max_length=14,
+        error_messages={'required': 'Informe o CPF.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': '000.000.000-00',
+            'inputmode': 'numeric',
+            'maxlength': '14',
+            'data-mask': 'cpf',
+        }),
+    )
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Óbito
+# ─────────────────────────────────────────────
+
+class CertidaoObitoForm(forms.Form):
+    nome_completo = _char_field('Nome Completo', 'Nome completo da pessoa')
+    nome_mae = _char_field('Nome Completo da Mãe', 'Nome completo da mãe', msg_label='o nome completo da mãe')
+    nome_pai = _char_field('Nome Completo do Pai', 'Nome completo do pai', msg_label='o nome completo do pai')
+    data_obito = _date_field('Data do Óbito', msg_label='a data do óbito')
+    numero_livro = forms.CharField(
+        label='Número do Livro', max_length=50, required=False,
+        widget=forms.TextInput(attrs={'class': _INPUT_CLASS, 'placeholder': 'Ex: A-10 (opcional)'}),
+    )
+    numero_folha = forms.CharField(
+        label='Número da Folha', max_length=50, required=False,
+        widget=forms.TextInput(attrs={'class': _INPUT_CLASS, 'placeholder': 'Ex: 123 (opcional)'}),
+    )
+    numero_termo = forms.CharField(
+        label='Número do Termo', max_length=50, required=False,
+        widget=forms.TextInput(attrs={'class': _INPUT_CLASS, 'placeholder': 'Ex: 456 (opcional)'}),
+    )
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Casamento
+# ─────────────────────────────────────────────
+
+class CertidaoCasamentoForm(forms.Form):
+    nome_completo = _char_field('Nome Completo', 'Nome completo da pessoa')
+    nome_mae = _char_field('Nome Completo da Mãe', 'Nome completo da mãe', msg_label='o nome completo da mãe')
+    nome_pai = _char_field('Nome Completo do Pai', 'Nome completo do pai', msg_label='o nome completo do pai')
+    data_casamento = _date_field('Data do Casamento', msg_label='a data do casamento')
+    numero_livro = forms.CharField(
+        label='Número do Livro', max_length=50, required=False,
+        widget=forms.TextInput(attrs={'class': _INPUT_CLASS, 'placeholder': 'Ex: A-10 (opcional)'}),
+    )
+    numero_folha = forms.CharField(
+        label='Número da Folha', max_length=50, required=False,
+        widget=forms.TextInput(attrs={'class': _INPUT_CLASS, 'placeholder': 'Ex: 123 (opcional)'}),
+    )
+    numero_termo = forms.CharField(
+        label='Número do Termo', max_length=50, required=False,
+        widget=forms.TextInput(attrs={'class': _INPUT_CLASS, 'placeholder': 'Ex: 456 (opcional)'}),
+    )
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Interdição
+# ─────────────────────────────────────────────
+
+class CertidaoInterdicaoForm(forms.Form):
+    cpf = _cpf_field()
+    nome_completo = _char_field('Nome Completo', 'Nome completo da pessoa')
+    nome_mae = _char_field('Nome da Mãe', 'Nome da mãe', msg_label='o nome da mãe')
+    nome_pai = _char_field('Nome do Pai', 'Nome do pai', msg_label='o nome do pai')
+    data_nascimento = _date_field('Data de Nascimento', msg_label='a data de nascimento')
+    estado_nascimento = forms.CharField(
+        label='Estado de Nascimento',
+        max_length=2,
+        error_messages={'required': 'Selecione o estado de nascimento.'},
+    )
+    cidade_nascimento = forms.CharField(
+        label='Cidade de Nascimento',
+        max_length=100,
+        error_messages={'required': 'Informe a cidade de nascimento.'},
+        widget=forms.TextInput(attrs={'class': _INPUT_CLASS, 'placeholder': 'Cidade de nascimento'}),
+    )
+    rg = _char_field('RG', 'Número do RG', msg_label='o RG')
+    ano_ato = forms.CharField(
+        label='Ano Aproximado do Ato',
+        max_length=4,
+        error_messages={'required': 'Informe o ano aproximado do ato.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: 2010',
+            'inputmode': 'numeric',
+            'maxlength': '4',
+        }),
+    )
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+    def clean_ano_ato(self):
+        ano = self.cleaned_data.get('ano_ato', '').strip()
+        if not re.match(r'^\d{4}$', ano):
+            raise forms.ValidationError('Informe um ano válido com 4 dígitos.')
+        return ano
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Procuração
+# ─────────────────────────────────────────────
+
+class CertidaoProcuracaoForm(forms.Form):
+    cpf = _cpf_field()
+    nome_completo = _char_field('Nome Completo', 'Nome completo da pessoa')
+    numero_livro = forms.CharField(
+        label='Número do Livro', max_length=50, required=False,
+        widget=forms.TextInput(attrs={'class': _INPUT_CLASS, 'placeholder': 'Ex: A-10 (opcional)'}),
+    )
+    numero_pagina = forms.CharField(
+        label='Número da Página', max_length=50, required=False,
+        widget=forms.TextInput(attrs={'class': _INPUT_CLASS, 'placeholder': 'Ex: 55 (opcional)'}),
+    )
+    data_ato = _date_field('Data do Ato', required=False, msg_label='a data do ato')
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+

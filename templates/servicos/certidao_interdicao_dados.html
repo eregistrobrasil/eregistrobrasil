@@ -1,0 +1,74 @@
+{% extends 'servicos/base_dados.html' %}
+{% load static %}
+
+{% block extra_head %}
+  {{ block.super }}
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <style>
+    .select2-container--default .select2-selection--single {
+      height: 2.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem;
+      background-color: #fff; padding: 0.25rem 0.5rem; font-size: 0.95rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered { color: #374151; line-height: 2.25rem; padding-left: 0.25rem; }
+    .select2-container--default .select2-selection--single .select2-selection__arrow { height: 2.75rem; right: 0.5rem; }
+    .select2-container { width: 100% !important; }
+    .skeleton {
+      background: linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%);
+      background-size: 200% 100%; animation: shimmer 1.2s infinite;
+      border-radius: 0.5rem; height: 2.75rem;
+    }
+    @keyframes shimmer { 0%{background-position:-200% 0;} 100%{background-position:200% 0;} }
+  </style>
+{% endblock %}
+
+{% block form_campos %}
+<div class="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-5">
+  <h2 class="text-base font-semibold text-gray-800 border-b border-gray-100 pb-3 flex items-center gap-2">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+    </svg>
+    Informações Obrigatórias
+  </h2>
+
+  {% include 'servicos/includes/_field_row.html' with field=form.cpf required=True %}
+  {% include 'servicos/includes/_field_row.html' with field=form.nome_completo required=True %}
+  {% include 'servicos/includes/_field_row.html' with field=form.nome_mae required=True %}
+  {% include 'servicos/includes/_field_row.html' with field=form.nome_pai required=True %}
+  {% include 'servicos/includes/_field_row.html' with field=form.data_nascimento required=True %}
+
+  <!-- Estado de Nascimento (Select2) -->
+  <div>
+    <label for="select-estado-nascimento" class="block text-sm font-medium text-gray-700 mb-1">
+      {{ form.estado_nascimento.label }} <span class="text-red-500" aria-hidden="true">*</span>
+    </label>
+    <select id="select-estado-nascimento" name="estado_nascimento" class="w-full" required>
+      <option value="">Selecione um estado</option>
+      {% for estado in estados %}
+        <option value="{{ estado.uf }}" {% if form.estado_nascimento.value == estado.uf %}selected{% endif %}>{{ estado.uf }} — {{ estado.nome }}</option>
+      {% endfor %}
+    </select>
+    {% if form.estado_nascimento.errors %}
+      <p class="text-xs text-red-500 mt-1" role="alert">{{ form.estado_nascimento.errors.0 }}</p>
+    {% endif %}
+  </div>
+
+  {% include 'servicos/includes/_field_row.html' with field=form.cidade_nascimento required=True %}
+  {% include 'servicos/includes/_field_row.html' with field=form.rg required=True %}
+  {% include 'servicos/includes/_field_row.html' with field=form.ano_ato required=True %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+  {{ block.super }}
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script>
+    $(function() {
+      $('#select-estado-nascimento').select2({
+        placeholder: 'Selecione um estado',
+        allowClear: true,
+        language: { noResults: () => 'Nenhum estado encontrado' },
+      });
+    });
+  </script>
+{% endblock %}

@@ -114,7 +114,7 @@
           Dados do Cartório
         </h2>
 
-        <form id="certidao-form" novalidate class="space-y-5">
+        <form id="certidao-form" method="post" novalidate class="space-y-5">
           {% csrf_token %}
 
           <!-- Estado -->
@@ -125,10 +125,14 @@
             <select id="select-estado" name="estado" class="select2-estado w-full" required>
               <option value="">Selecione um estado</option>
               {% for estado in estados %}
-                <option value="{{ estado.uf }}">{{ estado.uf }} — {{ estado.nome }}</option>
+                <option value="{{ estado.uf }}" {% if form.estado.value == estado.uf %}selected{% endif %}>{{ estado.uf }} — {{ estado.nome }}</option>
               {% endfor %}
             </select>
-            <p id="estado-error" class="hidden text-xs text-red-500 mt-1">Selecione um estado.</p>
+            {% if form.estado.errors %}
+              <p class="text-xs text-red-500 mt-1">{{ form.estado.errors.0 }}</p>
+            {% else %}
+              <p id="estado-error" class="hidden text-xs text-red-500 mt-1">Selecione um estado.</p>
+            {% endif %}
           </div>
 
           <!-- Cidade -->
@@ -137,12 +141,20 @@
               Cidade <span class="text-red-500">*</span>
             </label>
             <div id="cidade-wrapper">
-              <select id="select-cidade" name="cidade" class="select2-cidade w-full" required disabled>
-                <option value="">Selecione primeiro o estado</option>
+              <select id="select-cidade" name="cidade" class="select2-cidade w-full" required {% if not form.cidade.value %}disabled{% endif %}>
+                {% if form.cidade.value %}
+                  <option value="{{ form.cidade.value }}" selected>{{ form.cidade.value }}</option>
+                {% else %}
+                  <option value="">Selecione primeiro o estado</option>
+                {% endif %}
               </select>
             </div>
             <div id="cidade-skeleton" class="skeleton hidden"></div>
-            <p id="cidade-error" class="hidden text-xs text-red-500 mt-1">Selecione uma cidade.</p>
+            {% if form.cidade.errors %}
+              <p class="text-xs text-red-500 mt-1">{{ form.cidade.errors.0 }}</p>
+            {% else %}
+              <p id="cidade-error" class="hidden text-xs text-red-500 mt-1">Selecione uma cidade.</p>
+            {% endif %}
           </div>
 
           <!-- Nome do Cartório -->
@@ -156,10 +168,24 @@
               name="cartorio"
               class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all duration-200"
               placeholder="Ex: 1º Cartório de Registro Civil"
-              required
+              value="{{ form.cartorio.value|default:'' }}"
               autocomplete="off"
             />
-            <p id="cartorio-error" class="hidden text-xs text-red-500 mt-1">Informe o nome do cartório.</p>
+            <div class="flex items-start justify-between mt-1.5 gap-2">
+              <div>
+                {% if form.cartorio.errors %}
+                  <p class="text-xs text-red-500">{{ form.cartorio.errors.0 }}</p>
+                {% else %}
+                  <p id="cartorio-error" class="hidden text-xs text-red-500">Informe o nome do cartório.</p>
+                {% endif %}
+              </div>
+              <button
+                type="button"
+                id="btn-nao-sei-cartorio"
+                class="flex-shrink-0 text-xs text-primary hover:text-primary-dark underline underline-offset-2 transition-colors"
+                aria-label="Preencher com Cartório não informado"
+              >Não sei o cartório</button>
+            </div>
           </div>
 
           <!-- Botão -->
@@ -298,29 +324,35 @@
           });
       });
 
-      // Validação básica no submit
+      // Botão "Não sei o cartório"
+      document.getElementById('btn-nao-sei-cartorio').addEventListener('click', function () {
+        const input = document.getElementById('nome-cartorio');
+        input.value = 'Cartório não informado';
+        const errEl = document.getElementById('cartorio-error');
+        if (errEl) errEl.classList.add('hidden');
+        input.focus();
+      });
+
+      // Validação antes de submeter
       $('#certidao-form').on('submit', function (e) {
         e.preventDefault();
         let valid = true;
 
-        function setError(fieldId, errorId, show) {
-          $('#' + errorId).toggleClass('hidden', !show);
+        function setError(errorId, show) {
+          const el = document.getElementById(errorId);
+          if (el) el.classList.toggle('hidden', !show);
           if (show) valid = false;
         }
 
-        setError('select-estado', 'estado-error', !$('#select-estado').val());
-        setError('select-cidade', 'cidade-error', !$('#select-cidade').val() || $('#select-cidade').prop('disabled'));
-        setError('nome-cartorio', 'cartorio-error', !$('#nome-cartorio').val().trim());
+        setError('estado-error', !$('#select-estado').val());
+        setError('cidade-error', !$('#select-cidade').val() || $('#select-cidade').prop('disabled'));
+        // cartório é opcional (backend preenche se vazio)
 
         if (valid) {
-          // Aqui pode submeter via fetch/AJAX ou redirecionar
           const btn = $(this).find('button[type=submit]');
           btn.html('<svg class="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>');
           btn.prop('disabled', true);
-          // Simulação de envio — adapte para sua lógica real
-          setTimeout(() => {
-            btn.html('Solicitação enviada! ✓').removeClass('bg-primary hover:bg-primary-dark').addClass('bg-accent');
-          }, 1500);
+          this.submit();
         }
       });
     });

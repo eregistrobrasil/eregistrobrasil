@@ -43,13 +43,18 @@ command -v nginx   &>/dev/null || error "Nginx não encontrado. Instale com: apt
 if [ ! -d "$APP_DIR" ]; then
   info "Clonando repositório em $APP_DIR..."
   git clone "$REPO_URL" "$APP_DIR"
+  cd "$APP_DIR"
 else
+  cd "$APP_DIR"
   info "Atualizando repositório..."
-  DEFAULT_BRANCH=$(git -C "$APP_DIR" remote show origin | awk '/HEAD branch/ {print $NF}')
-  git -C "$APP_DIR" pull origin "$DEFAULT_BRANCH"
+  DEFAULT_BRANCH=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
+  git pull origin "$DEFAULT_BRANCH"
 fi
 
-cd "$APP_DIR"
+# Re-executa o script com a versão atualizada do disco (evita rodar código antigo pós-pull)
+if [ "$1" != "--updated" ]; then
+  exec bash "$APP_DIR/deploy.sh" --updated
+fi
 
 # ── 3. Arquivo .env ──────────────────────────────────────────────────────────
 if [ ! -f ".env" ]; then
@@ -88,29 +93,56 @@ $DC build
 VHOST_DEST="/etc/nginx/sites-available/eregistrobrasil.com.br"
 VHOST_LINK="/etc/nginx/sites-enabled/eregistrobrasil.com.br"
 
-info "Instalando vhost do nginx..."
-cp "$APP_DIR/nginx/nginx.conf" "$VHOST_DEST"
+if [ ! -d "/etc/letsencrypt/live/$DOMAIN" ]; then
+  # Certificado ainda não existe: instala vhost HTTP simples para o certbot poder rodar
+  info "Instalando vhost HTTP temporário (pré-SSL)..."
+  cat > "$VHOST_DEST" <<EOF
+server {
+    listen 80;
+    server_name $DOMAIN www.$DOMAIN;
+
+    location / {
+        proxy_pass         http://127.0.0.1:8001;
+        proxy_set_header   Host              \$host;
+        proxy_set_header   X-Real-IP         \$remote_addr;
+        proxy_set_header   X-Forwarded-For   \$proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto \$scheme;
+    }
+}
+EOF
+else
+  # Certificado já existe: instala o vhost completo com HTTPS
+  info "Instalando vhost completo (HTTPS)..."
+  cp "$APP_DIR/nginx/nginx.conf" "$VHOST_DEST"
+fi
 
 if [ ! -L "$VHOST_LINK" ]; then
   ln -s "$VHOST_DEST" "$VHOST_LINK"
 fi
 
-# Testar configuração antes de recarregar
 nginx -t || error "Configuração do nginx inválida. Verifique $VHOST_DEST"
+nginx -s reload
+info "Nginx recarregado."
 
 # ── 7. SSL via certbot do sistema ────────────────────────────────────────────
 if [ ! -d "/etc/letsencrypt/live/$DOMAIN" ]; then
   info "Obtendo certificado SSL via certbot..."
 
-  # Instalar certbot se necessário
   if ! command -v certbot &>/dev/null; then
     info "Instalando certbot..."
     apt-get install -y certbot python3-certbot-nginx
   fi
 
-  # Subir os containers para o Django responder primeiro
+  # Subir os containers para o Django responder no 8001
   info "Subindo containers antes do SSL..."
   $DC up -d
+
+  # Aguarda o container web estar respondendo
+  echo "   Aguardando Gunicorn ficar disponível..."
+  for i in $(seq 1 30); do
+    curl -sf http://127.0.0.1:8001 > /dev/null 2>&1 && break
+    sleep 3
+  done
 
   certbot --nginx \
     -d "$DOMAIN" \
@@ -119,6 +151,11 @@ if [ ! -d "/etc/letsencrypt/live/$DOMAIN" ]; then
     --agree-tos \
     -m "ti@eregistrobrasil.com.br" \
     --redirect
+
+  # Após o certbot, substituir o vhost pelo nosso completo (com cabeçalhos de segurança)
+  info "Aplicando vhost definitivo com cabeçalhos de segurança..."
+  cp "$APP_DIR/nginx/nginx.conf" "$VHOST_DEST"
+  nginx -t && nginx -s reload
 else
   info "Certificado SSL já existe. Pulando emissão."
   nginx -s reload

@@ -71,7 +71,7 @@ fi
 
 # ── 5. Build das imagens ─────────────────────────────────────────────────────
 info "Construindo imagens Docker..."
-docker compose build --no-cache
+docker compose build
 
 # ── 6. SSL (Let's Encrypt) ───────────────────────────────────────────────────
 if [ ! -d "./certbot/conf/live/$DOMAIN" ]; then

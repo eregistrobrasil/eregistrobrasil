@@ -15,6 +15,16 @@ info()  { echo -e "${GREEN}==> $1${NC}"; }
 warn()  { echo -e "${YELLOW}[!] $1${NC}"; }
 error() { echo -e "${RED}[ERRO] $1${NC}"; exit 1; }
 
+# ── Detectar versão do Docker Compose ───────────────────────────────────────
+if docker compose version &>/dev/null 2>&1; then
+  DC="docker compose"
+elif command -v docker-compose &>/dev/null; then
+  DC="docker-compose"
+else
+  error "Docker Compose não encontrado. Instale com: apt install docker-compose-plugin -y"
+fi
+info "Usando: $DC"
+
 echo ""
 echo "╔══════════════════════════════════════════════════╗"
 echo "║   e-Registro Brasil — Deploy VPS Hostinger       ║"
@@ -71,7 +81,7 @@ fi
 
 # ── 5. Build das imagens ─────────────────────────────────────────────────────
 info "Construindo imagens Docker..."
-docker compose build
+$DC build
 
 # ── 6. SSL (Let's Encrypt) ───────────────────────────────────────────────────
 if [ ! -d "./certbot/conf/live/$DOMAIN" ]; then
@@ -83,12 +93,12 @@ fi
 
 # ── 7. Subir todos os serviços ───────────────────────────────────────────────
 info "Iniciando todos os serviços..."
-docker compose up -d
+$DC up -d
 
 # ── 8. Status ────────────────────────────────────────────────────────────────
 echo ""
 info "Status dos containers:"
-docker compose ps
+$DC ps
 
 echo ""
 echo -e "${GREEN}╔══════════════════════════════════════════════════╗${NC}"
@@ -97,7 +107,7 @@ echo -e "${GREEN}║   https://$DOMAIN  ║${NC}"
 echo -e "${GREEN}╚══════════════════════════════════════════════════╝${NC}"
 echo ""
 echo "Comandos úteis:"
-echo "  Logs em tempo real : docker compose logs -f"
-echo "  Reiniciar serviço  : docker compose restart web"
-echo "  Parar tudo         : docker compose down"
-echo "  Criar superusuário : docker compose exec web python manage.py createsuperuser"
+echo "  Logs em tempo real : $DC logs -f"
+echo "  Reiniciar serviço  : $DC restart web"
+echo "  Parar tudo         : $DC down"
+echo "  Criar superusuário : $DC exec web python manage.py createsuperuser"

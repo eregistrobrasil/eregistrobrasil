@@ -12,10 +12,19 @@ STAGING=0                            # 1 = modo teste (sem limite de requisiçõ
 
 CERT_PATH="./certbot/conf/live/$DOMAIN"
 
+# ── Detectar versão do Docker Compose ────────────────────────────────────
+if docker compose version &>/dev/null 2>&1; then
+  DC="docker compose"
+elif command -v docker-compose &>/dev/null; then
+  DC="docker-compose"
+else
+  echo "[ERRO] Docker Compose não encontrado."; exit 1
+fi
+
 # ── Verificar se já existem certificados válidos ─────────────────────────────
 if [ -d "$CERT_PATH" ] && [ "$(ls -A $CERT_PATH)" ]; then
   echo "==> Certificados já existem em $CERT_PATH. Pulando emissão."
-  echo "    Para renovar manualmente: docker compose run --rm certbot renew"
+  echo "    Para renovar manualmente: $DC run --rm certbot renew"
   exit 0
 fi
 
@@ -58,7 +67,7 @@ cp "$CERT_PATH/fullchain.pem" "$CERT_PATH/chain.pem"
 
 # ── Subir apenas o nginx para o desafio HTTP ─────────────────────────────────
 echo "==> Iniciando nginx..."
-docker compose up --force-recreate -d nginx
+$DC up --force-recreate -d nginx
 echo "   Aguardando nginx ficar pronto..."
 sleep 3
 
@@ -70,7 +79,7 @@ if [ "$STAGING" = "1" ]; then
 fi
 
 echo "==> Solicitando certificado Let's Encrypt para $DOMAIN..."
-docker compose run --rm certbot certonly \
+$DC run --rm certbot certonly \
   --webroot \
   --webroot-path=/var/www/certbot \
   --email "$EMAIL" \
@@ -81,7 +90,7 @@ docker compose run --rm certbot certonly \
 
 # ── Recarregar nginx com certificado real ────────────────────────────────────
 echo "==> Recarregando nginx com certificado real..."
-docker compose exec nginx nginx -s reload
+$DC exec nginx nginx -s reload
 
 echo ""
 echo "✓ SSL configurado com sucesso!"

@@ -34,7 +34,8 @@ if [ ! -d "$APP_DIR" ]; then
   git clone "$REPO_URL" "$APP_DIR"
 else
   info "Atualizando repositório..."
-  git -C "$APP_DIR" pull origin main
+  DEFAULT_BRANCH=$(git -C "$APP_DIR" remote show origin | awk '/HEAD branch/ {print $NF}')
+  git -C "$APP_DIR" pull origin "$DEFAULT_BRANCH"
 fi
 
 cd "$APP_DIR"

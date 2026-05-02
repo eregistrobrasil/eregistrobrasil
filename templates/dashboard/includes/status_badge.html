@@ -1,0 +1,15 @@
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold
+  {% if status == 'pending' %}bg-yellow-100 text-yellow-800
+  {% elif status == 'paid' %}bg-blue-100 text-blue-700
+  {% elif status == 'novo' %}bg-indigo-100 text-indigo-700
+  {% elif status == 'em_analise' %}bg-purple-100 text-purple-700
+  {% elif status == 'aguardando_documentos' %}bg-orange-100 text-orange-700
+  {% elif status == 'em_processamento' %}bg-blue-100 text-blue-700
+  {% elif status == 'em_cartorio' %}bg-cyan-100 text-cyan-700
+  {% elif status == 'pronto_envio' %}bg-teal-100 text-teal-700
+  {% elif status == 'enviado' %}bg-lime-100 text-lime-700
+  {% elif status == 'concluido' or status == 'completed' %}bg-green-100 text-green-700
+  {% elif status == 'cancelado' %}bg-red-100 text-red-700
+  {% else %}bg-gray-100 text-gray-600{% endif %}">
+  {{ label }}
+</span>

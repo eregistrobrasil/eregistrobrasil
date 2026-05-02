@@ -1,0 +1,43 @@
+# ─────────────────────────────────────────────
+# e-Registro Brasil — .gitignore
+# ─────────────────────────────────────────────
+
+# Ambiente
+.env
+.venv/
+venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Django
+staticfiles/
+mediafiles/
+db.sqlite3
+
+# Certbot / SSL (gerados na VPS)
+certbot/
+
+# Testes / Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

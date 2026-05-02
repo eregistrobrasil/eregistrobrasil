@@ -1,5 +1,13 @@
 from django.contrib import admin
-from .models import Category, Product
+from .models import Category, TipoServico, Product
+
+
+@admin.register(TipoServico)
+class TipoServicoAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'order')
+    list_editable = ('order',)
+    search_fields = ('name',)
+    prepopulated_fields = {'slug': ('name',)}
 
 
 @admin.register(Category)
@@ -13,14 +21,14 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'price', 'delivery_days', 'is_active', 'is_featured', 'order')
+    list_display = ('name', 'category', 'tipo', 'price', 'delivery_days', 'is_active', 'is_featured', 'order')
     list_editable = ('price', 'is_active', 'is_featured', 'order')
-    list_filter = ('is_active', 'is_featured', 'category')
+    list_filter = ('is_active', 'is_featured', 'category', 'tipo')
     search_fields = ('name', 'description')
     prepopulated_fields = {'slug': ('name',)}
     fieldsets = (
         ('Informações Básicas', {
-            'fields': ('name', 'slug', 'category', 'short_description', 'description')
+            'fields': ('name', 'slug', 'category', 'tipo', 'short_description', 'description')
         }),
         ('Preço e Entrega', {
             'fields': ('price', 'original_price', 'delivery_days')

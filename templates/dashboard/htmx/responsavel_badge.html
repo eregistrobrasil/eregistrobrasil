@@ -1,0 +1,5 @@
+{% if order.responsavel %}
+<span class="text-sm font-medium text-gray-700">{{ order.responsavel.get_full_name|default:order.responsavel.username }}</span>
+{% else %}
+<span class="text-sm text-gray-400">Não atribuído</span>
+{% endif %}

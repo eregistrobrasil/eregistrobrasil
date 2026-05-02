@@ -19,6 +19,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from products.api_views import (
+    CategoriaListAPIView,
+    TipoServicoListAPIView,
+    ServicoListAPIView,
+    ServicoDetailAPIView,
+)
 
 admin.site.site_header = 'E-Registro Brasil — Administração'
 admin.site.site_title = 'E-Registro Brasil'
@@ -32,6 +38,13 @@ urlpatterns = [
     path('pedidos/', include('orders.urls')),
     path('pagamentos/', include('payments.urls')),
     path('blog/', include('blog.urls')),
+    path('painel/', include('dashboard.urls')),
+    path('documentos/', include('documents.urls')),
+    # API pública de serviços
+    path('api/categorias/', CategoriaListAPIView.as_view(), name='api-categorias'),
+    path('api/tipos/', TipoServicoListAPIView.as_view(), name='api-tipos'),
+    path('api/servicos/', ServicoListAPIView.as_view(), name='api-servicos'),
+    path('api/servicos/<slug:slug>/', ServicoDetailAPIView.as_view(), name='api-servico-detail'),
 ]
 
 if settings.DEBUG:

@@ -5,9 +5,17 @@ from django.dispatch import receiver
 
 
 class UserProfile(models.Model):
+    TIPO_CHOICES = [
+        ('admin', 'Administrador'),
+        ('operador', 'Operador'),
+        ('financeiro', 'Financeiro'),
+        ('cliente', 'Cliente'),
+    ]
+
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name='profile'
     )
+    tipo = models.CharField('Tipo', max_length=15, choices=TIPO_CHOICES, default='cliente')
     cpf = models.CharField('CPF', max_length=14, blank=True)
     phone = models.CharField('Telefone', max_length=20, blank=True)
     birth_date = models.DateField('Data de Nascimento', null=True, blank=True)
@@ -19,6 +27,18 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f'Perfil de {self.user.get_full_name() or self.user.username}'
+
+    @property
+    def is_operador(self):
+        return self.tipo in ('admin', 'operador')
+
+    @property
+    def is_financeiro(self):
+        return self.tipo in ('admin', 'financeiro')
+
+    @property
+    def is_admin(self):
+        return self.tipo == 'admin'
 
 
 @receiver(post_save, sender=User)

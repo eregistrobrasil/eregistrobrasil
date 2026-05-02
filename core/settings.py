@@ -21,6 +21,10 @@ DJANGO_APPS = [
     'django.contrib.sitemaps',
 ]
 
+THIRD_PARTY_APPS = [
+    'rest_framework',
+]
+
 LOCAL_APPS = [
     'accounts',
     'products',
@@ -28,9 +32,23 @@ LOCAL_APPS = [
     'payments',
     'blog',
     'pages',
+    'registry',
+    'documents',
+    'notifications',
+    'dashboard',
 ]
 
-INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_PAGINATION_CLASS': None,
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -59,6 +77,7 @@ TEMPLATES = [
                 'products.context_processors.categories_processor',
                 'orders.context_processors.cart_processor',
                 'core.context_processors.site_processor',
+                'notifications.context_processors.notifications_processor',
             ],
         },
     },
@@ -117,6 +136,25 @@ SESSION_CACHE_ALIAS = 'default'
 # Celery
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://redis:6379/0')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://redis:6379/1')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'America/Sao_Paulo'
+
+CELERY_BEAT_SCHEDULE = {
+    'verificar-atrasos': {
+        'task': 'notifications.verificar_atrasos',
+        'schedule': 3600,  # a cada hora
+    },
+    'verificar-prazo-proximo': {
+        'task': 'notifications.verificar_prazo_proximo',
+        'schedule': 1800,  # a cada 30min
+    },
+    'calcular-prioridade': {
+        'task': 'orders.calcular_prioridade_automatica',
+        'schedule': 1800,
+    },
+}
 
 # Email
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
@@ -134,4 +172,21 @@ MERCADOPAGO_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN', '')
 # Site
 SITE_NAME = 'E-Registro Brasil'
 SITE_URL = os.environ.get('SITE_URL', 'http://localhost')
+
+# ── Segurança HTTPS (produção) ───────────────────────────────────────────────
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS',
+    'https://eregistrobrasil.com.br,https://www.eregistrobrasil.com.br',
+).split(',')
+
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = False          # Nginx já faz o redirecionamento HTTP→HTTPS
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'SAMEORIGIN'
 

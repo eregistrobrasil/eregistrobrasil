@@ -4,9 +4,10 @@
 # ─────────────────────────────────────────────
 set -e
 
-echo "==> Aguardando banco de dados..."
-# Aguarda o PostgreSQL ficar disponível
-until python -c "
+# ── Função: aguardar PostgreSQL ──────────────
+wait_for_db() {
+  echo "==> Aguardando banco de dados..."
+  until python -c "
 import os, psycopg2
 psycopg2.connect(
     dbname=os.environ['DB_NAME'],
@@ -16,10 +17,21 @@ psycopg2.connect(
     port=os.environ.get('DB_PORT', '5432'),
 )
 " 2>/dev/null; do
-  echo "   PostgreSQL indisponível — aguardando..."
-  sleep 2
-done
-echo "==> PostgreSQL pronto!"
+    echo "   PostgreSQL indisponível — aguardando..."
+    sleep 2
+  done
+  echo "==> PostgreSQL pronto!"
+}
+
+# ── Celery (worker ou beat): aguarda banco e executa ──
+if [ "$1" = "celery" ]; then
+  wait_for_db
+  echo "==> Iniciando Celery: $*"
+  exec gosu appuser "$@"
+fi
+
+# ── Servidor web: setup completo + Gunicorn ──
+wait_for_db
 
 echo "==> Criando migrações pendentes..."
 python manage.py makemigrations --noinput

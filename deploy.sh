@@ -37,6 +37,7 @@ info "Verificando pré-requisitos..."
 command -v docker  &>/dev/null || error "Docker não encontrado. Instale com: curl -fsSL https://get.docker.com | sh"
 command -v git     &>/dev/null || error "Git não encontrado. Instale com: apt install git -y"
 command -v openssl &>/dev/null || error "OpenSSL não encontrado. Instale com: apt install openssl -y"
+command -v nginx   &>/dev/null || error "Nginx não encontrado. Instale com: apt install nginx -y"
 
 # ── 2. Clonar ou atualizar repositório ──────────────────────────────────────
 if [ ! -d "$APP_DIR" ]; then
@@ -83,19 +84,51 @@ fi
 info "Construindo imagens Docker..."
 $DC build
 
-# ── 6. SSL (Let's Encrypt) ───────────────────────────────────────────────────
-if [ ! -d "./certbot/conf/live/$DOMAIN" ]; then
-  info "Configurando certificado SSL (Let's Encrypt)..."
-  bash init-letsencrypt.sh
-else
-  info "Certificado SSL já existe. Pulando emissão."
+# ── 6. Configurar vhost no nginx do sistema ──────────────────────────────────
+VHOST_DEST="/etc/nginx/sites-available/eregistrobrasil.com.br"
+VHOST_LINK="/etc/nginx/sites-enabled/eregistrobrasil.com.br"
+
+info "Instalando vhost do nginx..."
+cp "$APP_DIR/nginx/nginx.conf" "$VHOST_DEST"
+
+if [ ! -L "$VHOST_LINK" ]; then
+  ln -s "$VHOST_DEST" "$VHOST_LINK"
 fi
 
-# ── 7. Subir todos os serviços ───────────────────────────────────────────────
+# Testar configuração antes de recarregar
+nginx -t || error "Configuração do nginx inválida. Verifique $VHOST_DEST"
+
+# ── 7. SSL via certbot do sistema ────────────────────────────────────────────
+if [ ! -d "/etc/letsencrypt/live/$DOMAIN" ]; then
+  info "Obtendo certificado SSL via certbot..."
+
+  # Instalar certbot se necessário
+  if ! command -v certbot &>/dev/null; then
+    info "Instalando certbot..."
+    apt-get install -y certbot python3-certbot-nginx
+  fi
+
+  # Subir os containers para o Django responder primeiro
+  info "Subindo containers antes do SSL..."
+  $DC up -d
+
+  certbot --nginx \
+    -d "$DOMAIN" \
+    -d "www.$DOMAIN" \
+    --non-interactive \
+    --agree-tos \
+    -m "ti@eregistrobrasil.com.br" \
+    --redirect
+else
+  info "Certificado SSL já existe. Pulando emissão."
+  nginx -s reload
+fi
+
+# ── 8. Subir todos os serviços (garante que estão rodando) ───────────────────
 info "Iniciando todos os serviços..."
 $DC up -d
 
-# ── 8. Status ────────────────────────────────────────────────────────────────
+# ── 9. Status ────────────────────────────────────────────────────────────────
 echo ""
 info "Status dos containers:"
 $DC ps

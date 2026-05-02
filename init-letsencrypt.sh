@@ -1,9 +1,16 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────────────────────────────
-# e-Registro Brasil — Inicialização do SSL (Let's Encrypt)
-# Execute UMA VEZ na primeira implantação para obter os certificados.
+# e-Registro Brasil — SSL via certbot do SISTEMA
+# Este script NÃO é mais necessário. O deploy.sh já configura o SSL
+# usando o certbot instalado no sistema (nginx do host, não Docker).
+#
+# Para emitir/renovar manualmente:
+#   certbot --nginx -d eregistrobrasil.com.br -d www.eregistrobrasil.com.br
+#   certbot renew --dry-run
 # ─────────────────────────────────────────────────────────────────────────────
-set -e
+echo "Use o deploy.sh para configurar o SSL automaticamente."
+echo "Ou execute diretamente: certbot --nginx -d eregistrobrasil.com.br -d www.eregistrobrasil.com.br"
+
 
 DOMAIN="eregistrobrasil.com.br"
 DOMAINS="-d eregistrobrasil.com.br -d www.eregistrobrasil.com.br"

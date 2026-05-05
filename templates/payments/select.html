@@ -2,35 +2,38 @@
 
 {% block content %}
 <div class="max-w-2xl mx-auto px-4 py-10">
-  <h1 class="text-2xl font-bold text-gray-900 mb-2">Pagamento</h1>
-  <p class="text-gray-500 text-sm mb-8">Pedido #{{ order.short_id }} — Total: <strong class="text-accent">R$ {{ order.total }}</strong></p>
+  <h1 class="text-2xl font-bold text-gray-900 mb-1">Pagamento</h1>
+  <p class="text-gray-500 text-sm mb-8">
+    Pedido <strong class="text-gray-700">#{{ order.short_id }}</strong> —
+    Total: <strong class="text-accent">R$ {{ order.total }}</strong>
+  </p>
 
-  <div class="bg-white rounded-2xl border border-gray-200 p-8">
-    {% if preference_id and mp_public_key %}
-    <!-- Mercado Pago Checkout Pro -->
-    <p class="text-sm text-gray-600 mb-6 text-center">Clique abaixo para pagar com segurança via Mercado Pago (cartão, Pix ou boleto):</p>
-    <div id="wallet_container" class="flex justify-center"></div>
-    <p class="text-xs text-center text-gray-400 mt-4 flex items-center justify-center gap-1">
-      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+  <div class="bg-white rounded-2xl border border-gray-200 p-6 md:p-8">
+    {% if mp_public_key %}
+
+    <div id="payment_brick_container"></div>
+
+    <div id="brick-error" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700"></div>
+
+    <p class="text-xs text-center text-gray-400 mt-5 flex items-center justify-center gap-1">
+      <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
       </svg>
       Ambiente seguro — seus dados estão protegidos
     </p>
-    <script src="https://sdk.mercadopago.com/js/v2"></script>
-    <script>
-      const mp = new MercadoPago('{{ mp_public_key }}', {locale: 'pt-BR'});
-      mp.bricks().create("wallet", "wallet_container", {
-        initialization: { preferenceId: '{{ preference_id }}' },
-        customization: { texts: { valueProp: 'smart_option' } }
-      });
-    </script>
+
     {% else %}
     <div class="text-center py-8">
       <svg class="w-16 h-16 text-yellow-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
       </svg>
       <h2 class="text-lg font-semibold text-gray-900 mb-2">Pagamento não configurado</h2>
-      <p class="text-gray-500 text-sm">As credenciais do Mercado Pago ainda não foram configuradas.<br>Entre em contato pelo WhatsApp para finalizar seu pedido.</p>
+      <p class="text-gray-500 text-sm">
+        As credenciais do Mercado Pago ainda não foram configuradas.<br>
+        Entre em contato pelo WhatsApp para finalizar seu pedido.
+      </p>
       <a href="https://wa.me/5511999999999?text=Olá!%20Quero%20pagar%20o%20pedido%20%23{{ order.short_id }}"
          target="_blank" rel="noopener"
          class="inline-block mt-6 bg-accent text-white font-bold px-6 py-3 rounded-xl hover:bg-accent-light transition-colors">
@@ -40,4 +43,80 @@
     {% endif %}
   </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if mp_public_key %}
+<script src="https://sdk.mercadopago.com/js/v2"></script>
+<script>
+(function () {
+  const brickError = document.getElementById('brick-error');
+
+  function showError(msg) {
+    brickError.textContent = msg;
+    brickError.classList.remove('hidden');
+  }
+
+  try {
+    const mp = new MercadoPago('{{ mp_public_key }}', { locale: 'pt-BR' });
+
+    mp.bricks().create('payment', 'payment_brick_container', {
+      initialization: {
+        amount: parseFloat('{{ order_amount }}'),
+        payer: {
+          entityType: 'individual',
+          email: '{{ order.customer_email|escapejs }}',
+          identification: {
+            type: 'CPF',
+            number: '{{ order_cpf }}',
+          },
+        },
+      },
+      customization: {
+        paymentMethods: {
+          creditCard: 'all',
+          debitCard: 'all',
+          ticket: 'all',
+          bankTransfer: 'all',
+        },
+        visual: {
+          style: { theme: 'default' },
+        },
+      },
+      callbacks: {
+        onReady: function () {
+          brickError.classList.add('hidden');
+        },
+        onSubmit: function ({ formData }) {
+          return new Promise(function (resolve, reject) {
+            fetch('/pagamentos/processar/{{ order.id }}/', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(formData),
+            })
+              .then(function (r) { return r.json(); })
+              .then(function (data) {
+                if (data.redirect_url) {
+                  resolve();
+                  window.location.href = data.redirect_url;
+                } else {
+                  reject(data.error || 'Erro ao processar pagamento.');
+                }
+              })
+              .catch(function (err) { reject(err); });
+          });
+        },
+        onError: function (error) {
+          console.error('Payment Brick error:', error);
+          showError('Erro ao carregar o formulário de pagamento. Recarregue a página e tente novamente.');
+        },
+      },
+    });
+  } catch (e) {
+    console.error(e);
+    showError('Erro ao inicializar o Mercado Pago. Verifique sua conexão e recarregue a página.');
+  }
+})();
+</script>
+{% endif %}
 {% endblock %}

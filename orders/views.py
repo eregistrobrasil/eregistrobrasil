@@ -31,12 +31,29 @@ class CartView(TemplateView):
 
 class AddToCartView(View):
     def post(self, request, slug):
+        from products.models import State
+        from products.services import obter_preco_por_estado
         product = get_object_or_404(Product, slug=slug, is_active=True)
         cart = _get_or_create_cart(request)
+
+        estado_code = request.POST.get('estado', '').strip().upper()
+
+        # Segurança: o preço SEMPRE vem do banco, nunca do formulário
+        unit_price = obter_preco_por_estado(product, estado_code) if estado_code else None
+        state_obj = None
+        if estado_code:
+            state_obj = State.objects.filter(code=estado_code).first()
+
         item, created = CartItem.objects.get_or_create(cart=cart, product=product)
         if not created:
             item.quantity += 1
-            item.save()
+        if state_obj is not None:
+            item.state = state_obj
+        # unit_price None → get_total() usa product.price como fallback
+        if unit_price is not None:
+            item.unit_price = unit_price
+        item.save()
+
         messages.success(request, f'"{product.name}" adicionado ao carrinho.')
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'count': cart.get_count(), 'message': 'Adicionado!'})
@@ -94,16 +111,29 @@ class CheckoutView(View):
             order.subtotal = cart.get_total()
             order.total = cart.get_total()
             order.save()
-            for cart_item in cart.items.select_related('product').all():
+            cart_items = list(cart.items.select_related('product', 'state').all())
+            for cart_item in cart_items:
+                effective_price = (
+                    cart_item.unit_price
+                    if cart_item.unit_price is not None
+                    else cart_item.product.price
+                )
                 OrderItem.objects.create(
                     order=order,
                     product=cart_item.product,
                     product_name=cart_item.product.name,
-                    price=cart_item.product.price,
+                    price=effective_price,
                     quantity=cart_item.quantity,
                     requester_name=cart_item.requester_name,
                     requester_document=cart_item.requester_document,
                 )
+            if not order.estado and cart_items:
+                first_state = next(
+                    (i.state.code for i in cart_items if i.state), None
+                )
+                if first_state:
+                    order.estado = first_state
+                    order.save(update_fields=['estado'])
             cart.items.all().delete()
             return redirect('payments:create', order_id=order.id)
         return self._render(request, form, cart)
@@ -113,7 +143,7 @@ class CheckoutView(View):
         return render(request, self.template_name, {
             'form': form,
             'cart': cart,
-            'cart_items': cart.items.select_related('product').all(),
+            'cart_items': cart.items.select_related('product', 'state').all(),
             'title': 'Finalizar Pedido',
         })
 

@@ -1,0 +1,148 @@
+{% extends "financeiro/base.html" %}
+
+{% block content %}
+<!-- Cards de métricas -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+
+  <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Faturamento Total</p>
+    <p class="text-2xl font-bold text-gray-900">R$ {{ metricas.total_faturamento|floatformat:2 }}</p>
+    <p class="text-xs text-gray-400 mt-1">Pedidos pagos / concluídos</p>
+  </div>
+
+  <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Faturamento Hoje</p>
+    <p class="text-2xl font-bold text-fin">R$ {{ metricas.faturamento_hoje|floatformat:2 }}</p>
+    <p class="text-xs text-gray-400 mt-1">{{ metricas.pedidos_pagos }} pedidos pagos total</p>
+  </div>
+
+  <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Faturamento do Mês</p>
+    <p class="text-2xl font-bold text-accent">R$ {{ metricas.faturamento_mes|floatformat:2 }}</p>
+    <p class="text-xs text-gray-400 mt-1">Mês atual</p>
+  </div>
+
+  <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Ticket Médio</p>
+    <p class="text-2xl font-bold text-gray-900">R$ {{ metricas.ticket_medio|floatformat:2 }}</p>
+    <p class="text-xs text-gray-400 mt-1">{{ metricas.total_pedidos }} pedidos no total</p>
+  </div>
+
+</div>
+
+<!-- Segunda linha: Gráfico + Status -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+
+  <!-- Gráfico faturamento 30 dias -->
+  <div class="xl:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h2 class="text-sm font-semibold text-gray-700 mb-4">Faturamento — últimos 30 dias</h2>
+    <div class="relative h-56">
+      <canvas id="chartFaturamento"></canvas>
+    </div>
+  </div>
+
+  <!-- Status dos pedidos -->
+  <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h2 class="text-sm font-semibold text-gray-700 mb-4">Pedidos por Status</h2>
+    <div class="space-y-2">
+      <div class="flex justify-between items-center text-sm">
+        <span class="text-gray-600">Aguardando pagamento</span>
+        <span class="badge bg-yellow-100 text-yellow-800">{{ metricas.pedidos_pendentes }}</span>
+      </div>
+      <div class="flex justify-between items-center text-sm">
+        <span class="text-gray-600">Pagos / Concluídos</span>
+        <span class="badge bg-green-100 text-green-800">{{ metricas.pedidos_pagos }}</span>
+      </div>
+      <div class="flex justify-between items-center text-sm">
+        <span class="text-gray-600">Cancelados / Reembolsados</span>
+        <span class="badge bg-red-100 text-red-800">{{ metricas.pedidos_cancelados }}</span>
+      </div>
+      <div class="pt-3 border-t border-gray-100 mt-3">
+        {% for label, count in metricas.por_status.items %}
+        <div class="flex justify-between items-center text-xs py-0.5">
+          <span class="text-gray-500">{{ label }}</span>
+          <span class="font-medium text-gray-700">{{ count }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Últimas vendas -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+    <h2 class="text-sm font-semibold text-gray-700">Últimas Vendas</h2>
+    <a href="{% url 'financeiro:relatorios' %}" class="text-xs text-fin hover:underline">Ver relatório completo →</a>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+          <th class="px-6 py-3 text-left">Pedido</th>
+          <th class="px-6 py-3 text-left">Cliente</th>
+          <th class="px-6 py-3 text-left">Status</th>
+          <th class="px-6 py-3 text-right">Total</th>
+          <th class="px-6 py-3 text-left">Data</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for pedido in ultimas_vendas %}
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-6 py-3 font-mono text-xs text-gray-600">#{{ pedido.short_id }}</td>
+          <td class="px-6 py-3">
+            <p class="font-medium text-gray-800">{{ pedido.customer_name }}</p>
+            <p class="text-xs text-gray-400">{{ pedido.customer_email }}</p>
+          </td>
+          <td class="px-6 py-3">
+            <span class="badge
+              {% if pedido.status == 'concluido' or pedido.status == 'completed' %}bg-green-100 text-green-700
+              {% elif pedido.status == 'paid' %}bg-blue-100 text-blue-700
+              {% elif pedido.status == 'cancelado' or pedido.status == 'refunded' %}bg-red-100 text-red-700
+              {% else %}bg-yellow-100 text-yellow-700{% endif %}">
+              {{ pedido.get_status_display }}
+            </span>
+          </td>
+          <td class="px-6 py-3 text-right font-semibold text-gray-800">R$ {{ pedido.total|floatformat:2 }}</td>
+          <td class="px-6 py-3 text-xs text-gray-400">{{ pedido.created_at|date:"d/m/Y H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 text-sm">Nenhuma venda encontrada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ctx = document.getElementById('chartFaturamento');
+if (ctx) {
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: {{ chart_labels|safe }},
+      datasets: [{
+        label: 'Faturamento (R$)',
+        data: {{ chart_valores|safe }},
+        backgroundColor: 'rgba(109,40,217,0.15)',
+        borderColor: 'rgba(109,40,217,0.8)',
+        borderWidth: 2,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#F3F4F6' }, ticks: { font: { size: 11 } } },
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+}
+</script>
+{% endblock %}

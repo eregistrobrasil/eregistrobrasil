@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta_description %}Escolha o tipo de certidão de imóvel que você precisa solicitar.{% endblock %}
+
+{% block extra_head %}
+<style>
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+  .animate-fade-in { animation: fadeInUp 0.45s ease both; }
+  .animate-delay-1 { animation-delay: 0.05s; }
+  .animate-delay-2 { animation-delay: 0.10s; }
+  .animate-delay-3 { animation-delay: 0.15s; }
+
+  .tipo-card {
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .tipo-card:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 18px rgba(27,79,114,0.12);
+    border-color: #1B4F72;
+  }
+  .tipo-card.selecting {
+    border-color: #1B4F72;
+    background-color: #EBF2FA;
+    opacity: 0.75;
+    pointer-events: none;
+  }
+  .tipo-card input[type="radio"] { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="py-10 px-4 max-w-6xl mx-auto">
+
+  <!-- Breadcrumb -->
+  {% include 'servicos/includes/_breadcrumb.html' with servico_nome="Certidão de Imóvel" step2=True step1_url=step1_url only %}
+
+  <!-- Step Indicator 4 etapas -->
+  {% include 'servicos/includes/_step_indicator_imovel.html' with current_step=2 %}
+
+  <!-- Cabeçalho -->
+  <div class="mb-8 animate-fade-in animate-delay-1">
+    <h1 class="text-2xl font-bold text-primary leading-tight">Qual certidão você precisa?</h1>
+    <p class="text-sm text-gray-500 mt-1">Clique no tipo de certidão para avançar automaticamente.</p>
+  </div>
+
+  <form method="post" id="tipo-form" novalidate>
+    {% csrf_token %}
+
+    {% if messages %}
+    <div class="mb-4">
+      {% for msg in messages %}
+      <div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
+        {{ msg }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Cards de tipos (um por linha) -->
+    <div class="flex flex-col gap-3 max-w-2xl animate-fade-in animate-delay-2">
+      {% for tipo in tipos %}
+      <label class="tipo-card bg-white rounded-2xl border-2 border-gray-200 px-5 py-4 flex flex-row items-center gap-4 select-none"
+             for="tipo_{{ tipo.key }}"
+             data-key="{{ tipo.key }}">
+
+        <input type="radio" name="tipo" id="tipo_{{ tipo.key }}" value="{{ tipo.key }}">
+
+        <!-- Ícone -->
+        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+
+        <!-- Texto -->
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-gray-900 text-sm leading-snug">{{ tipo.label }}</p>
+          <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">{{ tipo.descricao }}</p>
+        </div>
+
+        <!-- Seta de navegação -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300 flex-shrink-0 arrow-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+        </svg>
+
+        <!-- Spinner (oculto até selecionar) -->
+        <svg class="spinner-icon hidden animate-spin h-5 w-5 text-primary flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+      </label>
+      {% endfor %}
+    </div>
+
+    <p class="text-xs text-gray-400 mt-4">
+      <a href="{% url step1_url %}" class="underline underline-offset-2 hover:text-primary transition-colors">
+        ← Voltar e alterar cartório
+      </a>
+    </p>
+  </form>
+
+  <!-- Resumo do cartório (lateral em telas grandes) -->
+  <div class="mt-8 lg:hidden bg-white rounded-2xl border border-gray-200 p-4 text-sm text-gray-600">
+    <p class="font-semibold text-gray-800 mb-1">Cartório selecionado:</p>
+    <p>{{ cartorio_data.cidade }}{% if cartorio_data.estado_uf %} — {{ cartorio_data.estado_uf }}{% endif %}</p>
+    <p class="text-gray-400 text-xs mt-0.5">{{ cartorio_data.cartorio }}</p>
+  </div>
+
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+  const form  = document.getElementById('tipo-form');
+  const cards = document.querySelectorAll('.tipo-card');
+
+  cards.forEach(function (card) {
+    card.addEventListener('click', function () {
+      const radio = this.querySelector('input[type="radio"]');
+      if (!radio) return;
+
+      // Feedback visual imediato
+      this.classList.add('selecting');
+      const arrow   = this.querySelector('.arrow-icon');
+      const spinner = this.querySelector('.spinner-icon');
+      if (arrow)   arrow.classList.add('hidden');
+      if (spinner) spinner.classList.remove('hidden');
+
+      // Marca o radio e submete
+      radio.checked = true;
+      form.submit();
+    });
+  });
+})();
+</script>
+{% endblock %}

@@ -62,6 +62,8 @@
     <!-- Card de compra -->
     <div class="lg:col-span-1">
       <div class="bg-white rounded-2xl border border-gray-200 p-6 sticky top-24">
+
+        <!-- Bloco de preço -->
         {% if product.original_price %}
         <div class="flex items-center gap-2 mb-1">
           <span class="text-gray-400 line-through text-lg">R$ {{ product.original_price }}</span>
@@ -70,13 +72,84 @@
           </span>
         </div>
         {% endif %}
-        <p class="text-3xl font-bold text-accent mb-2">R$ {{ product.price }}</p>
-        <p class="text-xs text-gray-500 mb-6">Prazo: {{ product.delivery_days }} dias úteis</p>
 
-        <form action="{% url 'orders:add_to_cart' product.slug %}" method="POST">
+        <!-- Área de preço dinâmica -->
+        <div id="price-area" class="mb-1">
+          {% if has_state_prices %}
+          <!-- Instrução inicial quando há preços por estado -->
+          <p id="price-placeholder" class="text-base font-semibold text-gray-400">
+            Selecione o estado para ver o preço
+          </p>
+          <p id="price-display" class="text-3xl font-bold text-accent hidden"></p>
+          {% else %}
+          <p id="price-display" class="text-3xl font-bold text-accent">R$ {{ product.price }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Loading spinner (oculto por padrão) -->
+        <div id="price-loading" class="hidden mb-1">
+          <div class="flex items-center gap-2 text-gray-400 text-sm">
+            <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            Consultando preço...
+          </div>
+        </div>
+
+        <p id="price-note" class="text-xs text-gray-500 mb-4 hidden">
+          Preço para o estado selecionado
+        </p>
+        {% if not has_state_prices %}
+        <p class="text-xs text-gray-500 mb-4">Prazo: {{ product.delivery_days }} dias úteis</p>
+        {% else %}
+        <p id="delivery-note" class="text-xs text-gray-500 mb-4">Prazo: {{ product.delivery_days }} dias úteis</p>
+        {% endif %}
+
+        <!-- Seletor de Estado -->
+        {% if has_state_prices %}
+        <div class="mb-4">
+          <label for="estado-select" class="block text-sm font-semibold text-gray-700 mb-1">
+            Estado de registro <span class="text-red-500">*</span>
+          </label>
+          <select id="estado-select"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                  required>
+            <option value="">— Selecione o estado —</option>
+            {% for code, name in estados %}
+            <option value="{{ code }}">{{ name }} ({{ code }})</option>
+            {% endfor %}
+          </select>
+          <p id="estado-error" class="text-xs text-red-500 mt-1 hidden">
+            Por favor, selecione o estado antes de continuar.
+          </p>
+        </div>
+        {% else %}
+        <div class="mb-4">
+          <label for="estado-select" class="block text-sm font-medium text-gray-700 mb-1">
+            Estado de registro
+          </label>
+          <select id="estado-select"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <option value="">— Selecione (opcional) —</option>
+            {% for code, name in estados %}
+            <option value="{{ code }}">{{ name }} ({{ code }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+
+        <form action="{% url 'orders:add_to_cart' product.slug %}" method="POST" id="add-to-cart-form">
           {% csrf_token %}
-          <button type="submit"
-                  class="w-full bg-accent text-white font-bold py-3 px-6 rounded-xl hover:bg-accent-light transition-colors mb-3">
+          <input type="hidden" name="estado" id="estado-input" value="">
+          <button type="submit" id="btn-solicitar"
+                  {% if has_state_prices %}disabled{% endif %}
+                  class="w-full font-bold py-3 px-6 rounded-xl transition-colors mb-3
+                         {% if has_state_prices %}
+                         bg-gray-200 text-gray-400 cursor-not-allowed
+                         {% else %}
+                         bg-accent text-white hover:bg-accent-light
+                         {% endif %}">
             Solicitar Agora
           </button>
         </form>
@@ -125,4 +198,96 @@
   </section>
   {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+  // Preços por estado embutidos no HTML (sem chamada AJAX extra)
+  const STATE_PRICES = {{ state_prices_json|safe }};
+  const HAS_STATE_PRICES = {{ has_state_prices|yesno:"true,false" }};
+  const BASE_PRICE = '{{ product.price }}';
+
+  const select      = document.getElementById('estado-select');
+  const priceDisplay   = document.getElementById('price-display');
+  const pricePlaceholder = document.getElementById('price-placeholder');
+  const priceNote   = document.getElementById('price-note');
+  const estadoInput = document.getElementById('estado-input');
+  const btnSolicitar = document.getElementById('btn-solicitar');
+  const estadoError = document.getElementById('estado-error');
+
+  function fmt(value) {
+    return 'R$ ' + parseFloat(value).toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+
+  function setPrice(raw) {
+    if (pricePlaceholder) pricePlaceholder.classList.add('hidden');
+    priceDisplay.classList.remove('hidden');
+    priceDisplay.textContent = fmt(raw);
+  }
+
+  function enableButton() {
+    btnSolicitar.disabled = false;
+    btnSolicitar.classList.remove('bg-gray-200', 'text-gray-400', 'cursor-not-allowed');
+    btnSolicitar.classList.add('bg-accent', 'text-white', 'hover:bg-accent-light');
+  }
+
+  function disableButton() {
+    btnSolicitar.disabled = true;
+    btnSolicitar.classList.add('bg-gray-200', 'text-gray-400', 'cursor-not-allowed');
+    btnSolicitar.classList.remove('bg-accent', 'text-white', 'hover:bg-accent-light');
+  }
+
+  if (select) {
+    select.addEventListener('change', function () {
+      const estado = this.value;
+      estadoInput.value = estado;
+      if (estadoError) estadoError.classList.add('hidden');
+
+      if (!estado) {
+        // Nenhum estado selecionado
+        if (HAS_STATE_PRICES) {
+          if (pricePlaceholder) pricePlaceholder.classList.remove('hidden');
+          priceDisplay.classList.add('hidden');
+          priceNote.classList.add('hidden');
+          disableButton();
+        } else {
+          setPrice(BASE_PRICE);
+          priceNote.classList.add('hidden');
+        }
+        return;
+      }
+
+      // Busca no dict embutido (sem AJAX)
+      const preco = STATE_PRICES[estado];
+      if (preco) {
+        setPrice(preco);
+        priceNote.classList.remove('hidden');
+      } else {
+        // Estado sem preço específico (ex: AL) → mostra preço base
+        setPrice(BASE_PRICE);
+        priceNote.classList.remove('hidden');
+      }
+
+      if (HAS_STATE_PRICES) enableButton();
+    });
+  }
+
+  // Validação no submit: garante que estado foi selecionado
+  const form = document.getElementById('add-to-cart-form');
+  if (form && HAS_STATE_PRICES) {
+    form.addEventListener('submit', function (e) {
+      if (!estadoInput.value) {
+        e.preventDefault();
+        if (estadoError) estadoError.classList.remove('hidden');
+        select.focus();
+        select.classList.add('border-red-500');
+      }
+    });
+  }
+})();
+</script>
 {% endblock %}

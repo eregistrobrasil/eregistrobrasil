@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, TipoServico, Product
+from .models import Category, TipoServico, Product, State, ServiceStatePrice, PrecoImovelEstado
 
 
 @admin.register(TipoServico)
@@ -41,3 +41,29 @@ class ProductAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+
+@admin.register(State)
+class StateAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name')
+    search_fields = ('code', 'name')
+    ordering = ('name',)
+
+
+@admin.register(ServiceStatePrice)
+class ServiceStatePriceAdmin(admin.ModelAdmin):
+    list_display = ('service', 'state', 'price', 'promotional_price', 'is_active')
+    list_editable = ('price', 'promotional_price', 'is_active')
+    list_filter = ('is_active', 'state')
+    search_fields = ('service__name', 'state__code', 'state__name')
+    autocomplete_fields = ('service', 'state')
+
+
+@admin.register(PrecoImovelEstado)
+class PrecoImovelEstadoAdmin(admin.ModelAdmin):
+    list_display = ('tipo_certidao', 'state', 'price', 'is_active')
+    list_editable = ('price', 'is_active')
+    list_filter = ('is_active', 'tipo_certidao', 'state')
+    search_fields = ('tipo_certidao', 'state__code', 'state__name')
+    autocomplete_fields = ('state',)
+    ordering = ('tipo_certidao', 'state__name')

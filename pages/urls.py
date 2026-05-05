@@ -31,6 +31,10 @@ urlpatterns = [
     # Procuração
     path('servico/certidao-de-procuracao/', views.CertidaoProcuracaoView.as_view(), name='certidao_procuracao'),
     path('servico/certidao-de-procuracao/dados/', views.CertidaoProcuracaoDadosView.as_view(), name='certidao_procuracao_dados'),
+    # Imóvel
+    path('servico/certidao-de-imovel/', views.CertidaoImovelView.as_view(), name='certidao_imovel'),
+    path('servico/certidao-de-imovel/tipo/', views.CertidaoImovelTipoView.as_view(), name='certidao_imovel_tipo'),
+    path('servico/certidao-de-imovel/formulario/', views.CertidaoImovelDadosView.as_view(), name='certidao_imovel_dados'),
     path('api/cidades/', cidades_por_estado, name='cidades_por_estado'),
     path('quem-somos/', views.AboutView.as_view(), name='about'),
     path('fale-conosco/', views.ContactView.as_view(), name='contact'),

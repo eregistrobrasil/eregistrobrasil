@@ -1,0 +1,65 @@
+<!-- _step_indicator_imovel.html  — 4 etapas para Certidão de Imóvel -->
+{# current_step: 1=Cartório, 2=Tipo, 3=Dados, 4=Pagamento #}
+{% with s=current_step|default:1 %}
+<div class="flex items-center gap-1 sm:gap-2 mb-8 animate-fade-in" aria-label="Etapas do processo">
+
+  {# ─── Etapa 1: Cartório ─── #}
+  <div class="flex items-center gap-1 sm:gap-2">
+    {% if s > 1 %}
+      <span class="w-7 h-7 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+        </svg>
+      </span>
+    {% else %}
+      <span class="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center flex-shrink-0" aria-current="step">1</span>
+    {% endif %}
+    <span class="text-sm {% if s == 1 %}font-semibold text-primary{% else %}text-gray-400{% endif %} hidden sm:inline">Cartório</span>
+  </div>
+
+  <div class="h-px flex-1 max-w-8 {% if s > 1 %}bg-primary{% else %}bg-gray-300{% endif %}"></div>
+
+  {# ─── Etapa 2: Tipo ─── #}
+  <div class="flex items-center gap-1 sm:gap-2">
+    {% if s > 2 %}
+      <span class="w-7 h-7 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+        </svg>
+      </span>
+    {% elif s == 2 %}
+      <span class="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center flex-shrink-0" aria-current="step">2</span>
+    {% else %}
+      <span class="w-7 h-7 rounded-full bg-gray-200 text-gray-400 text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
+    {% endif %}
+    <span class="text-sm {% if s == 2 %}font-semibold text-primary{% elif s > 2 %}text-gray-400{% else %}text-gray-400{% endif %} hidden sm:inline">Tipo</span>
+  </div>
+
+  <div class="h-px flex-1 max-w-8 {% if s > 2 %}bg-primary{% else %}bg-gray-300{% endif %}"></div>
+
+  {# ─── Etapa 3: Dados ─── #}
+  <div class="flex items-center gap-1 sm:gap-2">
+    {% if s > 3 %}
+      <span class="w-7 h-7 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+        </svg>
+      </span>
+    {% elif s == 3 %}
+      <span class="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center flex-shrink-0" aria-current="step">3</span>
+    {% else %}
+      <span class="w-7 h-7 rounded-full bg-gray-200 text-gray-400 text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
+    {% endif %}
+    <span class="text-sm {% if s == 3 %}font-semibold text-primary{% else %}text-gray-400{% endif %} hidden sm:inline">Dados</span>
+  </div>
+
+  <div class="h-px flex-1 max-w-8 bg-gray-300"></div>
+
+  {# ─── Etapa 4: Pagamento ─── #}
+  <div class="flex items-center gap-1 sm:gap-2">
+    <span class="w-7 h-7 rounded-full bg-gray-200 text-gray-400 text-xs font-bold flex items-center justify-center flex-shrink-0">4</span>
+    <span class="text-sm text-gray-400 hidden sm:inline">Pagamento</span>
+  </div>
+
+</div>
+{% endwith %}

@@ -25,6 +25,13 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField('Quantidade', default=1)
+    state = models.ForeignKey(
+        'products.State', on_delete=models.SET_NULL, null=True, blank=True,
+        verbose_name='Estado'
+    )
+    unit_price = models.DecimalField(
+        'Preço Unitário', max_digits=10, decimal_places=2, null=True, blank=True
+    )
     requester_name = models.CharField('Nome do Requerente', max_length=200, blank=True)
     requester_document = models.CharField('Documento', max_length=30, blank=True)
 
@@ -37,7 +44,8 @@ class CartItem(models.Model):
         return f'{self.product.name} x {self.quantity}'
 
     def get_total(self):
-        return self.product.price * self.quantity
+        price = self.unit_price if self.unit_price is not None else self.product.price
+        return price * self.quantity
 
 
 class Order(models.Model):

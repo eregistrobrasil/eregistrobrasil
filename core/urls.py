@@ -24,6 +24,8 @@ from products.api_views import (
     TipoServicoListAPIView,
     ServicoListAPIView,
     ServicoDetailAPIView,
+    ServicePriceByStateView,
+    ImovelPriceByStateView,
 )
 
 admin.site.site_header = 'E-Registro Brasil — Administração'
@@ -39,12 +41,15 @@ urlpatterns = [
     path('pagamentos/', include('payments.urls')),
     path('blog/', include('blog.urls')),
     path('painel/', include('dashboard.urls')),
+    path('financeiro/', include('financeiro.urls')),
     path('documentos/', include('documents.urls')),
     # API pública de serviços
     path('api/categorias/', CategoriaListAPIView.as_view(), name='api-categorias'),
     path('api/tipos/', TipoServicoListAPIView.as_view(), name='api-tipos'),
     path('api/servicos/', ServicoListAPIView.as_view(), name='api-servicos'),
     path('api/servicos/<slug:slug>/', ServicoDetailAPIView.as_view(), name='api-servico-detail'),
+    path('api/preco/', ServicePriceByStateView.as_view(), name='api-preco-estado'),
+    path('api/preco-imovel/', ImovelPriceByStateView.as_view(), name='api-preco-imovel'),
 ]
 
 if settings.DEBUG:

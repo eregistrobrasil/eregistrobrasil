@@ -228,9 +228,8 @@ class CertidaoObitoForm(forms.Form):
 # ─────────────────────────────────────────────
 
 class CertidaoCasamentoForm(forms.Form):
-    nome_completo = _char_field('Nome Completo', 'Nome completo da pessoa')
-    nome_mae = _char_field('Nome Completo da Mãe', 'Nome completo da mãe', msg_label='o nome completo da mãe')
-    nome_pai = _char_field('Nome Completo do Pai', 'Nome completo do pai', msg_label='o nome completo do pai')
+    conjuge_1 = _char_field('Nome do Cônjuge 1', 'Nome completo do cônjuge 1', msg_label='o nome do cônjuge 1')
+    conjuge_2 = _char_field('Nome do Cônjuge 2', 'Nome completo do cônjuge 2', msg_label='o nome do cônjuge 2')
     data_casamento = _date_field('Data do Casamento', msg_label='a data do casamento')
     numero_livro = forms.CharField(
         label='Número do Livro', max_length=50, required=False,
@@ -315,4 +314,155 @@ class CertidaoProcuracaoForm(forms.Form):
         if len(cpf) != 11:
             raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
         return cpf
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Imóvel — tipos e forms dinâmicos
+# ─────────────────────────────────────────────
+
+TIPOS_CERTIDAO_IMOVEL = [
+    ('matricula',         'Matrícula'),
+    ('inteiro_teor',      'Certidão de Inteiro Teor e Ônus da Ação'),
+    ('vintenaria',        'Vintenária'),
+    ('transcricao',       'Transcrição'),
+    ('doc_arquivado',     'Documento Arquivado'),
+    ('pacto_antinupcial', 'Pacto Antinupcial'),
+    ('condominio',        'Condomínio'),
+    ('livro3_garantias',  'Livro 3 – Garantias'),
+    ('livro3_auxiliar',   'Livro 3 – Auxiliar'),
+    ('quesitos',          'Quesitos'),
+]
+
+TIPOS_CERTIDAO_IMOVEL_DICT = dict(TIPOS_CERTIDAO_IMOVEL)
+
+
+def _matricula_field():
+    return forms.CharField(
+        label='Número da Matrícula',
+        max_length=50,
+        error_messages={'required': 'Informe o número da matrícula.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: 12345',
+            'inputmode': 'numeric',
+        }),
+    )
+
+
+class CertidaoImovelMatriculaForm(forms.Form):
+    numero_matricula = _matricula_field()
+
+
+class CertidaoImovelInteiroTeorForm(forms.Form):
+    numero_matricula = _matricula_field()
+
+
+class CertidaoImovelVintenariaForm(forms.Form):
+    numero_matricula = _matricula_field()
+
+
+class CertidaoImovelQuesitosForm(forms.Form):
+    numero_matricula = _matricula_field()
+
+
+class CertidaoImovelTranscricaoForm(forms.Form):
+    numero_transcricao = _char_field(
+        'Número da Transcrição', 'Ex: 12345', msg_label='o número da transcrição'
+    )
+    data_emissao      = _date_field('Data de Emissão', required=False, msg_label='a data de emissão')
+    livro             = _char_field('Livro', 'Ex: B-10', required=False, msg_label='o livro')
+    # Dados do imóvel (complementares)
+    imovel_cidade      = _char_field('Cidade do Imóvel',  '', required=False)
+    imovel_rua         = _char_field('Rua',               '', required=False)
+    imovel_numero      = _char_field('Número',            '', required=False, max_length=20)
+    imovel_lote        = _char_field('Lote',              '', required=False, max_length=20)
+    imovel_apartamento = _char_field('Apartamento',       '', required=False, max_length=20)
+    imovel_bloco       = _char_field('Bloco',             '', required=False, max_length=20)
+    imovel_andar       = _char_field('Andar',             '', required=False, max_length=20)
+    imovel_edificio    = _char_field('Edifício',          '', required=False)
+    imovel_bairro      = _char_field('Bairro',            '', required=False)
+    imovel_vila        = _char_field('Vila',              '', required=False)
+
+
+_DOC_ARQUIVADO_CHOICES = [
+    ('',                'Selecione o tipo'),
+    ('matricula',       'Matrícula'),
+    ('registro_livro3', 'Registro Livro 3'),
+    ('protocolo',       'Protocolo'),
+]
+
+
+class CertidaoImovelDocArquivadoForm(forms.Form):
+    tipo_referencia = forms.ChoiceField(
+        label='Tipo de Referência',
+        choices=_DOC_ARQUIVADO_CHOICES,
+        error_messages={'required': 'Selecione o tipo de referência.'},
+        widget=forms.Select(attrs={'class': _INPUT_CLASS, 'id': 'id_tipo_referencia'}),
+    )
+    numero_referencia = _char_field(
+        'Número de Referência', 'Informe o número correspondente',
+        msg_label='o número de referência'
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        tipo = cleaned.get('tipo_referencia')
+        numero = cleaned.get('numero_referencia', '').strip()
+        if tipo and not numero:
+            self.add_error('numero_referencia', 'Informe o número correspondente ao tipo selecionado.')
+        return cleaned
+
+
+class CertidaoImovelCondominioForm(forms.Form):
+    nome_condominio = _char_field(
+        'Nome do Condomínio', 'Nome completo do condomínio', msg_label='o nome do condomínio'
+    )
+
+
+def _imovel_clean_cpf(form_instance):
+    cpf = re.sub(r'\D', '', form_instance.cleaned_data.get('cpf', ''))
+    if len(cpf) != 11:
+        raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+    return cpf
+
+
+class CertidaoImovelLivro3GarantiasForm(forms.Form):
+    nome_completo = _char_field('Nome Completo', 'Nome completo', msg_label='o nome completo')
+    cpf = _cpf_field()
+
+    def clean_cpf(self):
+        return _imovel_clean_cpf(self)
+
+
+class CertidaoImovelLivro3AuxiliarForm(forms.Form):
+    nome_completo = _char_field('Nome Completo', 'Nome completo', msg_label='o nome completo')
+    cpf = _cpf_field()
+
+    def clean_cpf(self):
+        return _imovel_clean_cpf(self)
+
+
+class CertidaoImovelPactoAntinupcialForm(forms.Form):
+    nome_completo = _char_field(
+        'Nome Completo do Outorgante', 'Nome completo', msg_label='o nome completo'
+    )
+    cpf = _cpf_field()
+
+    def clean_cpf(self):
+        return _imovel_clean_cpf(self)
+
+
+# Mapeamento tipo → form class (exportado para views)
+IMOVEL_FORM_MAP = {
+    'matricula':         CertidaoImovelMatriculaForm,
+    'inteiro_teor':      CertidaoImovelInteiroTeorForm,
+    'vintenaria':        CertidaoImovelVintenariaForm,
+    'transcricao':       CertidaoImovelTranscricaoForm,
+    'doc_arquivado':     CertidaoImovelDocArquivadoForm,
+    'pacto_antinupcial': CertidaoImovelPactoAntinupcialForm,
+    'condominio':        CertidaoImovelCondominioForm,
+    'livro3_garantias':  CertidaoImovelLivro3GarantiasForm,
+    'livro3_auxiliar':   CertidaoImovelLivro3AuxiliarForm,
+    'quesitos':          CertidaoImovelQuesitosForm,
+}
 

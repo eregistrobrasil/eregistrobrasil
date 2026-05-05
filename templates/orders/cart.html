@@ -17,8 +17,11 @@
         </div>
         <div class="flex-1">
           <p class="font-semibold text-gray-900">{{ item.product.name }}</p>
-          <p class="text-xs text-gray-500">{{ item.product.category.name }}</p>
-          <p class="text-sm font-bold text-accent mt-1">R$ {{ item.product.price }} × {{ item.quantity }} = R$ {{ item.get_total }}</p>
+          <p class="text-xs text-gray-500">{{ item.product.category.name }}{% if item.state %} — {{ item.state.code }}{% endif %}</p>
+          <p class="text-sm font-bold text-accent mt-1">
+            R$ {% if item.unit_price %}{{ item.unit_price }}{% else %}{{ item.product.price }}{% endif %}
+            × {{ item.quantity }} = R$ {{ item.get_total }}
+          </p>
         </div>
         <form action="{% url 'orders:remove_from_cart' item.id %}" method="POST">
           {% csrf_token %}

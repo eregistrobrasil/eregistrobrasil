@@ -1,7 +1,9 @@
 from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-from .models import Category, Product
+import json
+from .models import Category, Product, ESTADOS_BR
+from .services import get_state_prices_dict
 
 
 class HomeView(ListView):
@@ -55,6 +57,11 @@ class ProductDetailView(DetailView):
             is_active=True, category=self.object.category
         ).exclude(pk=self.object.pk)[:4]
         ctx['title'] = self.object.meta_title or self.object.name
+        ctx['estados'] = ESTADOS_BR
+        # Preços por estado embutidos como JSON — evita chamadas AJAX individuais
+        state_prices = get_state_prices_dict(self.object)
+        ctx['state_prices_json'] = json.dumps(state_prices)
+        ctx['has_state_prices'] = bool(state_prices)
         return ctx
 
 

@@ -1,0 +1,257 @@
+{% extends "financeiro/base.html" %}
+
+{% block topbar_actions %}
+<a href="{% url 'financeiro:servico_create' %}"
+   class="flex items-center gap-2 bg-fin text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-fin-light transition-colors">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+  </svg>
+  Novo Servico
+</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Seletor de Estado + Filtros -->
+<form method="get" class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-6">
+  <div class="flex flex-wrap gap-3 items-end">
+    <div class="w-56">
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Estado (preco por UF)</label>
+      <select name="estado" onchange="this.form.submit()"
+        class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-fin">
+        <option value="">Todos os servicos</option>
+        {% for code, name in estados %}
+        <option value="{{ code }}" {% if estado_code == code %}selected{% endif %}>{{ code }} -- {{ name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="flex-1 min-w-44">
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Buscar</label>
+      {{ form.q }}
+    </div>
+    <div class="w-52">
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Categoria</label>
+      {{ form.categoria }}
+    </div>
+    <div class="w-32">
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Status</label>
+      {{ form.ativo }}
+    </div>
+    <button type="submit" class="bg-fin text-white text-sm px-4 py-2 rounded-lg hover:bg-fin-light transition-colors">Filtrar</button>
+    <a href="{% url 'financeiro:servicos' %}" class="text-sm text-gray-400 hover:text-gray-700 px-2 py-2">Limpar</a>
+  </div>
+</form>
+
+{% if modo == 'estado' %}
+<div class="flex items-center gap-2 bg-fin/5 border border-fin/20 text-fin text-sm px-4 py-2.5 rounded-lg mb-4">
+  <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+  </svg>
+  Exibindo precos especificos para <strong class="mx-1">{{ estado_code }}</strong>. Edicoes afetam apenas este estado.
+</div>
+{% endif %}
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+    <h2 class="text-sm font-semibold text-gray-700">
+      {{ total }} servico{{ total|pluralize }}{% if modo == 'estado' %} &mdash; {{ estado_code }}{% endif %}
+    </h2>
+  </div>
+  <div class="overflow-x-auto">
+
+    {% if modo == 'estado' %}
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+          <th class="px-6 py-3 text-left">Servico</th>
+          <th class="px-6 py-3 text-left">Categoria</th>
+          <th class="px-6 py-3 text-center">Ativo</th>
+          <th class="px-6 py-3 text-right w-56">Preco ({{ estado_code }})</th>
+          <th class="px-6 py-3 text-right w-52">Preco Promo</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for ssp in servicos %}
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-6 py-3">
+            <p class="font-medium text-gray-800">{{ ssp.service.name }}</p>
+            <p class="text-xs text-gray-400">Base: R$ {{ ssp.service.price|floatformat:2 }}</p>
+          </td>
+          <td class="px-6 py-3 text-xs text-gray-500">{{ ssp.service.category.name }}</td>
+          <td class="px-6 py-3 text-center">
+            <button type="button" onclick="toggleEstado({{ ssp.pk }}, this)"
+              class="badge cursor-pointer {% if ssp.is_active %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-500{% endif %}">
+              {% if ssp.is_active %}Ativo{% else %}Inativo{% endif %}
+            </button>
+          </td>
+          <td class="px-6 py-3 text-right">
+            <div class="flex items-center justify-end gap-2">
+              <span class="font-semibold text-gray-800" id="ssp-price-{{ ssp.pk }}">R$ {{ ssp.price|floatformat:2 }}</span>
+              <button type="button" onclick="openSspEdit({{ ssp.pk }})"
+                class="text-gray-400 hover:text-fin transition-colors" title="Editar preco">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                </svg>
+              </button>
+            </div>
+            <div id="ssp-form-{{ ssp.pk }}" class="hidden mt-1.5">
+              <div class="flex items-center gap-1 justify-end">
+                <input type="number" step="0.01" id="ssp-input-{{ ssp.pk }}"
+                  class="w-24 text-right border border-fin/40 rounded px-2 py-1 text-xs focus:outline-none focus:border-fin"
+                  value="{{ ssp.price }}">
+                <button onclick="saveSsp({{ ssp.pk }})" class="text-xs bg-fin text-white px-2 py-1 rounded hover:bg-fin-light">OK</button>
+                <button onclick="cancelSspEdit({{ ssp.pk }})" class="text-xs text-gray-400 hover:text-gray-600 px-1">X</button>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-3 text-right text-xs text-gray-400">
+            {% if ssp.promotional_price %}R$ {{ ssp.promotional_price|floatformat:2 }}{% else %}&mdash;{% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="px-6 py-12 text-center text-gray-400">Nenhum preco configurado para este estado.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% else %}
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+          <th class="px-6 py-3 text-left">Servico</th>
+          <th class="px-6 py-3 text-left">Categoria</th>
+          <th class="px-6 py-3 text-center">Status</th>
+          <th class="px-6 py-3 text-right w-48">Preco Base</th>
+          <th class="px-6 py-3 text-right w-44">Acoes</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for s in servicos %}
+        <tr class="hover:bg-gray-50 transition-colors" id="row-{{ s.pk }}">
+          <td class="px-6 py-3">
+            <p class="font-medium text-gray-800">{{ s.name }}</p>
+            {% if s.short_description %}
+            <p class="text-xs text-gray-400 mt-0.5">{{ s.short_description|truncatechars:60 }}</p>
+            {% endif %}
+          </td>
+          <td class="px-6 py-3 text-gray-500 text-xs">{{ s.category.name }}</td>
+          <td class="px-6 py-3 text-center">
+            <button type="button" onclick="toggleAtivo({{ s.pk }}, this)"
+              class="badge cursor-pointer {% if s.is_active %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-500{% endif %}">
+              {% if s.is_active %}Ativo{% else %}Inativo{% endif %}
+            </button>
+          </td>
+          <td class="px-6 py-3 text-right">
+            <div class="flex items-center justify-end gap-2">
+              {% if s.original_price %}<span class="text-xs text-gray-400 line-through">R$ {{ s.original_price|floatformat:2 }}</span>{% endif %}
+              <span class="font-semibold text-gray-800" id="price-{{ s.pk }}">R$ {{ s.price|floatformat:2 }}</span>
+              <button type="button" onclick="openPriceEdit({{ s.pk }})"
+                class="text-gray-400 hover:text-fin transition-colors" title="Editar preco">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                </svg>
+              </button>
+            </div>
+            <div id="price-form-{{ s.pk }}" class="hidden mt-2">
+              <div class="flex items-center gap-1 justify-end">
+                <input type="number" step="0.01" id="price-input-{{ s.pk }}"
+                  class="w-24 text-right border border-fin/40 rounded px-2 py-1 text-xs focus:outline-none focus:border-fin"
+                  value="{{ s.price }}">
+                <button onclick="savePrice({{ s.pk }})" class="text-xs bg-fin text-white px-2 py-1 rounded hover:bg-fin-light">OK</button>
+                <button onclick="cancelPriceEdit({{ s.pk }})" class="text-xs text-gray-400 hover:text-gray-600 px-1">X</button>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-3 text-right">
+            <div class="flex items-center justify-end gap-2">
+              <a href="{% url 'financeiro:servico_edit' s.pk %}"
+                 class="text-xs bg-gray-100 text-gray-600 hover:bg-fin hover:text-white px-3 py-1.5 rounded-lg transition-colors">Editar</a>
+              <form method="post" action="{% url 'financeiro:servico_delete' s.pk %}" onsubmit="return confirm('Excluir?')">
+                {% csrf_token %}
+                <button type="submit" class="text-xs bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-lg transition-colors">Excluir</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+            Nenhum servico encontrado.
+            <a href="{% url 'financeiro:servico_create' %}" class="text-fin hover:underline ml-1">Criar agora</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CSRF = '{{ csrf_token }}';
+
+function openPriceEdit(pk) {
+  document.getElementById('price-form-' + pk).classList.remove('hidden');
+  const input = document.getElementById('price-input-' + pk);
+  input.focus(); input.select();
+}
+function cancelPriceEdit(pk) { document.getElementById('price-form-' + pk).classList.add('hidden'); }
+function savePrice(pk) {
+  const price = document.getElementById('price-input-' + pk).value;
+  fetch('/financeiro/servicos/' + pk + '/preco/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': CSRF },
+    body: 'price=' + price
+  }).then(r => r.json()).then(data => {
+    if (data.ok) {
+      document.getElementById('price-' + pk).textContent = 'R$ ' + parseFloat(data.price).toFixed(2).replace('.', ',');
+      cancelPriceEdit(pk);
+    } else { alert('Erro ao salvar preco.'); }
+  });
+}
+function toggleAtivo(pk, btn) {
+  fetch('/financeiro/servicos/' + pk + '/toggle/', { method: 'POST', headers: { 'X-CSRFToken': CSRF } })
+  .then(r => r.json()).then(data => {
+    if (data.ok) {
+      btn.textContent = data.is_active ? 'Ativo' : 'Inativo';
+      btn.className = 'badge cursor-pointer ' + (data.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500');
+    }
+  });
+}
+
+function openSspEdit(pk) {
+  document.getElementById('ssp-form-' + pk).classList.remove('hidden');
+  const input = document.getElementById('ssp-input-' + pk);
+  input.focus(); input.select();
+}
+function cancelSspEdit(pk) { document.getElementById('ssp-form-' + pk).classList.add('hidden'); }
+function saveSsp(pk) {
+  const price = document.getElementById('ssp-input-' + pk).value;
+  fetch('/financeiro/servicos/estado/' + pk + '/preco/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': CSRF },
+    body: 'price=' + price
+  }).then(r => r.json()).then(data => {
+    if (data.ok) {
+      document.getElementById('ssp-price-' + pk).textContent = 'R$ ' + parseFloat(data.price).toFixed(2).replace('.', ',');
+      cancelSspEdit(pk);
+    } else { alert('Erro ao salvar preco.'); }
+  });
+}
+function toggleEstado(pk, btn) {
+  fetch('/financeiro/servicos/estado/' + pk + '/toggle/', { method: 'POST', headers: { 'X-CSRFToken': CSRF } })
+  .then(r => r.json()).then(data => {
+    if (data.ok) {
+      btn.textContent = data.is_active ? 'Ativo' : 'Inativo';
+      btn.className = 'badge cursor-pointer ' + (data.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500');
+    }
+  });
+}
+</script>
+{% endblock %}

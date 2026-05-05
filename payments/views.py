@@ -1,10 +1,11 @@
 import json
 import logging
+import re
 from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.views.generic import TemplateView
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
@@ -26,53 +27,14 @@ class CreatePaymentView(View):
         if hasattr(order, 'payment') and order.payment.status == 'approved':
             return redirect('payments:success', order_id=order.id)
 
-        if not settings.MERCADOPAGO_ACCESS_TOKEN:
-            # Sem credenciais configuradas: vai direto para página de pendente
-            Payment.objects.get_or_create(order=order, defaults={'amount': order.total})
-            return render(request, 'payments/select.html', {
-                'order': order,
-                'mp_public_key': settings.MERCADOPAGO_PUBLIC_KEY,
-                'title': 'Escolha a Forma de Pagamento',
-            })
+        Payment.objects.get_or_create(order=order, defaults={'amount': order.total})
 
-        sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
-
-        items = []
-        for item in order.items.all():
-            items.append({
-                'title': item.product_name,
-                'quantity': item.quantity,
-                'unit_price': float(item.price),
-                'currency_id': 'BRL',
-            })
-
-        preference_data = {
-            'items': items,
-            'payer': {
-                'name': order.customer_name,
-                'email': order.customer_email,
-            },
-            'back_urls': {
-                'success': f'{settings.SITE_URL}/pagamentos/sucesso/{order.id}/',
-                'failure': f'{settings.SITE_URL}/pagamentos/falha/{order.id}/',
-                'pending': f'{settings.SITE_URL}/pagamentos/pendente/{order.id}/',
-            },
-            'auto_return': 'approved',
-            'external_reference': str(order.id),
-            'notification_url': f'{settings.SITE_URL}/pagamentos/webhook/',
-        }
-
-        preference_response = sdk.preference().create(preference_data)
-        preference = preference_response.get('response', {})
-
-        payment, _ = Payment.objects.get_or_create(order=order, defaults={'amount': order.total})
-        payment.preference_id = preference.get('id', '')
-        payment.save()
-
+        order_cpf = re.sub(r'\D', '', order.customer_cpf)
         return render(request, 'payments/select.html', {
             'order': order,
-            'preference_id': preference.get('id', ''),
             'mp_public_key': settings.MERCADOPAGO_PUBLIC_KEY,
+            'order_amount': str(order.total),
+            'order_cpf': order_cpf,
             'title': 'Escolha a Forma de Pagamento',
         })
 
@@ -115,8 +77,60 @@ class PaymentPendingView(TemplateView):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
+class ProcessPaymentView(View):
+    """Recebe formData do Payment Brick e cria o pagamento via SDK."""
+
+    def post(self, request, order_id):
+        order = get_object_or_404(Order, id=order_id)
+
+        if hasattr(order, 'payment') and order.payment.status == 'approved':
+            return JsonResponse({
+                'status': 'approved',
+                'redirect_url': f'/pagamentos/sucesso/{order.id}/',
+            })
+
+        try:
+            data = json.loads(request.body)
+        except (json.JSONDecodeError, ValueError):
+            return JsonResponse({'error': 'Dados inválidos.'}, status=400)
+
+        if not settings.MERCADOPAGO_ACCESS_TOKEN:
+            return JsonResponse({'error': 'Gateway não configurado.'}, status=503)
+
+        data['external_reference'] = str(order.id)
+        data['notification_url'] = f'{settings.SITE_URL}/pagamentos/webhook/'
+
+        sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
+        result = sdk.payment().create(data)
+        response = result.get('response', {})
+
+        status = response.get('status', 'rejected')
+
+        payment, _ = Payment.objects.get_or_create(order=order, defaults={'amount': order.total})
+        payment.mercadopago_id = str(response.get('id', ''))
+        payment.status = status
+        payment.status_detail = response.get('status_detail', '')
+        payment.payment_method = response.get('payment_method_id', '')
+        payment.payment_type = response.get('payment_type_id', '')
+        payment.payer_email = (response.get('payer') or {}).get('email', '')
+        payment.raw_response = response
+        payment.save()
+
+        if status == 'approved':
+            order.status = 'paid'
+            order.payment_id = str(response.get('id', ''))
+            order.save()
+            redirect_url = f'/pagamentos/sucesso/{order.id}/'
+        elif status in ('in_process', 'pending', 'authorized'):
+            redirect_url = f'/pagamentos/pendente/{order.id}/'
+        else:
+            redirect_url = f'/pagamentos/falha/{order.id}/'
+
+        return JsonResponse({'status': status, 'redirect_url': redirect_url})
+
+
+@method_decorator(csrf_exempt, name='dispatch')
 class WebhookView(View):
-    """Recebe notificações do Mercado Pago."""
 
     def post(self, request):
         try:

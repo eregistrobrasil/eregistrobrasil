@@ -466,3 +466,91 @@ IMOVEL_FORM_MAP = {
     'quesitos':          CertidaoImovelQuesitosForm,
 }
 
+
+# ─────────────────────────────────────────────
+#  Certidão de Penhor de Safra
+# ─────────────────────────────────────────────
+
+_TIPO_SAFRA_CHOICES = [
+    ('',            'Selecione o tipo'),
+    ('soja',        'Soja'),
+    ('milho',       'Milho'),
+    ('cana',        'Cana-de-Açúcar'),
+    ('algodao',     'Algodão'),
+    ('cafe',        'Café'),
+    ('trigo',       'Trigo'),
+    ('arroz',       'Arroz'),
+    ('feijao',      'Feijão'),
+    ('outros',      'Outros'),
+]
+
+
+class CertidaoPenhorSafraForm(forms.Form):
+    nome_completo = _char_field(
+        'Nome da Pessoa', 'Nome completo', msg_label='o nome completo'
+    )
+    cpf = _cpf_field()
+    tipo_safra = forms.ChoiceField(
+        label='Tipo de Safra',
+        choices=_TIPO_SAFRA_CHOICES,
+        error_messages={'required': 'Selecione o tipo de safra.'},
+        widget=forms.Select(attrs={'class': _INPUT_CLASS}),
+    )
+    data_ato = _date_field('Data', msg_label='a data do ato')
+    numero_registro = forms.CharField(
+        label='Número de Registro',
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: 12345 (opcional)',
+        }),
+    )
+    nome_propriedade = forms.CharField(
+        label='Nome da Propriedade',
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: Fazenda São João (opcional)',
+        }),
+    )
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+    def clean_tipo_safra(self):
+        valor = self.cleaned_data.get('tipo_safra', '').strip()
+        if not valor:
+            raise forms.ValidationError('Selecione o tipo de safra.')
+        return valor
+
+
+# ─────────────────────────────────────────────
+#  Pacote de Certidões — Compra e Venda de Imóvel
+# ─────────────────────────────────────────────
+
+class PacoteCertidoesCompraVendaForm(forms.Form):
+    nome_completo = _char_field('Nome Completo', 'Nome completo do solicitante', msg_label='o nome completo')
+    cpf = _cpf_field()
+    endereco = forms.CharField(
+        label='Endereço',
+        max_length=300,
+        error_messages={'required': 'Informe o endereço completo.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Rua, número, bairro, cidade — UF',
+            'autocomplete': 'street-address',
+        }),
+    )
+    nome_mae = _char_field('Nome da Mãe', 'Nome completo da mãe', msg_label='o nome da mãe')
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+

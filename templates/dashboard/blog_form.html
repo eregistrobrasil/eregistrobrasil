@@ -1,0 +1,281 @@
+{% extends 'dashboard/base.html' %}
+
+{% block extra_head %}
+<!-- CKEditor 5 CDN -->
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+
+  <!-- Header -->
+  <div class="flex items-center gap-3 mb-6">
+    <a href="{% url 'dashboard:blog_list' %}" class="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+    <div>
+      <h2 class="text-xl font-bold text-gray-900">{{ title }}</h2>
+      <p class="text-sm text-gray-500">{% if post %}Editando artigo existente{% else %}Criando novo artigo{% endif %}</p>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" id="blogForm">
+    {% csrf_token %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+      <!-- Coluna principal -->
+      <div class="lg:col-span-2 space-y-5">
+
+        <!-- Título e Slug -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <div class="mb-4">
+            <label for="id_title" class="block text-sm font-semibold text-gray-700 mb-1.5">Título <span class="text-red-500">*</span></label>
+            <input type="text" id="id_title" name="title" value="{{ post.title|default:'' }}"
+                   placeholder="Digite o título do artigo..."
+                   class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                   required>
+          </div>
+          <div>
+            <label for="id_slug" class="block text-sm font-semibold text-gray-700 mb-1.5">
+              Slug (URL)
+              <span class="font-normal text-gray-400 ml-1">— gerado automaticamente</span>
+            </label>
+            <div class="flex gap-2">
+              <input type="text" id="id_slug" name="slug" value="{{ post.slug|default:'' }}"
+                     placeholder="titulo-do-artigo"
+                     class="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary">
+              <button type="button" id="btnGerarSlug"
+                      class="px-3 py-2 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors whitespace-nowrap">
+                Gerar
+              </button>
+            </div>
+            {% if post.slug %}
+            <p class="text-xs text-gray-400 mt-1">URL: /blog/{{ post.slug }}/</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Conteúdo -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <label for="id_content" class="block text-sm font-semibold text-gray-700 mb-1.5">Conteúdo <span class="text-red-500">*</span></label>
+          <textarea id="id_content" name="content" rows="16"
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">{{ post.content|default:'' }}</textarea>
+        </div>
+
+        <!-- Resumo -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <label for="id_excerpt" class="block text-sm font-semibold text-gray-700 mb-1.5">
+            Resumo <span class="font-normal text-gray-400">— exibido na listagem</span>
+          </label>
+          <textarea id="id_excerpt" name="excerpt" rows="3"
+                    placeholder="Breve descrição do artigo para a listagem..."
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">{{ post.excerpt|default:'' }}</textarea>
+        </div>
+
+        <!-- SEO -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+            </svg>
+            Configurações de SEO
+          </h3>
+          <div class="space-y-4">
+            <div>
+              <label for="id_meta_title" class="block text-sm font-medium text-gray-700 mb-1">Meta Título</label>
+              <input type="text" id="id_meta_title" name="meta_title" value="{{ post.meta_title|default:'' }}"
+                     placeholder="Título para motores de busca (deixe em branco para usar o título do artigo)"
+                     class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+              <p class="text-xs text-gray-400 mt-1"><span id="metaTitleCount">0</span>/60 caracteres recomendados</p>
+            </div>
+            <div>
+              <label for="id_meta_description" class="block text-sm font-medium text-gray-700 mb-1">Meta Descrição</label>
+              <textarea id="id_meta_description" name="meta_description" rows="3"
+                        placeholder="Descrição para motores de busca (150-160 caracteres ideal)..."
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">{{ post.meta_description|default:'' }}</textarea>
+              <p class="text-xs text-gray-400 mt-1"><span id="metaDescCount">0</span>/160 caracteres recomendados</p>
+            </div>
+            <div>
+              <label for="id_meta_keywords" class="block text-sm font-medium text-gray-700 mb-1">Meta Keywords</label>
+              <input type="text" id="id_meta_keywords" name="meta_keywords" value="{{ post.meta_keywords|default:'' }}"
+                     placeholder="palavra-chave1, palavra-chave2, palavra-chave3"
+                     class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Coluna lateral -->
+      <div class="space-y-5">
+
+        <!-- Publicar -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="text-sm font-bold text-gray-800 mb-4">Publicação</h3>
+          <div class="flex items-center gap-3 mb-4 p-3 rounded-lg bg-gray-50">
+            <input type="checkbox" id="id_is_published" name="is_published" value="1"
+                   {% if post.is_published %}checked{% endif %}
+                   class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
+            <label for="id_is_published" class="text-sm font-medium text-gray-700 cursor-pointer">Publicar artigo</label>
+          </div>
+          <div class="flex gap-2">
+            <button type="submit"
+                    class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors">
+              {% if post %}Salvar Alterações{% else %}Criar Artigo{% endif %}
+            </button>
+            <a href="{% url 'dashboard:blog_list' %}"
+               class="px-3 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium rounded-lg transition-colors">
+              Cancelar
+            </a>
+          </div>
+        </div>
+
+        <!-- Categoria -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <label for="id_category" class="block text-sm font-bold text-gray-800 mb-3">Categoria</label>
+          <select id="id_category" name="category_id"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+            <option value="">Sem categoria</option>
+            {% for cat in categories %}
+            <option value="{{ cat.pk }}" {% if post.category_id == cat.pk %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Autor -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <label for="id_author" class="block text-sm font-bold text-gray-800 mb-3">Autor</label>
+          <select id="id_author" name="author_id"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+            {% if authors %}
+              {% for author in authors %}
+              <option value="{{ author.pk }}"
+                {% if post.author_id == author.pk %}selected
+                {% elif not post and author.pk == request.user.pk %}selected{% endif %}>
+                {{ author.get_full_name|default:author.username }}
+              </option>
+              {% endfor %}
+            {% else %}
+              <option value="{{ request.user.pk }}">{{ request.user.get_full_name|default:request.user.username }}</option>
+            {% endif %}
+          </select>
+        </div>
+
+        <!-- Imagem de Capa -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <label class="block text-sm font-bold text-gray-800 mb-3">Imagem de Capa</label>
+          {% if post.cover_image %}
+          <div id="imagePreview" class="mb-3 rounded-lg overflow-hidden border border-gray-200">
+            <img id="previewImg" src="{{ post.cover_image.url }}" alt="Capa atual" class="w-full h-36 object-cover">
+          </div>
+          {% else %}
+          <div id="imagePreview" class="mb-3 rounded-lg overflow-hidden border border-dashed border-gray-300 hidden">
+            <img id="previewImg" src="" alt="" class="w-full h-36 object-cover">
+          </div>
+          {% endif %}
+          <label for="id_cover_image"
+                 class="flex flex-col items-center justify-center gap-2 w-full py-4 px-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors text-center">
+            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span class="text-xs text-gray-500">Clique para selecionar imagem<br><span class="text-gray-400">JPG, PNG, WebP — máx. 5MB</span></span>
+          </label>
+          <input type="file" id="id_cover_image" name="cover_image" accept="image/*" class="hidden">
+          {% if post.cover_image %}
+          <p class="text-xs text-gray-400 mt-2 truncate">Atual: {{ post.cover_image.name }}</p>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// CKEditor 5
+ClassicEditor
+  .create(document.querySelector('#id_content'), {
+    toolbar: {
+      items: [
+        'heading', '|',
+        'bold', 'italic', 'underline', 'strikethrough', '|',
+        'link', 'bulletedList', 'numberedList', '|',
+        'blockQuote', 'insertTable', '|',
+        'imageUpload', 'mediaEmbed', '|',
+        'undo', 'redo'
+      ]
+    },
+    language: 'pt-br',
+  })
+  .then(editor => {
+    window.blogEditor = editor;
+    // Garantir que o conteúdo seja enviado no form
+    document.getElementById('blogForm').addEventListener('submit', function() {
+      document.getElementById('id_content').value = editor.getData();
+    });
+  })
+  .catch(err => {
+    console.warn('CKEditor:', err);
+  });
+
+// Gerar slug a partir do título
+function gerarSlug(str) {
+  return str.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+const titleInput = document.getElementById('id_title');
+const slugInput = document.getElementById('id_slug');
+const btnGerarSlug = document.getElementById('btnGerarSlug');
+
+btnGerarSlug.addEventListener('click', function() {
+  slugInput.value = gerarSlug(titleInput.value);
+});
+
+// Auto-gerar apenas se slug estiver vazio
+titleInput.addEventListener('blur', function() {
+  if (!slugInput.value.trim()) {
+    slugInput.value = gerarSlug(this.value);
+  }
+});
+
+// Contadores SEO
+const metaTitleInput = document.getElementById('id_meta_title');
+const metaDescInput = document.getElementById('id_meta_description');
+const metaTitleCount = document.getElementById('metaTitleCount');
+const metaDescCount = document.getElementById('metaDescCount');
+
+function updateCounter(input, countEl, max) {
+  const len = input.value.length;
+  countEl.textContent = len;
+  countEl.className = len > max ? 'text-red-500 font-semibold' : '';
+}
+
+metaTitleInput.addEventListener('input', () => updateCounter(metaTitleInput, metaTitleCount, 60));
+metaDescInput.addEventListener('input', () => updateCounter(metaDescInput, metaDescCount, 160));
+updateCounter(metaTitleInput, metaTitleCount, 60);
+updateCounter(metaDescInput, metaDescCount, 160);
+
+// Preview de imagem
+document.getElementById('id_cover_image').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const preview = document.getElementById('imagePreview');
+  const img = document.getElementById('previewImg');
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    img.src = ev.target.result;
+    preview.classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+});
+</script>
+{% endblock %}

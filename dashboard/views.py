@@ -321,3 +321,173 @@ class KanbanMoverView(View):
             enviar_email_status.delay(str(order.pk), novo_status)
 
         return JsonResponse({'ok': True, 'status': order.get_status_display()})
+
+
+# ─────────────────────────────────────────────
+#  Blog — Painel Administrativo
+# ─────────────────────────────────────────────
+
+import html
+import re as _re
+from blog.models import Post, BlogCategory
+
+
+def _sanitize_html(content):
+    """Remove scripts e atributos perigosos do HTML do editor."""
+    # Remove tags <script> e <iframe>
+    content = _re.sub(r'<script[^>]*>.*?</script>', '', content, flags=_re.IGNORECASE | _re.DOTALL)
+    content = _re.sub(r'<iframe[^>]*>.*?</iframe>', '', content, flags=_re.IGNORECASE | _re.DOTALL)
+    # Remove atributos on* (onclick, onload, etc.)
+    content = _re.sub(r'\s+on\w+\s*=\s*["\'][^"\']*["\']', '', content, flags=_re.IGNORECASE)
+    content = _re.sub(r'\s+on\w+\s*=\s*[^\s>]+', '', content, flags=_re.IGNORECASE)
+    # Remove javascript: em href/src
+    content = _re.sub(r'(href|src)\s*=\s*["\']?\s*javascript:[^"\'>\s]*["\']?', '', content, flags=_re.IGNORECASE)
+    return content
+
+
+@method_decorator(staff_required, name='dispatch')
+class BlogListView(View):
+    template_name = 'dashboard/blog_list.html'
+
+    def get(self, request):
+        q = request.GET.get('q', '').strip()
+        status = request.GET.get('status', '')
+        qs = Post.objects.select_related('author', 'category').order_by('-created_at')
+        if q:
+            qs = qs.filter(title__icontains=q)
+        if status == 'publicado':
+            qs = qs.filter(is_published=True)
+        elif status == 'rascunho':
+            qs = qs.filter(is_published=False)
+        return render(request, self.template_name, {
+            'title': 'Blog',
+            'posts': qs,
+            'total': qs.count(),
+            'q': q,
+            'status_filter': status,
+        })
+
+
+@method_decorator(staff_required, name='dispatch')
+class BlogCreateView(View):
+    template_name = 'dashboard/blog_form.html'
+
+    def get(self, request):
+        categories = BlogCategory.objects.all()
+        return render(request, self.template_name, {
+            'title': 'Novo Artigo',
+            'categories': categories,
+            'post': None,
+        })
+
+    def post(self, request):
+        title = request.POST.get('title', '').strip()
+        slug = request.POST.get('slug', '').strip()
+        content = _sanitize_html(request.POST.get('content', ''))
+        excerpt = request.POST.get('excerpt', '').strip()
+        author_id = request.POST.get('author_id') or request.user.pk
+        category_id = request.POST.get('category_id') or None
+        is_published = request.POST.get('is_published') == '1'
+        meta_title = request.POST.get('meta_title', '').strip()
+        meta_description = request.POST.get('meta_description', '').strip()
+        meta_keywords = request.POST.get('meta_keywords', '').strip()
+
+        if not title or not content:
+            messages.error(request, 'Título e conteúdo são obrigatórios.')
+            return redirect('dashboard:blog_create')
+
+        post = Post(
+            title=title,
+            content=content,
+            excerpt=excerpt,
+            author_id=author_id,
+            is_published=is_published,
+            meta_title=meta_title,
+            meta_description=meta_description,
+            meta_keywords=meta_keywords,
+        )
+        if slug:
+            post.slug = slug
+        if category_id:
+            post.category_id = category_id
+        if is_published and not post.published_at:
+            post.published_at = timezone.now()
+        if request.FILES.get('cover_image'):
+            post.cover_image = request.FILES['cover_image']
+        post.save()
+        messages.success(request, 'Artigo criado com sucesso!')
+        return redirect('dashboard:blog_list')
+
+
+@method_decorator(staff_required, name='dispatch')
+class BlogEditView(View):
+    template_name = 'dashboard/blog_form.html'
+
+    def get(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        categories = BlogCategory.objects.all()
+        authors = User.objects.filter(is_staff=True).order_by('first_name', 'username')
+        return render(request, self.template_name, {
+            'title': f'Editar: {post.title}',
+            'post': post,
+            'categories': categories,
+            'authors': authors,
+        })
+
+    def post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        title = request.POST.get('title', '').strip()
+        slug = request.POST.get('slug', '').strip()
+        content = _sanitize_html(request.POST.get('content', ''))
+        excerpt = request.POST.get('excerpt', '').strip()
+        author_id = request.POST.get('author_id') or post.author_id
+        category_id = request.POST.get('category_id') or None
+        is_published = request.POST.get('is_published') == '1'
+        meta_title = request.POST.get('meta_title', '').strip()
+        meta_description = request.POST.get('meta_description', '').strip()
+        meta_keywords = request.POST.get('meta_keywords', '').strip()
+
+        if not title or not content:
+            messages.error(request, 'Título e conteúdo são obrigatórios.')
+            return redirect('dashboard:blog_edit', pk=pk)
+
+        post.title = title
+        if slug:
+            post.slug = slug
+        post.content = content
+        post.excerpt = excerpt
+        post.author_id = author_id
+        post.category_id = category_id
+        post.is_published = is_published
+        post.meta_title = meta_title
+        post.meta_description = meta_description
+        post.meta_keywords = meta_keywords
+        if is_published and not post.published_at:
+            post.published_at = timezone.now()
+        if request.FILES.get('cover_image'):
+            post.cover_image = request.FILES['cover_image']
+        post.save()
+        messages.success(request, 'Artigo atualizado com sucesso!')
+        return redirect('dashboard:blog_list')
+
+
+@method_decorator(staff_required, name='dispatch')
+class BlogDeleteView(View):
+    def post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        post.delete()
+        messages.success(request, 'Artigo excluído com sucesso.')
+        return redirect('dashboard:blog_list')
+
+
+@method_decorator(staff_required, name='dispatch')
+class BlogTogglePublishView(View):
+    def post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        post.is_published = not post.is_published
+        if post.is_published and not post.published_at:
+            post.published_at = timezone.now()
+        post.save(update_fields=['is_published', 'published_at'])
+        label = 'publicado' if post.is_published else 'despublicado'
+        messages.success(request, f'Artigo {label} com sucesso.')
+        return redirect('dashboard:blog_list')

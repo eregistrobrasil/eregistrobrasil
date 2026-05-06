@@ -12,4 +12,10 @@ urlpatterns = [
     path('pedidos/<uuid:pk>/responsavel/', views.AtribuirResponsavelView.as_view(), name='atribuir_responsavel'),
     path('kanban/mover/', views.KanbanMoverView.as_view(), name='kanban_mover'),
     path('notificacoes/', views.NotificacoesView.as_view(), name='notificacoes'),
+    # Blog
+    path('blog/', views.BlogListView.as_view(), name='blog_list'),
+    path('blog/novo/', views.BlogCreateView.as_view(), name='blog_create'),
+    path('blog/<int:pk>/editar/', views.BlogEditView.as_view(), name='blog_edit'),
+    path('blog/<int:pk>/excluir/', views.BlogDeleteView.as_view(), name='blog_delete'),
+    path('blog/<int:pk>/publicar/', views.BlogTogglePublishView.as_view(), name='blog_toggle_publish'),
 ]

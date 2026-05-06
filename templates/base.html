@@ -5,7 +5,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="{% block meta_description %}Certidões Online com agilidade e segurança. Registro Civil, Imóveis, Notas, Protestos e muito mais.{% endblock %}">
+  {% block meta_keywords_tag %}{% if meta_keywords %}<meta name="keywords" content="{{ meta_keywords }}">{% endif %}{% endblock %}
   <title>{% block title %}{{ title|default:"E-Registro Brasil — Certidões Online" }}{% endblock %}</title>
+
+  <!-- Open Graph -->
+  {% block og_tags %}
+  <meta property="og:site_name" content="E-Registro Brasil">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ title|default:'E-Registro Brasil — Certidões Online' }}">
+  <meta property="og:description" content="{% block og_description %}Certidões Online com agilidade e segurança.{% endblock %}">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  {% endblock %}
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>

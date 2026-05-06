@@ -19,6 +19,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.sitemaps.views import sitemap
+from django.http import HttpResponse
 from products.api_views import (
     CategoriaListAPIView,
     TipoServicoListAPIView,
@@ -27,13 +29,36 @@ from products.api_views import (
     ServicePriceByStateView,
     ImovelPriceByStateView,
 )
+from blog.sitemaps import BlogPostSitemap
 
 admin.site.site_header = 'E-Registro Brasil — Administração'
 admin.site.site_title = 'E-Registro Brasil'
 admin.site.index_title = 'Painel Administrativo'
 
+_sitemaps = {
+    'blog': BlogPostSitemap,
+}
+
+
+def robots_txt(request):
+    lines = [
+        'User-agent: *',
+        'Allow: /',
+        'Allow: /blog/',
+        'Disallow: /painel/',
+        'Disallow: /admin/',
+        'Disallow: /conta/',
+        'Disallow: /pedidos/',
+        'Disallow: /pagamentos/',
+        f'Sitemap: {request.build_absolute_uri("/sitemap.xml")}',
+    ]
+    return HttpResponse('\n'.join(lines), content_type='text/plain')
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('robots.txt', robots_txt, name='robots_txt'),
+    path('sitemap.xml', sitemap, {'sitemaps': _sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('', include('pages.urls')),
     path('', include('products.urls')),
     path('conta/', include('accounts.urls')),

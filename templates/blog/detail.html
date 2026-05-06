@@ -1,38 +1,173 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block meta_description %}{{ meta_description }}{% endblock %}
+{% block og_description %}{{ meta_description }}{% endblock %}
+
+{% block meta_keywords_tag %}
+{% if meta_keywords %}<meta name="keywords" content="{{ meta_keywords }}">{% endif %}
+{% endblock %}
+
+{% block og_tags %}
+<meta property="og:site_name" content="E-Registro Brasil">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ post.meta_title|default:post.title }}">
+<meta property="og:description" content="{{ meta_description }}">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+{% if post.cover_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ post.cover_image.url }}">{% endif %}
+<meta property="article:published_time" content="{{ post.published_at|date:'c' }}">
+<meta property="article:modified_time" content="{{ post.updated_at|date:'c' }}">
+{% if post.author %}<meta property="article:author" content="{{ post.author.get_full_name|default:post.author.username }}">{% endif %}
+{% endblock %}
+
+{% block extra_head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "{{ post.title|escapejs }}",
+  "description": "{{ meta_description|escapejs }}",
+  "datePublished": "{{ post.published_at|date:'c' }}",
+  "dateModified": "{{ post.updated_at|date:'c' }}",
+  "author": {
+    "@type": "Person",
+    "name": "{{ post.author.get_full_name|default:post.author.username|escapejs }}"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "E-Registro Brasil",
+    "url": "{{ request.scheme }}://{{ request.get_host }}"
+  }{% if post.cover_image %},
+  "image": "{{ request.scheme }}://{{ request.get_host }}{{ post.cover_image.url }}"{% endif %}
+}
+</script>
+{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto px-4 py-10">
-  <!-- Breadcrumb -->
-  <nav class="text-sm text-gray-500 mb-6 flex items-center gap-1.5">
-    <a href="{% url 'blog:list' %}" class="hover:text-primary transition-colors">Blog</a>
-    <span>/</span>
-    <span class="text-gray-800 truncate">{{ post.title }}</span>
-  </nav>
+<div class="max-w-6xl mx-auto px-4 py-10">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
-  {% if post.category %}
-  <span class="inline-block text-xs font-medium text-primary bg-primary/10 px-3 py-1 rounded-full mb-4">{{ post.category.name }}</span>
-  {% endif %}
+    <!-- Artigo principal -->
+    <article class="lg:col-span-2">
+      <!-- Breadcrumb -->
+      <nav class="text-sm text-gray-500 mb-6 flex items-center gap-1.5">
+        <a href="/" class="hover:text-primary transition-colors">Início</a>
+        <span>/</span>
+        <a href="{% url 'blog:list' %}" class="hover:text-primary transition-colors">Blog</a>
+        <span>/</span>
+        <span class="text-gray-800 truncate max-w-xs">{{ post.title }}</span>
+      </nav>
 
-  <h1 class="text-3xl font-bold text-gray-900 leading-tight mb-4">{{ post.title }}</h1>
-  <p class="text-sm text-gray-400 mb-8">Publicado em {{ post.created_at|date:"d \d\e F \d\e Y" }}</p>
+      {% if post.category %}
+      <a href="{% url 'blog:list' %}?categoria={{ post.category.slug }}"
+         class="inline-block text-xs font-medium text-primary bg-primary/10 px-3 py-1 rounded-full mb-4 hover:bg-primary/20 transition-colors">
+        {{ post.category.name }}
+      </a>
+      {% endif %}
 
-  {% if post.cover_image %}
-  <div class="rounded-2xl overflow-hidden mb-8">
-    <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" class="w-full object-cover">
-  </div>
-  {% endif %}
+      <h1 class="text-3xl font-bold text-gray-900 leading-tight mb-4">{{ post.title }}</h1>
 
-  <div class="prose prose-slate max-w-none">
-    {{ post.content|linebreaks }}
-  </div>
+      <div class="flex items-center gap-4 text-sm text-gray-400 mb-8 flex-wrap">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+            {{ post.author.first_name|first|upper }}{{ post.author.last_name|first|upper }}
+          </div>
+          <span class="text-gray-600 font-medium">{{ post.author.get_full_name|default:post.author.username }}</span>
+        </div>
+        <span>·</span>
+        <span>{{ post.published_at|default:post.created_at|date:"d \d\e F \d\e Y" }}</span>
+        <span>·</span>
+        <span class="flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          {{ post.reading_time }} min de leitura
+        </span>
+      </div>
 
-  <div class="mt-12 pt-6 border-t border-gray-200">
-    <a href="{% url 'blog:list' %}" class="inline-flex items-center gap-2 text-sm text-primary hover:underline">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-      </svg>
-      Voltar para o Blog
-    </a>
+      {% if post.cover_image %}
+      <div class="rounded-2xl overflow-hidden mb-8 aspect-video">
+        <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" class="w-full h-full object-cover" loading="lazy">
+      </div>
+      {% endif %}
+
+      <!-- Conteúdo -->
+      <div class="prose prose-slate prose-headings:text-primary prose-a:text-primary max-w-none text-gray-700 leading-relaxed">
+        {{ post.content|safe }}
+      </div>
+
+      <!-- Compartilhar -->
+      <div class="mt-10 pt-8 border-t border-gray-200">
+        <p class="text-sm font-semibold text-gray-700 mb-3">Compartilhar artigo:</p>
+        <div class="flex gap-3 flex-wrap">
+          <a href="https://wa.me/?text={{ request.build_absolute_uri|urlencode }}"
+             target="_blank" rel="noopener noreferrer"
+             class="inline-flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+            WhatsApp
+          </a>
+          <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri|urlencode }}"
+             target="_blank" rel="noopener noreferrer"
+             class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            Facebook
+          </a>
+          <button onclick="navigator.clipboard.writeText(window.location.href); this.textContent='Copiado!';"
+                  class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+            </svg>
+            Copiar link
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-8">
+        <a href="{% url 'blog:list' %}" class="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Voltar para o Blog
+        </a>
+      </div>
+    </article>
+
+    <!-- Sidebar -->
+    <aside class="lg:col-span-1">
+      {% if recent_posts %}
+      <div class="bg-white rounded-2xl border border-gray-200 p-6 sticky top-6">
+        <h3 class="font-bold text-gray-900 mb-4 text-base">Artigos Recentes</h3>
+        <div class="flex flex-col gap-4">
+          {% for recent in recent_posts %}
+          {% if recent.pk != post.pk %}
+          <a href="{% url 'blog:detail' recent.slug %}" class="flex gap-3 group">
+            {% if recent.cover_image %}
+            <div class="w-16 h-14 rounded-lg overflow-hidden flex-shrink-0">
+              <img src="{{ recent.cover_image.url }}" alt="{{ recent.title }}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            </div>
+            {% else %}
+            <div class="w-16 h-14 rounded-lg bg-gradient-to-br from-primary to-blue-800 flex-shrink-0"></div>
+            {% endif %}
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-800 group-hover:text-primary transition-colors leading-snug line-clamp-2">{{ recent.title }}</p>
+              <span class="text-xs text-gray-400">{{ recent.published_at|default:recent.created_at|date:"d/m/Y" }}</span>
+            </div>
+          </a>
+          {% endif %}
+          {% endfor %}
+        </div>
+        <div class="mt-5 pt-4 border-t border-gray-100">
+          <a href="{% url 'blog:list' %}" class="block text-center text-sm text-primary font-medium hover:underline">Ver todos os artigos →</a>
+        </div>
+      </div>
+      {% endif %}
+    </aside>
+
   </div>
 </div>
 {% endblock %}

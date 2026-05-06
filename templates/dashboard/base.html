@@ -70,6 +70,14 @@
         Pedidos
       </a>
 
+      <a href="{% url 'dashboard:blog_list' %}"
+         class="nav-link {% if 'blog' in current %}bg-white/15 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %}">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+        </svg>
+        Blog
+      </a>
+
       <div class="pt-3 pb-1 px-3">
         <p class="text-xs font-semibold text-white/40 uppercase tracking-wider">Sistema</p>
       </div>
@@ -198,6 +206,7 @@
     <a href="{% url 'dashboard:index' %}" class="nav-link text-white/80 hover:bg-white/10 hover:text-white">Dashboard</a>
     <a href="{% url 'dashboard:kanban' %}" class="nav-link text-white/80 hover:bg-white/10 hover:text-white">Kanban</a>
     <a href="{% url 'dashboard:order_list' %}" class="nav-link text-white/80 hover:bg-white/10 hover:text-white">Pedidos</a>
+    <a href="{% url 'dashboard:blog_list' %}" class="nav-link text-white/80 hover:bg-white/10 hover:text-white">Blog</a>
     <a href="{% url 'dashboard:notificacoes' %}" class="nav-link text-white/80 hover:bg-white/10 hover:text-white">Notificações</a>
   </nav>
 </div>

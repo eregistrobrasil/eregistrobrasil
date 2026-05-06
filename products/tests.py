@@ -920,3 +920,148 @@ class QuesitosPrecoTest(TestCase):
     def test_api_tipo_inexistente_retorna_404(self):
         r = self.client.get('/api/preco-imovel/', {'tipo': 'tipo_qualquer', 'estado': 'BA'})
         self.assertEqual(r.status_code, 404)
+
+
+class PenhorSafraPrecoTest(TestCase):
+    """Testes de preço para Certidão de Penhor de Safra (chave: penhor_safra)."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.state_ba = State.objects.create(code='BA', name='Bahia')
+        cls.state_rn = State.objects.create(code='RN', name='Rio Grande do Norte')
+        cls.state_df = State.objects.create(code='DF', name='Distrito Federal')
+        cls.state_sp = State.objects.create(code='SP', name='São Paulo')
+        cls.state_ac = State.objects.create(code='AC', name='Acre')
+        PrecoImovelEstado.objects.create(
+            tipo_certidao='penhor_safra', state=cls.state_ba, price=Decimal('259.90')
+        )
+        PrecoImovelEstado.objects.create(
+            tipo_certidao='penhor_safra', state=cls.state_rn, price=Decimal('699.90')
+        )
+        PrecoImovelEstado.objects.create(
+            tipo_certidao='penhor_safra', state=cls.state_df, price=Decimal('119.90')
+        )
+        PrecoImovelEstado.objects.create(
+            tipo_certidao='penhor_safra', state=cls.state_sp, price=Decimal('219.90')
+        )
+        PrecoImovelEstado.objects.create(
+            tipo_certidao='penhor_safra', state=cls.state_ac, price=Decimal('139.90')
+        )
+
+    # ── obter_preco_imovel ────────────────────────────────────────────────────
+
+    def test_penhor_safra_ba(self):
+        self.assertEqual(obter_preco_imovel('penhor_safra', 'BA'), Decimal('259.90'))
+
+    def test_penhor_safra_rn_maior_preco(self):
+        """RN tem o maior preço de Penhor de Safra: R$ 699,90."""
+        self.assertEqual(obter_preco_imovel('penhor_safra', 'RN'), Decimal('699.90'))
+
+    def test_penhor_safra_df_menor_preco(self):
+        """DF tem o menor preço de Penhor de Safra: R$ 119,90."""
+        self.assertEqual(obter_preco_imovel('penhor_safra', 'DF'), Decimal('119.90'))
+
+    def test_penhor_safra_sp(self):
+        self.assertEqual(obter_preco_imovel('penhor_safra', 'SP'), Decimal('219.90'))
+
+    def test_penhor_safra_ac(self):
+        self.assertEqual(obter_preco_imovel('penhor_safra', 'AC'), Decimal('139.90'))
+
+    def test_penhor_safra_estado_invalido_retorna_none(self):
+        self.assertIsNone(obter_preco_imovel('penhor_safra', 'ZZ'))
+
+    def test_penhor_safra_tipo_inexistente_retorna_none(self):
+        self.assertIsNone(obter_preco_imovel('tipo_invalido', 'BA'))
+
+    def test_penhor_safra_estado_sem_preco_retorna_none(self):
+        self.assertIsNone(obter_preco_imovel('penhor_safra', 'MG'))
+
+    # ── get_imovel_prices_dict ────────────────────────────────────────────────
+
+    def test_dict_penhor_safra_contem_estados(self):
+        d = get_imovel_prices_dict('penhor_safra')
+        for uf in ('BA', 'RN', 'DF', 'SP', 'AC'):
+            self.assertIn(uf, d)
+
+    def test_dict_penhor_safra_ba_valor_correto(self):
+        self.assertEqual(get_imovel_prices_dict('penhor_safra')['BA'], '259.90')
+
+    def test_dict_penhor_safra_df_valor_correto(self):
+        self.assertEqual(get_imovel_prices_dict('penhor_safra')['DF'], '119.90')
+
+    # ── API /api/preco-imovel/ ────────────────────────────────────────────────
+
+    def test_api_penhor_safra_ba(self):
+        r = self.client.get('/api/preco-imovel/', {'tipo': 'penhor_safra', 'estado': 'BA'})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()['display_price'], '259.90')
+
+    def test_api_penhor_safra_rn(self):
+        r = self.client.get('/api/preco-imovel/', {'tipo': 'penhor_safra', 'estado': 'RN'})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()['display_price'], '699.90')
+
+    def test_api_penhor_safra_df(self):
+        r = self.client.get('/api/preco-imovel/', {'tipo': 'penhor_safra', 'estado': 'DF'})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()['display_price'], '119.90')
+
+    def test_api_estado_inexistente_retorna_404(self):
+        r = self.client.get('/api/preco-imovel/', {'tipo': 'penhor_safra', 'estado': 'XX'})
+        self.assertEqual(r.status_code, 404)
+
+    def test_api_tipo_inexistente_retorna_404(self):
+        r = self.client.get('/api/preco-imovel/', {'tipo': 'tipo_qualquer', 'estado': 'BA'})
+        self.assertEqual(r.status_code, 404)
+
+
+# ── Testes de formulário ───────────────────────────────────────────────────────
+
+class PenhorSafraFormTest(TestCase):
+    """Testes de validação do CertidaoPenhorSafraForm."""
+
+    def _post(self, **kwargs):
+        from pages.forms import CertidaoPenhorSafraForm
+        defaults = {
+            'nome_completo': 'João da Silva',
+            'cpf': '123.456.789-09',
+            'tipo_safra': 'soja',
+            'data_ato': '15/03/2024',
+            'numero_registro': '',
+            'nome_propriedade': '',
+        }
+        defaults.update(kwargs)
+        return CertidaoPenhorSafraForm(defaults)
+
+    def test_form_valido_campos_obrigatorios(self):
+        form = self._post()
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_form_valido_com_complementares(self):
+        form = self._post(numero_registro='12345', nome_propriedade='Fazenda São João')
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_nome_completo_obrigatorio(self):
+        form = self._post(nome_completo='')
+        self.assertFalse(form.is_valid())
+        self.assertIn('nome_completo', form.errors)
+
+    def test_cpf_invalido_digitos_insuficientes(self):
+        form = self._post(cpf='123.456')
+        self.assertFalse(form.is_valid())
+        self.assertIn('cpf', form.errors)
+
+    def test_tipo_safra_obrigatorio(self):
+        form = self._post(tipo_safra='')
+        self.assertFalse(form.is_valid())
+        self.assertIn('tipo_safra', form.errors)
+
+    def test_data_ato_obrigatoria(self):
+        form = self._post(data_ato='')
+        self.assertFalse(form.is_valid())
+        self.assertIn('data_ato', form.errors)
+
+    def test_data_ato_formato_invalido(self):
+        form = self._post(data_ato='32/13/2024')
+        self.assertFalse(form.is_valid())
+        self.assertIn('data_ato', form.errors)

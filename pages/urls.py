@@ -35,6 +35,12 @@ urlpatterns = [
     path('servico/certidao-de-imovel/', views.CertidaoImovelView.as_view(), name='certidao_imovel'),
     path('servico/certidao-de-imovel/tipo/', views.CertidaoImovelTipoView.as_view(), name='certidao_imovel_tipo'),
     path('servico/certidao-de-imovel/formulario/', views.CertidaoImovelDadosView.as_view(), name='certidao_imovel_dados'),
+    # Penhor de Safra
+    path('servico/certidao-de-penhor-de-safra/', views.CertidaoPenhorSafraView.as_view(), name='certidao_penhor_safra'),
+    path('servico/certidao-de-penhor-de-safra/dados/', views.CertidaoPenhorSafraDadosView.as_view(), name='certidao_penhor_safra_dados'),
+    # Pacote de Certidões — Compra e Venda de Imóvel
+    path('servico/pacote-de-certidoes-compra-e-venda-de-imovel/', views.PacoteCertidoesCompraVendaView.as_view(), name='pacote_certidoes_compra_venda'),
+    path('servico/pacote-de-certidoes-compra-e-venda-de-imovel/dados/', views.PacoteCertidoesCompraVendaDadosView.as_view(), name='pacote_certidoes_compra_venda_dados'),
     path('api/cidades/', cidades_por_estado, name='cidades_por_estado'),
     path('quem-somos/', views.AboutView.as_view(), name='about'),
     path('fale-conosco/', views.ContactView.as_view(), name='contact'),

@@ -16,6 +16,8 @@ from .forms import (
     CertidaoCasamentoForm,
     CertidaoInterdicaoForm,
     CertidaoProcuracaoForm,
+    CertidaoPenhorSafraForm,
+    PacoteCertidoesCompraVendaForm,
     TIPOS_CERTIDAO_IMOVEL_DICT,
     IMOVEL_FORM_MAP,
 )
@@ -652,6 +654,108 @@ class CertidaoImovelDadosView(View):
             if state_obj:
                 item.state = state_obj
         item.save()
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Penhor de Safra
+# ─────────────────────────────────────────────
+
+class CertidaoPenhorSafraView(BaseCertidaoCartorioView):
+    """Etapa 1: seleção de estado, cidade e cartório para Penhor de Safra."""
+    title = 'Certidão de Penhor de Safra — E-Registro Brasil'
+    template_name = 'servicos/certidao_penhor_safra_cartorio.html'
+    dados_step_name = 'pages:certidao_penhor_safra_dados'
+    descricao_servico = (
+        'Solicite a certidão de penhor de safra registrada em cartório '
+        'com agilidade e segurança em todo o Brasil.'
+    )
+    imagem_static = 'img/certidao-de-nascimento.png'
+    _product_slug = 'certidao-de-penhor-de-safra'
+
+    def _ctx(self, dados_ec, form):
+        from products.services import get_imovel_prices_dict
+        ctx = super()._ctx(dados_ec, form)
+        ctx['passos'] = _PASSOS
+        ctx['state_prices_json'] = json.dumps(get_imovel_prices_dict('penhor_safra'))
+        ctx['product_base_price'] = '0'
+        return ctx
+
+
+class CertidaoPenhorSafraDadosView(BaseCertidaoDadosView):
+    """Etapa 2: formulário de dados do Penhor de Safra."""
+    title = 'Dados do Pedido — Certidão de Penhor de Safra'
+    form_class = CertidaoPenhorSafraForm
+    template_name = 'servicos/certidao_penhor_safra_dados.html'
+    product_slug = 'certidao-de-penhor-de-safra'
+    step1_url = 'pages:certidao_penhor_safra'
+    date_fields = ['data_ato']
+    date_field_ids = ['id_data_ato']
+    descricao_step2 = 'Informe os dados do penhor de safra registrado em cartório.'
+
+    def _add_to_cart(self, request, cartorio_data, dados):
+        from products.models import Product, State
+        from products.services import obter_preco_imovel
+        from orders.models import Cart, CartItem
+        try:
+            product = Product.objects.get(slug=self.product_slug, is_active=True)
+        except Product.DoesNotExist:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = str(dados.get('nome_completo', ''))[:200]
+        item.requester_document = str(dados.get('cpf', ''))[:30]
+
+        estado_uf = cartorio_data.get('estado_uf', '')
+        if estado_uf:
+            unit_price = obter_preco_imovel('penhor_safra', estado_uf)
+            if unit_price is None:
+                unit_price = product.price
+            item.unit_price = unit_price
+            state_obj = State.objects.filter(code=estado_uf).first()
+            if state_obj:
+                item.state = state_obj
+        item.save()
+
+
+# ─────────────────────────────────────────────
+#  Pacote de Certidões — Compra e Venda de Imóvel
+# ─────────────────────────────────────────────
+
+class PacoteCertidoesCompraVendaView(BaseCertidaoCartorioView):
+    title = 'Pacote de Certidões — Compra e Venda de Imóvel'
+    template_name = 'servicos/pacote_certidoes_compra_venda_cartorio.html'
+    dados_step_name = 'pages:pacote_certidoes_compra_venda_dados'
+    descricao_servico = 'Pacote completo de certidões necessárias para transações de compra e venda de imóvel.'
+    imagem_static = 'img/certidao-de-nascimento.png'
+    _product_slug = 'pacote-de-certidoes-compra-e-venda-de-imovel'
+
+    def _ctx(self, dados_ec, form):
+        from products.services import get_state_prices_dict
+        from products.models import Product
+        ctx = super()._ctx(dados_ec, form)
+        ctx['passos'] = _PASSOS
+        try:
+            product = Product.objects.get(slug=self._product_slug, is_active=True)
+            ctx['state_prices_json'] = json.dumps(get_state_prices_dict(product))
+            ctx['product_base_price'] = str(product.price)
+        except Product.DoesNotExist:
+            ctx['state_prices_json'] = '{}'
+            ctx['product_base_price'] = '159.90'
+        return ctx
+
+
+class PacoteCertidoesCompraVendaDadosView(BaseCertidaoDadosView):
+    title = 'Dados do Solicitante — Pacote de Certidões Compra e Venda'
+    form_class = PacoteCertidoesCompraVendaForm
+    template_name = 'servicos/pacote_certidoes_compra_venda_dados.html'
+    product_slug = 'pacote-de-certidoes-compra-e-venda-de-imovel'
+    step1_url = 'pages:pacote_certidoes_compra_venda'
+    date_fields = []
+    date_field_ids = []
+    descricao_step2 = 'Informe os dados do solicitante para o pacote de certidões.'
 
 
 # ─────────────────────────────────────────────

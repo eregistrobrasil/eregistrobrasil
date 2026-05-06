@@ -1,3 +1,4 @@
+import math
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
@@ -41,6 +42,7 @@ class Post(models.Model):
     is_published = models.BooleanField('Publicado', default=False)
     meta_title = models.CharField('Meta Título', max_length=200, blank=True)
     meta_description = models.CharField('Meta Descrição', max_length=300, blank=True)
+    meta_keywords = models.CharField('Meta Keywords', max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     published_at = models.DateTimeField('Publicado em', null=True, blank=True)
@@ -57,6 +59,18 @@ class Post(models.Model):
         if not self.slug:
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('blog:detail', kwargs={'slug': self.slug})
+
+    @property
+    def reading_time(self):
+        """Tempo de leitura estimado em minutos (200 palavras/min)."""
+        import re
+        text = re.sub(r'<[^>]+>', '', self.content)
+        words = len(text.split())
+        minutes = max(1, math.ceil(words / 200))
+        return minutes
 
     def get_absolute_url(self):
         return reverse('blog:detail', kwargs={'slug': self.slug})

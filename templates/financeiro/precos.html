@@ -1,0 +1,522 @@
+{% extends "financeiro/base.html" %}
+
+{% block topbar_actions %}
+<div class="flex items-center gap-2">
+  <button onclick="document.getElementById('modal-replicar').classList.remove('hidden')"
+    class="flex items-center gap-2 bg-white border border-gray-200 text-gray-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+    </svg>
+    Replicar
+  </button>
+  <button onclick="document.getElementById('modal-massa').classList.remove('hidden')"
+    class="flex items-center gap-2 bg-white border border-gray-200 text-gray-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+    </svg>
+    Reajuste em Massa
+  </button>
+  <form method="post" class="inline">
+    {% csrf_token %}
+    <button type="submit" name="exportar" value="csv"
+      class="flex items-center gap-2 bg-white border border-gray-200 text-gray-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      Exportar CSV
+    </button>
+  </form>
+  <a href="{% url 'financeiro:preco_criar' %}"
+    class="flex items-center gap-2 bg-fin text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-fin-light transition-colors">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+    </svg>
+    Novo Preço
+  </a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Métricas rápidas -->
+<div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3 mb-6">
+  <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 col-span-1">
+    <p class="text-xs text-gray-400 font-medium">Total registros</p>
+    <p class="text-2xl font-bold text-gray-800 mt-1">{{ metricas.total }}</p>
+  </div>
+  <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+    <p class="text-xs text-green-500 font-medium">Ativos</p>
+    <p class="text-2xl font-bold text-green-700 mt-1">{{ metricas.ativos }}</p>
+  </div>
+  <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+    <p class="text-xs text-gray-400 font-medium">Inativos</p>
+    <p class="text-2xl font-bold text-gray-500 mt-1">{{ metricas.inativos }}</p>
+  </div>
+  <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+    <p class="text-xs text-blue-500 font-medium">Serviços c/ preço</p>
+    <p class="text-2xl font-bold text-blue-700 mt-1">{{ metricas.servicos_com_preco }}</p>
+  </div>
+  <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+    <p class="text-xs text-orange-500 font-medium">Sem preço</p>
+    <p class="text-2xl font-bold text-orange-600 mt-1">{{ metricas.servicos_sem_preco }}</p>
+  </div>
+  <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+    <p class="text-xs text-gray-400 font-medium">Preço médio</p>
+    <p class="text-xl font-bold text-gray-800 mt-1">R$ {{ metricas.preco_medio|floatformat:2 }}</p>
+  </div>
+  <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+    <p class="text-xs text-gray-400 font-medium">Min / Max</p>
+    <p class="text-sm font-bold text-gray-700 mt-1">
+      R$ {{ metricas.preco_min|floatformat:2 }} / R$ {{ metricas.preco_max|floatformat:2 }}
+    </p>
+  </div>
+</div>
+
+<!-- Filtros -->
+<form method="get" class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-6">
+  <div class="flex flex-wrap gap-3 items-end">
+    <div class="flex-1 min-w-44">
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Busca rápida</label>
+      {{ form.q }}
+    </div>
+    <div class="w-52">
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Serviço</label>
+      {{ form.servico }}
+    </div>
+    <div class="w-48">
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Categoria</label>
+      {{ form.categoria }}
+    </div>
+    <div class="w-40">
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Estado</label>
+      {{ form.estado }}
+    </div>
+    <div class="w-28">
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Status</label>
+      {{ form.ativo }}
+    </div>
+    <div class="w-32">
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Preço mín.</label>
+      {{ form.preco_min }}
+    </div>
+    <div class="w-32">
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Preço máx.</label>
+      {{ form.preco_max }}
+    </div>
+    <button type="submit"
+      class="bg-fin text-white text-sm px-4 py-2 rounded-lg hover:bg-fin-light transition-colors">
+      Filtrar
+    </button>
+    <a href="{% url 'financeiro:precos' %}"
+      class="text-sm text-gray-400 hover:text-gray-700 px-2 py-2">Limpar</a>
+  </div>
+</form>
+
+<!-- Tabela de preços -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+    <h2 class="text-sm font-semibold text-gray-700">
+      {{ total }} registro{{ total|pluralize }}
+      {% if page_obj.has_other_pages %}
+      — página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+      {% endif %}
+    </h2>
+    <p class="text-xs text-gray-400">Clique no lápis para edição rápida de preço</p>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm" id="tabela-precos">
+      <thead>
+        <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+          <th class="px-4 py-3 text-left">Serviço</th>
+          <th class="px-4 py-3 text-left">Categoria</th>
+          <th class="px-4 py-3 text-center w-20">Estado</th>
+          <th class="px-4 py-3 text-center w-24">Status</th>
+          <th class="px-4 py-3 text-right w-48">Preço</th>
+          <th class="px-4 py-3 text-right w-40">Promo</th>
+          <th class="px-4 py-3 text-right w-44">Ações</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50" id="tbody-precos">
+        {% for ssp in page_obj %}
+        <tr class="hover:bg-gray-50 transition-colors" id="row-ssp-{{ ssp.pk }}">
+          <!-- Serviço -->
+          <td class="px-4 py-3">
+            <p class="font-medium text-gray-800 text-sm">{{ ssp.service.name }}</p>
+            <p class="text-xs text-gray-400 mt-0.5">Base: R$ {{ ssp.service.price|floatformat:2 }}</p>
+          </td>
+          <!-- Categoria -->
+          <td class="px-4 py-3">
+            <span class="text-xs text-gray-500">{{ ssp.service.category.name }}</span>
+          </td>
+          <!-- Estado -->
+          <td class="px-4 py-3 text-center">
+            <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-700 font-bold text-xs">
+              {{ ssp.state.code }}
+            </span>
+          </td>
+          <!-- Status toggle -->
+          <td class="px-4 py-3 text-center">
+            <button type="button"
+              id="toggle-{{ ssp.pk }}"
+              onclick="togglePreco({{ ssp.pk }}, this)"
+              class="badge cursor-pointer transition-colors {% if ssp.is_active %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-400{% endif %}">
+              {% if ssp.is_active %}Ativo{% else %}Inativo{% endif %}
+            </button>
+          </td>
+          <!-- Preço com edição inline -->
+          <td class="px-4 py-3 text-right">
+            <div class="flex items-center justify-end gap-2">
+              <span class="font-semibold text-gray-800" id="price-label-{{ ssp.pk }}">
+                R$ {{ ssp.price|floatformat:2 }}
+              </span>
+              <button type="button" onclick="openInlineEdit({{ ssp.pk }})"
+                class="text-gray-300 hover:text-fin transition-colors" title="Edição rápida">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                </svg>
+              </button>
+            </div>
+            <!-- Formulário inline -->
+            <div id="inline-form-{{ ssp.pk }}" class="hidden mt-1.5">
+              <div class="flex items-center gap-1 justify-end">
+                <input type="number" step="0.01" min="0.01"
+                  id="inline-input-{{ ssp.pk }}"
+                  class="w-28 text-right border border-fin/40 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-fin focus:ring-1 focus:ring-fin/30"
+                  value="{{ ssp.price }}">
+                <button onclick="saveInline({{ ssp.pk }})"
+                  class="text-xs bg-fin text-white px-2.5 py-1.5 rounded-lg hover:bg-fin-light transition-colors">OK</button>
+                <button onclick="cancelInline({{ ssp.pk }})"
+                  class="text-xs text-gray-400 hover:text-gray-600 px-1.5 py-1.5">✕</button>
+              </div>
+            </div>
+          </td>
+          <!-- Preço promocional -->
+          <td class="px-4 py-3 text-right text-xs text-gray-400">
+            {% if ssp.promotional_price %}
+            <span class="text-green-600 font-medium">R$ {{ ssp.promotional_price|floatformat:2 }}</span>
+            {% else %}
+            <span class="text-gray-300">—</span>
+            {% endif %}
+          </td>
+          <!-- Ações -->
+          <td class="px-4 py-3 text-right">
+            <div class="flex items-center justify-end gap-1.5">
+              <a href="{% url 'financeiro:preco_editar' ssp.pk %}"
+                class="text-xs bg-gray-100 text-gray-600 hover:bg-fin hover:text-white px-2.5 py-1.5 rounded-lg transition-colors">
+                Editar
+              </a>
+              <form method="post" action="{% url 'financeiro:preco_excluir' ssp.pk %}"
+                onsubmit="return confirm('Remover preço de {{ ssp.service.name }} / {{ ssp.state.code }}?')">
+                {% csrf_token %}
+                <button type="submit"
+                  class="text-xs bg-red-50 text-red-500 hover:bg-red-500 hover:text-white px-2.5 py-1.5 rounded-lg transition-colors">
+                  Excluir
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="px-6 py-16 text-center">
+            <div class="flex flex-col items-center gap-3 text-gray-400">
+              <svg class="w-12 h-12 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/>
+              </svg>
+              <p class="text-sm font-medium">Nenhum preço encontrado</p>
+              <a href="{% url 'financeiro:preco_criar' %}"
+                class="text-fin text-sm font-medium hover:underline">
+                Cadastrar primeiro preço
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginação -->
+  {% if page_obj.has_other_pages %}
+  <div class="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+    <p class="text-xs text-gray-400">
+      Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ total }}
+    </p>
+    <div class="flex items-center gap-1">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}&{{ query_params }}"
+        class="px-3 py-1.5 text-xs rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-600">
+        ← Anterior
+      </a>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <span class="px-3 py-1.5 text-xs rounded-lg bg-fin text-white font-semibold">{{ num }}</span>
+        {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+        <a href="?page={{ num }}&{{ query_params }}"
+          class="px-3 py-1.5 text-xs rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-600">
+          {{ num }}
+        </a>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}&{{ query_params }}"
+        class="px-3 py-1.5 text-xs rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-600">
+        Próxima →
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+
+<!-- ── MODAL: Reajuste em Massa ──────────────────────────────────────────────── -->
+<div id="modal-massa" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <h3 class="font-semibold text-gray-800">Reajuste em Massa</h3>
+      <button onclick="document.getElementById('modal-massa').classList.add('hidden')"
+        class="text-gray-400 hover:text-gray-600 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <form method="post" action="{% url 'financeiro:precos_massa' %}" class="px-6 py-4 space-y-4">
+      {% csrf_token %}
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Tipo de Reajuste</label>
+          {{ mass_form.tipo }}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Valor</label>
+          {{ mass_form.valor }}
+          <p class="text-xs text-gray-400 mt-1">Para %, use 10 para 10%. Para R$, use 20 para R$ 20,00.</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Categoria (opcional)</label>
+          {{ mass_form.categoria }}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Estado (opcional)</label>
+          {{ mass_form.estado }}
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1">Observação para auditoria</label>
+        {{ mass_form.observacao }}
+      </div>
+      <div class="flex items-center gap-2">
+        {{ mass_form.apenas_ativos }}
+        <label class="text-sm text-gray-600">Aplicar apenas em registros ativos</label>
+      </div>
+      <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
+        ⚠ Esta ação altera múltiplos preços ao mesmo tempo. Verifique os filtros antes de confirmar.
+        Todas as alterações são registradas no histórico de auditoria.
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="button"
+          onclick="document.getElementById('modal-massa').classList.add('hidden')"
+          class="flex-1 px-4 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
+          Cancelar
+        </button>
+        <button type="submit"
+          class="flex-1 px-4 py-2.5 text-sm bg-fin text-white rounded-lg hover:bg-fin-light font-semibold transition-colors">
+          Aplicar Reajuste
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- ── MODAL: Replicar Preços ────────────────────────────────────────────────── -->
+<div id="modal-replicar" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
+      <h3 class="font-semibold text-gray-800">Replicar Preços</h3>
+      <button onclick="document.getElementById('modal-replicar').classList.add('hidden')"
+        class="text-gray-400 hover:text-gray-600 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <form method="post" action="{% url 'financeiro:precos_replicar' %}" class="px-6 py-4 space-y-4">
+      {% csrf_token %}
+      <p class="text-sm text-gray-500">
+        Copia o preço de um par (serviço + estado) para outros estados ou outro serviço.
+      </p>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Serviço de Origem</label>
+          {{ replicate_form.servico_origem }}
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Estado de Origem</label>
+          {{ replicate_form.estado_origem }}
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1">
+          Serviço de Destino
+          <span class="font-normal text-gray-400">(deixe em branco para manter o mesmo)</span>
+        </label>
+        {{ replicate_form.servico_destino }}
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-2">
+          Estados de Destino
+          <button type="button" onclick="toggleAllEstados(true)"
+            class="text-fin text-xs underline ml-2">Todos</button>
+          <button type="button" onclick="toggleAllEstados(false)"
+            class="text-gray-400 text-xs underline ml-1">Nenhum</button>
+        </label>
+        <div class="grid grid-cols-4 sm:grid-cols-6 gap-1.5 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
+          {% for value, label in replicate_form.estados_destino.field.choices %}
+          <label class="flex items-center gap-1.5 text-xs text-gray-700 cursor-pointer hover:text-fin">
+            <input type="checkbox" name="estados_destino" value="{{ value }}"
+              class="estado-destino-check w-3.5 h-3.5 text-fin rounded">
+            <span>{{ value }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        {{ replicate_form.sobrescrever }}
+        <label class="text-sm text-gray-600">Sobrescrever preços existentes</label>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="button"
+          onclick="document.getElementById('modal-replicar').classList.add('hidden')"
+          class="flex-1 px-4 py-2.5 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
+          Cancelar
+        </button>
+        <button type="submit"
+          class="flex-1 px-4 py-2.5 text-sm bg-fin text-white rounded-lg hover:bg-fin-light font-semibold transition-colors">
+          Replicar Preços
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CSRF = '{{ csrf_token }}';
+
+// ── Edição inline ──────────────────────────────────────────────────────────────
+function openInlineEdit(pk) {
+  document.getElementById('inline-form-' + pk).classList.remove('hidden');
+  document.getElementById('price-label-' + pk).parentElement.querySelector('button').classList.add('hidden');
+  document.getElementById('inline-input-' + pk).focus();
+  document.getElementById('inline-input-' + pk).select();
+}
+
+function cancelInline(pk) {
+  document.getElementById('inline-form-' + pk).classList.add('hidden');
+  document.getElementById('price-label-' + pk).parentElement.querySelector('button').classList.remove('hidden');
+}
+
+async function saveInline(pk) {
+  const input = document.getElementById('inline-input-' + pk);
+  const price = input.value.trim();
+  if (!price || parseFloat(price) <= 0) {
+    input.classList.add('border-red-400');
+    input.focus();
+    return;
+  }
+  input.classList.remove('border-red-400');
+
+  try {
+    const res = await fetch(`/financeiro/precos/${pk}/inline/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `price=${encodeURIComponent(price)}`,
+    });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('price-label-' + pk).textContent = data.price_fmt;
+      cancelInline(pk);
+      showToast('Preço atualizado!', 'success');
+    } else {
+      showToast(data.error || 'Erro ao salvar.', 'error');
+    }
+  } catch {
+    showToast('Erro de conexão.', 'error');
+  }
+}
+
+// ── Toggle ativo/inativo ───────────────────────────────────────────────────────
+async function togglePreco(pk, btn) {
+  try {
+    const res = await fetch(`/financeiro/precos/${pk}/toggle/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF },
+    });
+    const data = await res.json();
+    if (data.ok) {
+      btn.textContent = data.label;
+      btn.className = 'badge cursor-pointer transition-colors ' +
+        (data.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400');
+    }
+  } catch {
+    showToast('Erro ao alterar status.', 'error');
+  }
+}
+
+// ── Selecionar todos os estados no modal Replicar ──────────────────────────────
+function toggleAllEstados(check) {
+  document.querySelectorAll('.estado-destino-check').forEach(cb => cb.checked = check);
+}
+
+// ── Toast de feedback ──────────────────────────────────────────────────────────
+function showToast(msg, type) {
+  const colors = {
+    success: 'bg-green-600',
+    error: 'bg-red-600',
+    info: 'bg-blue-600',
+  };
+  const toast = document.createElement('div');
+  toast.className = `fixed bottom-6 right-6 z-[100] ${colors[type] || 'bg-gray-800'} text-white text-sm font-medium px-5 py-3 rounded-xl shadow-lg transition-all duration-300 opacity-0`;
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => { toast.style.opacity = '1'; });
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// ── Enter no input inline confirma ────────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && e.target.id && e.target.id.startsWith('inline-input-')) {
+    const pk = e.target.id.replace('inline-input-', '');
+    saveInline(pk);
+  }
+  if (e.key === 'Escape' && e.target.id && e.target.id.startsWith('inline-input-')) {
+    const pk = e.target.id.replace('inline-input-', '');
+    cancelInline(pk);
+  }
+});
+
+// ── Fechar modais com Escape ───────────────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.getElementById('modal-massa').classList.add('hidden');
+    document.getElementById('modal-replicar').classList.add('hidden');
+  }
+});
+</script>
+{% endblock %}

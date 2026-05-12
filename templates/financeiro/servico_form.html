@@ -90,6 +90,16 @@
            class="text-sm text-gray-500 hover:text-gray-700 px-4 py-2.5">
           Cancelar
         </a>
+        {% if servico %}
+        <a href="{% url 'financeiro:precos_servico' servico.pk %}"
+           class="ml-auto text-sm text-fin font-medium hover:underline flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/>
+          </svg>
+          Gerenciar Preços por Estado
+        </a>
+        {% endif %}
       </div>
     </form>
   </div>

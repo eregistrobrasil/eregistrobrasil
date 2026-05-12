@@ -152,6 +152,8 @@ class ServiceStatePrice(models.Model):
         'Preço Promocional', max_digits=10, decimal_places=2, null=True, blank=True
     )
     is_active = models.BooleanField('Ativo', default=True)
+    observacao = models.TextField('Observação Interna', blank=True)
+    updated_at = models.DateTimeField('Atualizado em', auto_now=True)
 
     class Meta:
         verbose_name = 'Preço por Estado'

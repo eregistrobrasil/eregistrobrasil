@@ -1,0 +1,134 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+<!-- Filtros -->
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-5">
+  <form method="get" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+    <div class="col-span-2 md:col-span-2">
+      <input type="text" name="q" value="{{ filtros.q }}" placeholder="Buscar por nome ou cidade..."
+             class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+    </div>
+    <select name="estado" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+      <option value="">Todos os estados</option>
+      {% for uf, nome in estados %}
+      <option value="{{ uf }}" {% if filtros.estado == uf %}selected{% endif %}>{{ uf }} — {{ nome }}</option>
+      {% endfor %}
+    </select>
+    <select name="tipo" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+      <option value="">Todos os tipos</option>
+      {% for val, lbl in tipo_choices %}
+      <option value="{{ val }}" {% if filtros.tipo == val %}selected{% endif %}>{{ lbl }}</option>
+      {% endfor %}
+    </select>
+    <select name="ativo" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+      <option value="">Todos</option>
+      <option value="1" {% if filtros.ativo == '1' %}selected{% endif %}>Ativos</option>
+      <option value="0" {% if filtros.ativo == '0' %}selected{% endif %}>Inativos</option>
+    </select>
+    <div class="flex gap-2">
+      <button type="submit" class="flex-1 px-4 py-2 text-sm font-semibold bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+        Filtrar
+      </button>
+      <a href="{% url 'dashboard:cartorio_list' %}" class="px-3 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">✕</a>
+    </div>
+  </form>
+</div>
+
+<!-- Tabela -->
+<div class="bg-white rounded-2xl border border-gray-200 shadow-sm">
+  <div class="flex items-center justify-between p-5 border-b border-gray-100">
+    <div class="flex items-center gap-3">
+      <h3 class="text-sm font-semibold text-gray-700">Cartórios</h3>
+      <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full">{{ total }}</span>
+    </div>
+    <a href="{% url 'dashboard:cartorio_create' %}"
+       class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-dark transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Novo Cartório
+    </a>
+  </div>
+
+  {% if cartorios %}
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gray-100 bg-gray-50/50">
+          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Nome</th>
+          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Estado</th>
+          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Cidade</th>
+          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Tipo</th>
+          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Telefone</th>
+          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Ações</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for c in cartorios %}
+        <tr class="hover:bg-gray-50/50 transition-colors">
+          <td class="px-5 py-3.5 font-medium text-gray-900">{{ c.nome }}</td>
+          <td class="px-5 py-3.5">
+            <span class="inline-block bg-primary/10 text-primary text-xs font-semibold px-2 py-0.5 rounded-full">{{ c.estado }}</span>
+          </td>
+          <td class="px-5 py-3.5 text-gray-600">{{ c.cidade }}</td>
+          <td class="px-5 py-3.5">
+            <div class="flex flex-wrap gap-1">
+              {% for tipo in c.tipo_servico %}
+                {% if tipo == 'civil' %}<span class="inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full">Civil</span>
+                {% elif tipo == 'notas' %}<span class="inline-block bg-purple-100 text-purple-700 text-xs font-semibold px-2 py-0.5 rounded-full">Notas</span>
+                {% elif tipo == 'imoveis' %}<span class="inline-block bg-orange-100 text-orange-700 text-xs font-semibold px-2 py-0.5 rounded-full">Imóveis</span>
+                {% elif tipo == 'protesto' %}<span class="inline-block bg-red-100 text-red-700 text-xs font-semibold px-2 py-0.5 rounded-full">Protesto</span>
+                {% endif %}
+              {% empty %}<span class="text-gray-400 text-xs">—</span>
+              {% endfor %}
+            </div>
+          </td>
+          <td class="px-5 py-3.5 text-gray-500">{{ c.telefone|default:"—" }}</td>
+          <td class="px-5 py-3.5">
+            {% if c.ativo %}
+              <span class="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span> Ativo
+              </span>
+            {% else %}
+              <span class="inline-flex items-center gap-1 text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                <span class="w-1.5 h-1.5 bg-gray-400 rounded-full"></span> Inativo
+              </span>
+            {% endif %}
+          </td>
+          <td class="px-5 py-3.5">
+            <div class="flex items-center gap-2">
+              <a href="{% url 'dashboard:cartorio_edit' c.pk %}"
+                 class="text-xs font-medium text-primary hover:underline">Editar</a>
+              <form action="{% url 'dashboard:cartorio_toggle_ativo' c.pk %}" method="post" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="text-xs font-medium text-gray-500 hover:text-primary hover:underline">
+                  {% if c.ativo %}Desativar{% else %}Ativar{% endif %}
+                </button>
+              </form>
+              <form action="{% url 'dashboard:cartorio_delete' c.pk %}" method="post" class="inline"
+                    onsubmit="return confirm('Excluir o cartório {{ c.nome|escapejs }}?')">
+                {% csrf_token %}
+                <button type="submit" class="text-xs font-medium text-red-500 hover:underline">Excluir</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="p-12 text-center text-gray-400">
+    <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+    </svg>
+    <p class="text-sm mb-3">Nenhum cartório encontrado.</p>
+    <a href="{% url 'dashboard:cartorio_create' %}"
+       class="inline-block px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-dark transition-colors">
+      Cadastrar primeiro cartório
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

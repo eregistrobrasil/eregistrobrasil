@@ -38,21 +38,33 @@ class CertidaoCartorioForm(forms.Form):
         max_length=100,
         error_messages={'required': 'Selecione uma cidade.'},
     )
+    cartorio_id = forms.IntegerField(
+        required=False,
+        widget=forms.HiddenInput(),
+    )
     cartorio = forms.CharField(
         label='Nome do Cartório',
         max_length=200,
         required=False,
-        widget=forms.TextInput(attrs={
-            'id': 'nome-cartorio',
-            'class': _INPUT_CLASS,
-            'placeholder': 'Ex: 1º Cartório de Registro Civil',
-            'autocomplete': 'off',
-        }),
+        widget=forms.HiddenInput(),
     )
 
-    def clean_cartorio(self):
-        value = self.cleaned_data.get('cartorio', '').strip()
-        return value or 'Cartório não informado'
+    def clean(self):
+        cleaned = super().clean()
+        cartorio_id = cleaned.get('cartorio_id')
+        if cartorio_id:
+            from registry.models import Registry
+            try:
+                cartorio_obj = Registry.objects.get(pk=cartorio_id, ativo=True)
+                cleaned['cartorio'] = cartorio_obj.nome
+                cleaned['cartorio_id'] = cartorio_obj.pk
+            except Registry.DoesNotExist:
+                cleaned['cartorio_id'] = None
+                cleaned['cartorio'] = cleaned.get('cartorio') or 'Cartório não informado'
+        else:
+            if not cleaned.get('cartorio'):
+                cleaned['cartorio'] = 'Cartório não informado'
+        return cleaned
 
 
 class CertidaoRegistroForm(forms.Form):
@@ -300,12 +312,26 @@ class CertidaoProcuracaoForm(forms.Form):
     cpf = _cpf_field()
     nome_completo = _char_field('Nome Completo', 'Nome completo da pessoa')
     numero_livro = forms.CharField(
-        label='Número do Livro', max_length=50, required=False,
-        widget=forms.TextInput(attrs={'class': _INPUT_CLASS, 'placeholder': 'Ex: A-10 (opcional)'}),
+        label='Número do Livro',
+        max_length=50,
+        required=True,
+        error_messages={'required': 'Informe o número do livro.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: A-10',
+            'inputmode': 'text',
+        }),
     )
     numero_pagina = forms.CharField(
-        label='Número da Página', max_length=50, required=False,
-        widget=forms.TextInput(attrs={'class': _INPUT_CLASS, 'placeholder': 'Ex: 55 (opcional)'}),
+        label='Número da Página',
+        max_length=50,
+        required=True,
+        error_messages={'required': 'Informe o número da página.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: 55',
+            'inputmode': 'numeric',
+        }),
     )
     data_ato = _date_field('Data do Ato', required=False, msg_label='a data do ato')
 
@@ -314,6 +340,18 @@ class CertidaoProcuracaoForm(forms.Form):
         if len(cpf) != 11:
             raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
         return cpf
+
+    def clean_numero_livro(self):
+        valor = self.cleaned_data.get('numero_livro', '').strip()
+        if not valor:
+            raise forms.ValidationError('Informe o número do livro.')
+        return valor
+
+    def clean_numero_pagina(self):
+        valor = self.cleaned_data.get('numero_pagina', '').strip()
+        if not valor:
+            raise forms.ValidationError('Informe o número da página.')
+        return valor
 
 
 # ─────────────────────────────────────────────
@@ -526,6 +564,106 @@ class CertidaoPenhorSafraForm(forms.Form):
         valor = self.cleaned_data.get('tipo_safra', '').strip()
         if not valor:
             raise forms.ValidationError('Selecione o tipo de safra.')
+        return valor
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Escritura
+# ─────────────────────────────────────────────
+
+class CertidaoEscrituraForm(forms.Form):
+    cpf = _cpf_field()
+    nome_completo = _char_field('Nome Completo', 'Nome completo da pessoa')
+    numero_livro = forms.CharField(
+        label='Número do Livro',
+        max_length=50,
+        required=True,
+        error_messages={'required': 'Informe o número do livro.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: A-10',
+            'inputmode': 'text',
+        }),
+    )
+    numero_pagina = forms.CharField(
+        label='Número da Página',
+        max_length=50,
+        required=True,
+        error_messages={'required': 'Informe o número da página.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: 55',
+            'inputmode': 'numeric',
+        }),
+    )
+    data_ato = _date_field('Data do Ato', required=False, msg_label='a data do ato')
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+    def clean_numero_livro(self):
+        valor = self.cleaned_data.get('numero_livro', '').strip()
+        if not valor:
+            raise forms.ValidationError('Informe o número do livro.')
+        return valor
+
+    def clean_numero_pagina(self):
+        valor = self.cleaned_data.get('numero_pagina', '').strip()
+        if not valor:
+            raise forms.ValidationError('Informe o número da página.')
+        return valor
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Escritura de União Estável
+# ─────────────────────────────────────────────
+
+class CertidaoUniaoEstavelForm(forms.Form):
+    cpf = _cpf_field()
+    nome_completo = _char_field('Nome Completo', 'Nome completo da pessoa')
+    numero_livro = forms.CharField(
+        label='Número do Livro',
+        max_length=50,
+        required=True,
+        error_messages={'required': 'Informe o número do livro.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: A-10',
+            'inputmode': 'text',
+        }),
+    )
+    numero_pagina = forms.CharField(
+        label='Número da Página',
+        max_length=50,
+        required=True,
+        error_messages={'required': 'Informe o número da página.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: 55',
+            'inputmode': 'numeric',
+        }),
+    )
+    data_ato = _date_field('Data do Ato', required=False, msg_label='a data do ato')
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+    def clean_numero_livro(self):
+        valor = self.cleaned_data.get('numero_livro', '').strip()
+        if not valor:
+            raise forms.ValidationError('Informe o número do livro.')
+        return valor
+
+    def clean_numero_pagina(self):
+        valor = self.cleaned_data.get('numero_pagina', '').strip()
+        if not valor:
+            raise forms.ValidationError('Informe o número da página.')
         return valor
 
 

@@ -1,75 +1,112 @@
 {% extends 'dashboard/base.html' %}
+{% load dashboard_tags %}
 
 {% block content %}
-<!-- Filtros -->
+
+{# ─── ABAS DE CATEGORIA ──────────────────────────────────────────────────── #}
+<div class="mb-5 -mx-1">
+  <div class="flex items-end gap-1 overflow-x-auto pb-px flex-nowrap">
+    {% for aba in abas %}
+    <a href="{% url 'dashboard:order_list' %}?categoria={{ aba.slug }}"
+       class="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-xl border border-b-0 transition-all whitespace-nowrap
+              {% if aba.ativa %}
+                bg-white border-gray-200 text-primary shadow-sm
+              {% else %}
+                bg-gray-100 border-transparent text-gray-500 hover:bg-gray-200/70 hover:text-gray-700
+              {% endif %}">
+      <span>{{ aba.label }}</span>
+      {% if aba.count %}
+      <span class="text-xs font-bold px-1.5 py-0.5 rounded-full
+                   {% if aba.ativa %}bg-primary text-white{% else %}bg-gray-300 text-gray-600{% endif %}">
+        {{ aba.count }}
+      </span>
+      {% endif %}
+    </a>
+    {% endfor %}
+  </div>
+  <div class="h-px bg-gray-200"></div>
+</div>
+
+{# ─── PAINEL DE FILTROS ──────────────────────────────────────────────────── #}
 <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-5">
-  <form method="get" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-    <div class="col-span-2 md:col-span-4 lg:col-span-2">
-      <input type="text" name="q" value="{{ filtros.q }}" placeholder="Buscar por nome, CPF, ID..."
-             class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
-    </div>
-    <select name="status" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
-      <option value="">Todos os status</option>
-      {% for val, lbl in status_choices %}
-      <option value="{{ val }}" {% if filtros.status == val %}selected{% endif %}>{{ lbl }}</option>
-      {% endfor %}
-    </select>
-    <select name="tipo" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
-      <option value="">Todos os tipos</option>
-      {% for val, lbl in tipo_choices %}
-      <option value="{{ val }}" {% if filtros.tipo == val %}selected{% endif %}>{{ lbl }}</option>
-      {% endfor %}
-    </select>
-    <select name="prioridade" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
-      <option value="">Todas prioridades</option>
-      {% for val, lbl in prioridade_choices %}
-      <option value="{{ val }}" {% if filtros.prioridade == val %}selected{% endif %}>{{ lbl }}</option>
-      {% endfor %}
-    </select>
-    <select name="responsavel" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
-      <option value="">Todos responsáveis</option>
-      {% for op in operadores %}
-      <option value="{{ op.pk }}" {% if filtros.responsavel == op.pk|stringformat:'s' %}selected{% endif %}>
-        {{ op.get_full_name|default:op.username }}
-      </option>
-      {% endfor %}
-    </select>
-    <input type="date" name="data_de" value="{{ filtros.data_de }}"
-           class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
-    <input type="date" name="data_ate" value="{{ filtros.data_ate }}"
-           class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
-    <div class="flex gap-2">
-      <button type="submit" class="flex-1 px-4 py-2 text-sm font-semibold bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
-        Filtrar
-      </button>
-      <a href="{% url 'dashboard:order_list' %}" class="px-3 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">✕</a>
+  <form method="get" id="filtros-form">
+    <input type="hidden" name="categoria" value="{{ filtros.categoria }}">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="col-span-2 lg:col-span-2">
+        <input type="text" name="q" value="{{ filtros.q }}"
+               placeholder="Buscar por nome, CPF ou ID..."
+               class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+      </div>
+      <select name="status" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+        <option value="">Todos os status</option>
+        {% for val, lbl in status_choices %}
+        <option value="{{ val }}" {% if filtros.status == val %}selected{% endif %}>{{ lbl }}</option>
+        {% endfor %}
+      </select>
+      <select name="estado" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+        <option value="">Todos os estados</option>
+        {% for uf, nome in estados %}
+        <option value="{{ uf }}" {% if filtros.estado == uf %}selected{% endif %}>{{ uf }} — {{ nome }}</option>
+        {% endfor %}
+      </select>
+      <select name="prioridade" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+        <option value="">Todas prioridades</option>
+        {% for val, lbl in prioridade_choices %}
+        <option value="{{ val }}" {% if filtros.prioridade == val %}selected{% endif %}>{{ lbl }}</option>
+        {% endfor %}
+      </select>
+      <select name="responsavel" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+        <option value="">Todos responsáveis</option>
+        {% for op in operadores %}
+        <option value="{{ op.pk }}" {% if filtros.responsavel == op.pk|stringformat:'s' %}selected{% endif %}>
+          {{ op.get_full_name|default:op.username }}
+        </option>
+        {% endfor %}
+      </select>
+      <input type="date" name="data_de" value="{{ filtros.data_de }}"
+             class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+      <input type="date" name="data_ate" value="{{ filtros.data_ate }}"
+             class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+      <div class="col-span-2 flex gap-2">
+        <button type="submit"
+                class="flex-1 px-4 py-2 text-sm font-semibold bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+          Filtrar
+        </button>
+        <a href="{% url 'dashboard:order_list' %}?categoria={{ filtros.categoria }}"
+           class="px-3 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">✕</a>
+      </div>
     </div>
   </form>
 </div>
 
-<!-- Table -->
+{# ─── TABELA ─────────────────────────────────────────────────────────────── #}
 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm">
-  <div class="flex items-center justify-between p-5 border-b border-gray-100">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
     <div class="flex items-center gap-3">
-      <h3 class="text-sm font-semibold text-gray-700">Pedidos</h3>
+      {% for aba in abas %}{% if aba.ativa %}<h3 class="text-sm font-semibold text-gray-700">{{ aba.label }}</h3>{% endif %}{% endfor %}
       <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full">{{ total }}</span>
+      {% if total != total_geral %}
+      <span class="text-xs text-gray-400">de {{ total_geral }} no total</span>
+      {% endif %}
     </div>
-    <div class="flex gap-2">
-      <a href="{% url 'dashboard:kanban' %}" class="text-xs font-medium text-primary hover:underline flex items-center gap-1">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7"/>
-        </svg>
-        Kanban
-      </a>
-    </div>
+    <a href="{% url 'dashboard:kanban' %}"
+       class="text-xs font-medium text-primary hover:underline flex items-center gap-1">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7"/>
+      </svg>
+      Kanban
+    </a>
   </div>
+
   <div class="overflow-x-auto">
     <table class="w-full text-sm">
       <thead>
         <tr class="border-b border-gray-100 bg-gray-50/50">
           <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">ID</th>
           <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Cliente</th>
-          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Tipo</th>
+          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Serviço</th>
+          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Local</th>
           <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
           <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Prioridade</th>
           <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">SLA</th>
@@ -77,60 +114,103 @@
           <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Total</th>
           {% endif %}
           <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Responsável</th>
-          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Criado</th>
+          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Data</th>
           <th class="px-5 py-3"></th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-50">
         {% for pedido in pedidos %}
         <tr class="hover:bg-gray-50/70 transition-colors {% if pedido.esta_atrasado %}bg-red-50/40 hover:bg-red-50/60{% endif %}">
-          <td class="px-5 py-3">
+          <td class="px-5 py-3.5">
             <span class="font-mono text-xs font-bold text-primary">#{{ pedido.short_id }}</span>
           </td>
-          <td class="px-5 py-3">
-            <p class="font-medium text-gray-800 truncate max-w-[150px]">{{ pedido.customer_name }}</p>
+          <td class="px-5 py-3.5">
+            <p class="font-medium text-gray-800 truncate max-w-[140px]">{{ pedido.customer_name }}</p>
             <p class="text-xs text-gray-400">{{ pedido.customer_cpf }}</p>
           </td>
-          <td class="px-5 py-3">
-            <span class="text-xs text-gray-600">{{ pedido.get_tipo_certidao_display|default:"—" }}</span>
+          <td class="px-5 py-3.5">
+            <span class="text-xs text-gray-700">{{ pedido.get_tipo_certidao_display|default:"—" }}</span>
           </td>
-          <td class="px-5 py-3">
+          <td class="px-5 py-3.5">
+            {% if pedido.cidade %}
+            <p class="text-xs text-gray-600">{{ pedido.cidade }}</p>
+            <p class="text-xs text-gray-400">{{ pedido.estado }}</p>
+            {% else %}
+            <span class="text-xs text-gray-400">—</span>
+            {% endif %}
+          </td>
+          <td class="px-5 py-3.5">
             {% include 'dashboard/includes/status_badge.html' with status=pedido.status label=pedido.get_status_display %}
           </td>
-          <td class="px-5 py-3">
+          <td class="px-5 py-3.5">
             {% include 'dashboard/includes/prioridade_badge.html' with prioridade=pedido.prioridade label=pedido.get_prioridade_display %}
           </td>
-          <td class="px-5 py-3">{% include 'dashboard/includes/sla_bar.html' with order=pedido %}</td>
+          <td class="px-5 py-3.5">
+            {% include 'dashboard/includes/sla_bar.html' with order=pedido %}
+          </td>
           {% if pode_ver_financeiro %}
-          <td class="px-5 py-3">
+          <td class="px-5 py-3.5">
             <span class="font-semibold text-gray-800">R$ {{ pedido.total|floatformat:2 }}</span>
           </td>
           {% endif %}
-          <td class="px-5 py-3">
+          <td class="px-5 py-3.5">
             <span class="text-xs text-gray-500">{{ pedido.responsavel.get_full_name|default:"—" }}</span>
           </td>
-          <td class="px-5 py-3">
-            <span class="text-xs text-gray-400">{{ pedido.created_at|date:"d/m/Y" }}</span>
+          <td class="px-5 py-3.5">
+            <span class="text-xs text-gray-400">{{ pedido.created_at|date:"d/m/y" }}</span>
           </td>
-          <td class="px-5 py-3">
+          <td class="px-5 py-3.5">
             <a href="{% url 'dashboard:order_detail' pk=pedido.pk %}"
-               class="text-xs font-semibold text-primary hover:text-primary-dark border border-primary/20 hover:border-primary/40 px-3 py-1.5 rounded-lg transition-colors">
+               class="text-xs font-semibold text-primary hover:text-primary-dark border border-primary/20 hover:border-primary/40 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
               Detalhes
             </a>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="{% if pode_ver_financeiro %}10{% else %}9{% endif %}" class="px-5 py-16 text-center text-gray-400">
+          <td colspan="{% if pode_ver_financeiro %}11{% else %}10{% endif %}"
+              class="px-5 py-16 text-center text-gray-400">
             <svg class="w-12 h-12 mx-auto mb-3 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
             </svg>
-            <p class="text-sm">Nenhum pedido encontrado.</p>
+            <p class="text-sm">Nenhum pedido encontrado nesta categoria.</p>
+            {% if filtros.q or filtros.status or filtros.estado or filtros.prioridade %}
+            <a href="{% url 'dashboard:order_list' %}?categoria={{ filtros.categoria }}"
+               class="inline-block mt-3 text-xs text-primary hover:underline">Limpar filtros</a>
+            {% endif %}
           </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+
+  {# ─── PAGINAÇÃO ────────────────────────────────────────────────────────── #}
+  {% if total_paginas > 1 %}
+  <div class="flex items-center justify-between px-5 py-4 border-t border-gray-100">
+    <p class="text-xs text-gray-400">
+      Página {{ pagina }} de {{ total_paginas }} &middot; {{ total }} pedido{{ total|pluralize }}
+    </p>
+    <div class="flex items-center gap-1">
+      {% if tem_anterior %}
+      <a href="{% url_com_param p=pagina|add:'-1' %}"
+         class="px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-500 transition-colors">← Anterior</a>
+      {% endif %}
+      {% for num in range_paginas %}
+      <a href="{% url_com_param p=num %}"
+         class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors
+                {% if num == pagina %}bg-primary text-white{% else %}border border-gray-200 hover:bg-gray-50 text-gray-500{% endif %}">
+        {{ num }}
+      </a>
+      {% endfor %}
+      {% if tem_proxima %}
+      <a href="{% url_com_param p=pagina|add:'1' %}"
+         class="px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-500 transition-colors">Próxima →</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
 </div>
+
 {% endblock %}

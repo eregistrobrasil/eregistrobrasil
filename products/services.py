@@ -207,7 +207,7 @@ PRECOS_CERTIDAO_PROCURACAO: dict[str, Decimal] = {
     "ES": Decimal("219.90"),
     "GO": Decimal("219.90"),
     "MA": Decimal("219.90"),
-    "MT": Decimal("209.90"),
+    "MT": Decimal("219.90"),
     "MS": Decimal("219.90"),
     "MG": Decimal("219.90"),
     "PA": Decimal("209.90"),
@@ -215,14 +215,14 @@ PRECOS_CERTIDAO_PROCURACAO: dict[str, Decimal] = {
     "PR": Decimal("209.90"),
     "PE": Decimal("219.90"),
     "PI": Decimal("219.90"),
-    "RJ": Decimal("359.90"),
+    "RJ": Decimal("199.90"),
     "RN": Decimal("219.90"),
     "RS": Decimal("209.90"),
     "RO": Decimal("219.90"),
-    "RR": Decimal("219.90"),
-    "SC": Decimal("219.90"),
+    "RR": Decimal("209.90"),
+    "SC": Decimal("209.90"),
     "SP": Decimal("129.90"),
-    "SE": Decimal("219.90"),
+    "SE": Decimal("209.90"),
     "TO": Decimal("259.90"),
 }
 
@@ -238,6 +238,96 @@ def obter_preco_certidao_procuracao(estado: str) -> Optional[Decimal]:
     if code not in _CODIGOS_VALIDOS:
         return None
     return PRECOS_CERTIDAO_PROCURACAO.get(code)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Tabela de preços: Certidão de Escritura
+# ─────────────────────────────────────────────────────────────────────────────
+PRECOS_CERTIDAO_ESCRITURA: dict[str, Decimal] = {
+    "AC": Decimal("219.90"),
+    "AL": Decimal("219.90"),
+    "AP": Decimal("219.90"),
+    "AM": Decimal("219.90"),
+    "BA": Decimal("219.90"),
+    "CE": Decimal("219.90"),
+    "DF": Decimal("149.90"),
+    "ES": Decimal("219.90"),
+    "GO": Decimal("219.90"),
+    "MA": Decimal("219.90"),
+    "MT": Decimal("219.90"),
+    "MS": Decimal("219.90"),
+    "MG": Decimal("219.90"),
+    "PA": Decimal("209.90"),
+    "PB": Decimal("219.90"),
+    "PR": Decimal("209.90"),
+    "PE": Decimal("219.90"),
+    "PI": Decimal("219.90"),
+    "RJ": Decimal("199.90"),
+    "RN": Decimal("219.90"),
+    "RS": Decimal("209.90"),
+    "RO": Decimal("219.90"),
+    "RR": Decimal("209.90"),
+    "SC": Decimal("209.90"),
+    "SP": Decimal("129.90"),
+    "SE": Decimal("209.90"),
+    "TO": Decimal("259.90"),
+}
+
+
+def obter_preco_certidao_escritura(estado: str) -> Optional[Decimal]:
+    """
+    Retorna o preço da Certidão de Escritura para o estado informado.
+    Valida a sigla e retorna None se não configurado (fallback ao preço base).
+    """
+    code = (estado or "").strip().upper()
+    if code not in _CODIGOS_VALIDOS:
+        return None
+    return PRECOS_CERTIDAO_ESCRITURA.get(code)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Tabela de preços: Certidão de Escritura de União Estável
+# (mesmos valores da Certidão de Escritura)
+# ─────────────────────────────────────────────────────────────────────────────
+PRECOS_CERTIDAO_UNIAO_ESTAVEL: dict[str, Decimal] = {
+    "AC": Decimal("219.90"),
+    "AL": Decimal("219.90"),
+    "AP": Decimal("219.90"),
+    "AM": Decimal("219.90"),
+    "BA": Decimal("219.90"),
+    "CE": Decimal("219.90"),
+    "DF": Decimal("149.90"),
+    "ES": Decimal("219.90"),
+    "GO": Decimal("219.90"),
+    "MA": Decimal("219.90"),
+    "MT": Decimal("219.90"),
+    "MS": Decimal("219.90"),
+    "MG": Decimal("219.90"),
+    "PA": Decimal("209.90"),
+    "PB": Decimal("219.90"),
+    "PR": Decimal("209.90"),
+    "PE": Decimal("219.90"),
+    "PI": Decimal("219.90"),
+    "RJ": Decimal("199.90"),
+    "RN": Decimal("219.90"),
+    "RS": Decimal("209.90"),
+    "RO": Decimal("219.90"),
+    "RR": Decimal("209.90"),
+    "SC": Decimal("209.90"),
+    "SP": Decimal("129.90"),
+    "SE": Decimal("209.90"),
+    "TO": Decimal("259.90"),
+}
+
+
+def obter_preco_certidao_uniao_estavel(estado: str) -> Optional[Decimal]:
+    """
+    Retorna o preço da Certidão de Escritura de União Estável para o estado informado.
+    """
+    code = (estado or "").strip().upper()
+    if code not in _CODIGOS_VALIDOS:
+        return None
+    return PRECOS_CERTIDAO_UNIAO_ESTAVEL.get(code)
 
 
 def obter_preco_por_estado(product: "Product", estado: str) -> Optional[Decimal]:

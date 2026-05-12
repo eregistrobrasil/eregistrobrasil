@@ -127,13 +127,33 @@ class CheckoutView(View):
                     requester_name=cart_item.requester_name,
                     requester_document=cart_item.requester_document,
                 )
+            # Propaga estado a partir do item do carrinho
+            update_fields = []
             if not order.estado and cart_items:
                 first_state = next(
                     (i.state.code for i in cart_items if i.state), None
                 )
                 if first_state:
                     order.estado = first_state
-                    order.save(update_fields=['estado'])
+                    update_fields.append('estado')
+            # Propaga tipo_certidao, cidade e cartório salvos pelo fluxo de serviço
+            tipo_certidao = request.session.pop('ordem_tipo_certidao', '')
+            cidade = request.session.pop('ordem_cidade', '')
+            cartorio_id = request.session.pop('ordem_cartorio_id', None)
+            if tipo_certidao and not order.tipo_certidao:
+                order.tipo_certidao = tipo_certidao
+                update_fields.append('tipo_certidao')
+            if cidade and not order.cidade:
+                order.cidade = cidade
+                update_fields.append('cidade')
+            if cartorio_id and not order.cartorio_id:
+                from registry.models import Registry
+                cartorio_obj = Registry.objects.filter(pk=cartorio_id, ativo=True).first()
+                if cartorio_obj:
+                    order.cartorio = cartorio_obj
+                    update_fields.append('cartorio')
+            if update_fields:
+                order.save(update_fields=update_fields)
             cart.items.all().delete()
             return redirect('payments:create', order_id=order.id)
         return self._render(request, form, cart)

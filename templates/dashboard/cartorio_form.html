@@ -1,0 +1,187 @@
+{% extends 'dashboard/base.html' %}
+
+{% block extra_head %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl">
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-5 text-sm text-red-700">
+        {% for err in form.non_field_errors %}{{ err }}{% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="grid grid-cols-1 gap-5">
+
+        <!-- Nome -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">
+            Nome do Cartório <span class="text-red-500">*</span>
+          </label>
+          {{ form.nome }}
+          {% if form.nome.errors %}<p class="text-xs text-red-500 mt-1">{{ form.nome.errors.0 }}</p>{% endif %}
+        </div>
+
+        <!-- Estado e Cidade -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+              Estado <span class="text-red-500">*</span>
+            </label>
+            {{ form.estado }}
+            {% if form.estado.errors %}<p class="text-xs text-red-500 mt-1">{{ form.estado.errors.0 }}</p>{% endif %}
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+              Cidade <span class="text-red-500">*</span>
+            </label>
+            <div id="cidade-wrapper">
+              <select id="id_cidade_select" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" {% if not form.instance.pk %}disabled{% endif %}>
+                {% if form.instance.pk %}
+                  <option value="{{ form.instance.cidade }}" selected>{{ form.instance.cidade }}</option>
+                {% else %}
+                  <option value="">Selecione primeiro o estado</option>
+                {% endif %}
+              </select>
+            </div>
+            <input type="hidden" id="id_cidade" name="cidade" value="{{ form.instance.cidade|default:'' }}">
+            {% if form.cidade.errors %}<p class="text-xs text-red-500 mt-1">{{ form.cidade.errors.0 }}</p>{% endif %}
+          </div>
+        </div>
+
+        <!-- Tipos de Serviço -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Tipos de Serviço <span class="text-red-500">*</span>
+          </label>
+          <div class="flex flex-wrap gap-4">
+            {% for val, lbl in form.tipos_servico.field.choices %}
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" name="tipos_servico" value="{{ val }}"
+                     class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
+                     {% if val in form.tipos_servico.value %}checked{% endif %}>
+              <span class="text-sm text-gray-700">{{ lbl }}</span>
+            </label>
+            {% endfor %}
+          </div>
+          {% if form.tipos_servico.errors %}
+            <p class="text-xs text-red-500 mt-1">{{ form.tipos_servico.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <!-- CNPJ -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">CNPJ</label>
+          {{ form.cnpj }}
+          {% if form.cnpj.errors %}<p class="text-xs text-red-500 mt-1">{{ form.cnpj.errors.0 }}</p>{% endif %}
+        </div>
+
+        <!-- Endereço -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Endereço</label>
+          {{ form.endereco }}
+          {% if form.endereco.errors %}<p class="text-xs text-red-500 mt-1">{{ form.endereco.errors.0 }}</p>{% endif %}
+        </div>
+
+        <!-- Email e Telefone -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">E-mail</label>
+            {{ form.email }}
+            {% if form.email.errors %}<p class="text-xs text-red-500 mt-1">{{ form.email.errors.0 }}</p>{% endif %}
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Telefone</label>
+            {{ form.telefone }}
+            {% if form.telefone.errors %}<p class="text-xs text-red-500 mt-1">{{ form.telefone.errors.0 }}</p>{% endif %}
+          </div>
+        </div>
+
+        <!-- Ativo -->
+        <div class="flex items-center gap-2">
+          {{ form.ativo }}
+          <label class="text-sm text-gray-700 cursor-pointer">Cartório ativo</label>
+        </div>
+
+      </div><!-- /grid -->
+
+      <!-- Ações -->
+      <div class="flex items-center justify-between mt-8 pt-6 border-t border-gray-100">
+        <a href="{% url 'dashboard:cartorio_list' %}"
+           class="text-sm text-gray-500 hover:text-gray-700 transition-colors">← Voltar</a>
+        <button type="submit"
+                class="px-6 py-2.5 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-dark transition-colors">
+          {{ action }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(function () {
+  const estadoSelect = document.getElementById('id_estado');
+  const cidadeSelect = document.getElementById('id_cidade_select');
+  const cidadeHidden = document.getElementById('id_cidade');
+
+  function loadCidades(uf, currentCity) {
+    if (!uf) {
+      $(cidadeSelect).empty().append('<option value="">Selecione primeiro o estado</option>');
+      cidadeSelect.disabled = true;
+      cidadeHidden.value = '';
+      return;
+    }
+    cidadeSelect.disabled = true;
+    $(cidadeSelect).empty().append('<option value="">Carregando...</option>');
+
+    $.getJSON('/api/cidades/', { uf: uf })
+      .done(function (data) {
+        $(cidadeSelect).empty().append('<option value="">Selecione a cidade</option>');
+        data.cidades.forEach(function (c) {
+          const opt = new Option(c, c);
+          if (c === currentCity) opt.selected = true;
+          cidadeSelect.appendChild(opt);
+        });
+        cidadeSelect.disabled = false;
+        cidadeHidden.value = cidadeSelect.value;
+        $(cidadeSelect).select2({
+          placeholder: 'Digite para buscar...',
+          allowClear: true,
+          language: { noResults: () => 'Nenhuma cidade' },
+        });
+      })
+      .fail(function () {
+        $(cidadeSelect).empty().append('<option value="">Erro ao carregar</option>');
+      });
+  }
+
+  // Init cidade quando há estado pré-selecionado (edição)
+  const initialEstado = estadoSelect ? estadoSelect.value : '';
+  const initialCidade = cidadeHidden.value;
+  if (initialEstado) {
+    loadCidades(initialEstado, initialCidade);
+  }
+
+  if (estadoSelect) {
+    estadoSelect.addEventListener('change', function () {
+      cidadeHidden.value = '';
+      loadCidades(this.value, '');
+    });
+  }
+
+  // Sincroniza hidden com select
+  $(document).on('change', '#id_cidade_select', function () {
+    cidadeHidden.value = this.value;
+  });
+});
+</script>
+{% endblock %}

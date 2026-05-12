@@ -18,4 +18,10 @@ urlpatterns = [
     path('blog/<int:pk>/editar/', views.BlogEditView.as_view(), name='blog_edit'),
     path('blog/<int:pk>/excluir/', views.BlogDeleteView.as_view(), name='blog_delete'),
     path('blog/<int:pk>/publicar/', views.BlogTogglePublishView.as_view(), name='blog_toggle_publish'),
+    # Cartórios
+    path('cartorios/', views.CartorioListView.as_view(), name='cartorio_list'),
+    path('cartorios/novo/', views.CartorioCreateView.as_view(), name='cartorio_create'),
+    path('cartorios/<int:pk>/editar/', views.CartorioEditView.as_view(), name='cartorio_edit'),
+    path('cartorios/<int:pk>/excluir/', views.CartorioDeleteView.as_view(), name='cartorio_delete'),
+    path('cartorios/<int:pk>/ativar/', views.CartorioToggleAtivoView.as_view(), name='cartorio_toggle_ativo'),
 ]

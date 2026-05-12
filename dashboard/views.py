@@ -8,8 +8,10 @@ from django.db.models import Count, Sum, Q
 from django.contrib import messages
 from django.contrib.auth.models import User
 
-from orders.models import Order, OrderStatusLog
+from orders.models import Order, OrderStatusLog, CATEGORIA_PAINEL_CHOICES, TIPO_CERTIDAO_PARA_CATEGORIA
 from notifications.models import Notification
+from registry.models import Registry
+from registry.forms import CartorioForm
 
 
 def staff_required(view_func):
@@ -116,23 +118,57 @@ class KanbanView(View):
 @method_decorator(staff_required, name='dispatch')
 class OrderOpsListView(View):
     template_name = 'dashboard/order_list.html'
+    PEDIDOS_POR_PAGINA = 50
 
     def get(self, request):
-        qs = Order.objects.select_related('responsavel', 'cartorio').order_by('-created_at')
+        # ── Parâmetros da requisição ──────────────────────────────────────
+        categoria   = request.GET.get('categoria', '')
+        status      = request.GET.get('status', '')
+        estado      = request.GET.get('estado', '')
+        responsavel_id = request.GET.get('responsavel', '')
+        prioridade  = request.GET.get('prioridade', '')
+        busca       = request.GET.get('q', '').strip()
+        data_de     = request.GET.get('data_de', '')
+        data_ate    = request.GET.get('data_ate', '')
+        pagina      = max(int(request.GET.get('p', 1) or 1), 1)
 
-        status = request.GET.get('status')
-        tipo = request.GET.get('tipo')
-        estado = request.GET.get('estado')
-        responsavel_id = request.GET.get('responsavel')
-        prioridade = request.GET.get('prioridade')
-        busca = request.GET.get('q', '').strip()
-        data_de = request.GET.get('data_de')
-        data_ate = request.GET.get('data_ate')
+        # ── Base queryset ─────────────────────────────────────────────────
+        qs_base = Order.objects.select_related(
+            'responsavel', 'cartorio'
+        ).order_by('-created_at')
 
+        # ── Contadores por categoria (query única) ────────────────────────
+        from django.db.models import Count, Q as DQ
+        contagens_raw = (
+            Order.objects.values('categoria_painel')
+            .annotate(total=Count('id'))
+        )
+        contagens = {row['categoria_painel']: row['total'] for row in contagens_raw}
+        total_geral = sum(contagens.values())
+
+        # ── Monta estrutura de abas ───────────────────────────────────────
+        abas = []
+        for slug, label in CATEGORIA_PAINEL_CHOICES:
+            abas.append({
+                'slug': slug,
+                'label': label,
+                'count': contagens.get(slug, 0),
+                'ativa': (categoria == slug),
+            })
+        # Aba "Todos" no início
+        abas.insert(0, {
+            'slug': '',
+            'label': 'Todos',
+            'count': total_geral,
+            'ativa': (categoria == ''),
+        })
+
+        # ── Filtragem ─────────────────────────────────────────────────────
+        qs = qs_base
+        if categoria:
+            qs = qs.filter(categoria_painel=categoria)
         if status:
             qs = qs.filter(status=status)
-        if tipo:
-            qs = qs.filter(tipo_certidao=tipo)
         if estado:
             qs = qs.filter(estado=estado)
         if responsavel_id:
@@ -142,7 +178,7 @@ class OrderOpsListView(View):
         if busca:
             qs = qs.filter(
                 Q(customer_name__icontains=busca) |
-                Q(customer_cpf__icontains=busca) |
+                Q(customer_cpf__icontains=busca)  |
                 Q(customer_email__icontains=busca) |
                 Q(id__icontains=busca)
             )
@@ -151,28 +187,51 @@ class OrderOpsListView(View):
         if data_ate:
             qs = qs.filter(created_at__date__lte=data_ate)
 
+        total_filtrado = qs.count()
+
+        # ── Paginação manual (sem Paginator do Django para manter simplicidade) ─
+        offset = (pagina - 1) * self.PEDIDOS_POR_PAGINA
+        pedidos = qs[offset: offset + self.PEDIDOS_POR_PAGINA]
+        total_paginas = max(1, (total_filtrado + self.PEDIDOS_POR_PAGINA - 1) // self.PEDIDOS_POR_PAGINA)
+
         operadores = User.objects.filter(
             profile__tipo__in=('admin', 'operador')
         ).select_related('profile')
 
+        from products.models import ESTADOS_BR
         ctx = {
             'title': 'Pedidos',
-            'pedidos': qs,
-            'total': qs.count(),
+            'pedidos': pedidos,
+            'total': total_filtrado,
+            'total_geral': total_geral,
+            'abas': abas,
+            'categoria_ativa': categoria,
             'operadores': operadores,
             'status_choices': Order.STATUS_CHOICES,
-            'tipo_choices': Order.TIPO_CERTIDAO_CHOICES,
             'prioridade_choices': Order.PRIORIDADE_CHOICES,
+            'estados': ESTADOS_BR,
             'pode_ver_financeiro': (
                 request.user.is_superuser or (
                     hasattr(request.user, 'profile') and
                     request.user.profile.tipo in ('admin', 'financeiro')
                 )
             ),
+            # Paginação
+            'pagina': pagina,
+            'total_paginas': total_paginas,
+            'tem_proxima': pagina < total_paginas,
+            'tem_anterior': pagina > 1,
+            'range_paginas': range(max(1, pagina - 2), min(total_paginas + 1, pagina + 3)),
+            # Filtros ativos (para persistência no form e links de paginação)
             'filtros': {
-                'status': status, 'tipo': tipo, 'estado': estado,
-                'responsavel': responsavel_id, 'prioridade': prioridade,
-                'q': busca, 'data_de': data_de, 'data_ate': data_ate,
+                'categoria': categoria,
+                'status': status,
+                'estado': estado,
+                'responsavel': responsavel_id,
+                'prioridade': prioridade,
+                'q': busca,
+                'data_de': data_de,
+                'data_ate': data_ate,
             },
         }
         return render(request, self.template_name, ctx)
@@ -491,3 +550,117 @@ class BlogTogglePublishView(View):
         label = 'publicado' if post.is_published else 'despublicado'
         messages.success(request, f'Artigo {label} com sucesso.')
         return redirect('dashboard:blog_list')
+
+
+# ─────────────────────────────────────────────
+#  Cartórios
+# ─────────────────────────────────────────────
+
+@method_decorator(staff_required, name='dispatch')
+class CartorioListView(View):
+    template_name = 'dashboard/cartorio_list.html'
+
+    def get(self, request):
+        qs = Registry.objects.all()
+
+        q = request.GET.get('q', '').strip()
+        estado = request.GET.get('estado', '').strip().upper()
+        tipo = request.GET.get('tipo', '').strip()
+        ativo = request.GET.get('ativo', '')
+
+        if q:
+            qs = qs.filter(Q(nome__icontains=q) | Q(cidade__icontains=q))
+        if estado:
+            qs = qs.filter(estado=estado)
+        if tipo:
+            qs = qs.filter(tipo_servico__contains=tipo)
+        if ativo in ('1', '0'):
+            qs = qs.filter(ativo=ativo == '1')
+
+        from products.models import ESTADOS_BR
+        return render(request, self.template_name, {
+            'title': 'Cartórios',
+            'cartorios': qs.order_by('estado', 'cidade', 'nome'),
+            'total': qs.count(),
+            'tipo_choices': Registry.TIPO_SERVICO_CHOICES,
+            'estados': ESTADOS_BR,
+            'filtros': {
+                'q': q,
+                'estado': estado,
+                'tipo': tipo,
+                'ativo': ativo,
+            },
+        })
+
+
+@method_decorator(staff_required, name='dispatch')
+class CartorioCreateView(View):
+    template_name = 'dashboard/cartorio_form.html'
+
+    def get(self, request):
+        return render(request, self.template_name, {
+            'title': 'Novo Cartório',
+            'form': CartorioForm(),
+            'action': 'Cadastrar',
+        })
+
+    def post(self, request):
+        form = CartorioForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Cartório cadastrado com sucesso.')
+            return redirect('dashboard:cartorio_list')
+        return render(request, self.template_name, {
+            'title': 'Novo Cartório',
+            'form': form,
+            'action': 'Cadastrar',
+        })
+
+
+@method_decorator(staff_required, name='dispatch')
+class CartorioEditView(View):
+    template_name = 'dashboard/cartorio_form.html'
+
+    def get(self, request, pk):
+        cartorio = get_object_or_404(Registry, pk=pk)
+        return render(request, self.template_name, {
+            'title': f'Editar — {cartorio.nome}',
+            'form': CartorioForm(instance=cartorio),
+            'cartorio': cartorio,
+            'action': 'Salvar Alterações',
+        })
+
+    def post(self, request, pk):
+        cartorio = get_object_or_404(Registry, pk=pk)
+        form = CartorioForm(request.POST, instance=cartorio)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Cartório atualizado com sucesso.')
+            return redirect('dashboard:cartorio_list')
+        return render(request, self.template_name, {
+            'title': f'Editar — {cartorio.nome}',
+            'form': form,
+            'cartorio': cartorio,
+            'action': 'Salvar Alterações',
+        })
+
+
+@method_decorator(staff_required, name='dispatch')
+class CartorioDeleteView(View):
+    def post(self, request, pk):
+        cartorio = get_object_or_404(Registry, pk=pk)
+        nome = cartorio.nome
+        cartorio.delete()
+        messages.success(request, f'Cartório "{nome}" excluído com sucesso.')
+        return redirect('dashboard:cartorio_list')
+
+
+@method_decorator(staff_required, name='dispatch')
+class CartorioToggleAtivoView(View):
+    def post(self, request, pk):
+        cartorio = get_object_or_404(Registry, pk=pk)
+        cartorio.ativo = not cartorio.ativo
+        cartorio.save(update_fields=['ativo'])
+        status = 'ativado' if cartorio.ativo else 'desativado'
+        messages.success(request, f'Cartório {status}.')
+        return redirect('dashboard:cartorio_list')

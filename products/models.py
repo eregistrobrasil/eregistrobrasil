@@ -77,6 +77,13 @@ class Category(models.Model):
 
 
 class Product(models.Model):
+    TIPO_CARTORIO_CHOICES = [
+        ('civil', 'Civil'),
+        ('notas', 'Notas'),
+        ('imoveis', 'Imóveis'),
+        ('protesto', 'Protesto'),
+    ]
+
     name = models.CharField('Nome', max_length=200)
     slug = models.SlugField('Slug', unique=True, blank=True)
     category = models.ForeignKey(
@@ -86,6 +93,11 @@ class Product(models.Model):
     tipo = models.ForeignKey(
         TipoServico, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='products', verbose_name='Tipo de Serviço'
+    )
+    tipo_cartorio = models.CharField(
+        'Tipo de Cartório', max_length=20,
+        choices=TIPO_CARTORIO_CHOICES, blank=True,
+        help_text='Define qual tipo de cartório é utilizado neste serviço.',
     )
     description = models.TextField('Descrição')
     short_description = models.CharField('Descrição Curta', max_length=300, blank=True)

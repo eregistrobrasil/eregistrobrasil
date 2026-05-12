@@ -17,6 +17,8 @@ from .forms import (
     CertidaoInterdicaoForm,
     CertidaoProcuracaoForm,
     CertidaoPenhorSafraForm,
+    CertidaoEscrituraForm,
+    CertidaoUniaoEstavelForm,
     PacoteCertidoesCompraVendaForm,
     TIPOS_CERTIDAO_IMOVEL_DICT,
     IMOVEL_FORM_MAP,
@@ -59,6 +61,7 @@ class BaseCertidaoCartorioView(View):
     dados_step_name = ''          # nome da URL do passo 2 (pages:xxx_dados)
     descricao_servico = ''
     imagem_static = ''            # ex: 'img/certidao-de-nascimento.png'
+    tipo_cartorio = ''            # ex: 'civil', 'notas', 'imoveis', 'protesto'
 
     def _ctx(self, dados_ec, form):
         return {
@@ -68,6 +71,7 @@ class BaseCertidaoCartorioView(View):
             'form': form,
             'descricao_servico': self.descricao_servico,
             'imagem_static': self.imagem_static,
+            'tipo_cartorio': self.tipo_cartorio,
         }
 
     def get(self, request):
@@ -86,6 +90,7 @@ class BaseCertidaoCartorioView(View):
                 'estado_nome': estado_nome,
                 'cidade': cd['cidade'],
                 'cartorio': cd['cartorio'],
+                'cartorio_id': cd.get('cartorio_id'),
             }
             return redirect(self.dados_step_name)
         return render(request, self.template_name, self._ctx(dados_ec, form))
@@ -143,6 +148,10 @@ class BaseCertidaoDadosView(View):
                     dados[key] = val or ''
             request.session['certidao_dados'] = dados
             self._add_to_cart(request, cartorio_data, dados)
+            # Propaga cartorio_id para o checkout via sessão
+            cartorio_id = cartorio_data.get('cartorio_id')
+            if cartorio_id:
+                request.session['ordem_cartorio_id'] = cartorio_id
             return redirect('orders:checkout')
         return render(request, self.template_name, self._ctx(form, cartorio_data))
 
@@ -183,6 +192,7 @@ class CertidaoNascimentoView(BaseCertidaoCartorioView):
     title = 'Certidão de Nascimento 2ª Via — E-Registro Brasil'
     template_name = 'pages/certidao_nascimento.html'
     dados_step_name = 'pages:certidao_nascimento_dados'
+    tipo_cartorio = 'civil'
     descricao_servico = 'Certidão de nascimento atualizada para uso em processos, casamentos e outros fins legais.'
     imagem_static = 'img/certidao-de-nascimento.png'
     _product_slug = 'certidao-de-nascimento-2a-via'
@@ -221,6 +231,7 @@ class CertidaoObitoView(BaseCertidaoCartorioView):
     title = 'Certidão de Óbito 2ª Via — E-Registro Brasil'
     template_name = 'servicos/certidao_obito_cartorio.html'
     dados_step_name = 'pages:certidao_obito_dados'
+    tipo_cartorio = 'civil'
     descricao_servico = 'Certidão de óbito para fins de inventário, pensão ou outros processos legais.'
     imagem_static = 'img/certidao-de-nascimento.png'
     _product_slug = 'certidao-de-obito-2a-via'
@@ -279,6 +290,7 @@ class CertidaoCasamentoView(BaseCertidaoCartorioView):
     title = 'Certidão de Casamento 2ª Via — E-Registro Brasil'
     template_name = 'servicos/certidao_casamento_cartorio.html'
     dados_step_name = 'pages:certidao_casamento_dados'
+    tipo_cartorio = 'civil'
     descricao_servico = 'Segunda via da certidão de casamento com validade em todo território nacional.'
     imagem_static = 'img/certidao-de-nascimento.png'
     _product_slug = 'certidao-de-casamento-2a-via'
@@ -337,6 +349,7 @@ class CertidaoInterdicaoView(BaseCertidaoCartorioView):
     title = 'Certidão de Interdição — E-Registro Brasil'
     template_name = 'servicos/certidao_interdicao_cartorio.html'
     dados_step_name = 'pages:certidao_interdicao_dados'
+    tipo_cartorio = 'civil'
     descricao_servico = 'Certidão de interdição registrada em cartório.'
     imagem_static = 'img/certidao-de-nascimento.png'
     _product_slug = 'certidao-de-interdicao'
@@ -400,20 +413,28 @@ class CertidaoProcuracaoView(BaseCertidaoCartorioView):
     title = 'Certidão de Procuração — E-Registro Brasil'
     template_name = 'servicos/certidao_procuracao_cartorio.html'
     dados_step_name = 'pages:certidao_procuracao_dados'
+    tipo_cartorio = 'notas'
     descricao_servico = 'Localização e emissão de certidão de procuração lavrada em cartório de notas.'
     imagem_static = 'img/certidao-de-nascimento.png'
-    _product_slug = 'certidao-de-procuracao'
+    # Tenta o slug preferido primeiro; fallback para o slug base
+    _product_slugs = ['certidao-de-procuracao-1', 'certidao-de-procuracao']
 
     def _ctx(self, dados_ec, form):
         from products.services import get_state_prices_dict
         from products.models import Product
         ctx = super()._ctx(dados_ec, form)
         ctx['passos'] = _PASSOS
-        try:
-            product = Product.objects.get(slug=self._product_slug, is_active=True)
+        product = None
+        for slug in self._product_slugs:
+            try:
+                product = Product.objects.get(slug=slug, is_active=True)
+                break
+            except Product.DoesNotExist:
+                continue
+        if product:
             ctx['state_prices_json'] = json.dumps(get_state_prices_dict(product))
             ctx['product_base_price'] = str(product.price)
-        except Product.DoesNotExist:
+        else:
             ctx['state_prices_json'] = '{}'
             ctx['product_base_price'] = '0'
         return ctx
@@ -423,11 +444,54 @@ class CertidaoProcuracaoDadosView(BaseCertidaoDadosView):
     title = 'Dados do Registro — Certidão de Procuração'
     form_class = CertidaoProcuracaoForm
     template_name = 'servicos/certidao_procuracao_dados.html'
-    product_slug = 'certidao-de-procuracao'
+    # Tenta o slug preferido primeiro; fallback para o slug base
+    product_slug = 'certidao-de-procuracao-1'
+    _product_slug_fallback = 'certidao-de-procuracao'
     step1_url = 'pages:certidao_procuracao'
     date_fields = ['data_ato']
     date_field_ids = ['id_data_ato']
     descricao_step2 = 'Informe os dados do outorgante para localização da procuração.'
+    tipo_certidao_sessao = 'procuracao'
+
+    def _add_to_cart(self, request, cartorio_data, dados):
+        from products.models import Product, State
+        from products.services import obter_preco_por_estado
+        from orders.models import Cart, CartItem
+
+        # Tenta os dois slugs possíveis
+        product = None
+        for slug in [self.product_slug, self._product_slug_fallback]:
+            try:
+                product = Product.objects.get(slug=slug, is_active=True)
+                break
+            except Product.DoesNotExist:
+                continue
+        if product is None:
+            return
+
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = str(dados.get('nome_completo', ''))[:200]
+        item.requester_document = str(dados.get('cpf', ''))[:30]
+
+        estado_uf = cartorio_data.get('estado_uf', '')
+        if estado_uf:
+            unit_price = obter_preco_por_estado(product, estado_uf)
+            if unit_price is not None:
+                item.unit_price = unit_price
+            state_obj = State.objects.filter(code=estado_uf).first()
+            if state_obj:
+                item.state = state_obj
+
+        item.save()
+
+        # Salva tipo e cidade na sessão para propagar ao pedido durante o checkout
+        request.session['ordem_tipo_certidao'] = self.tipo_certidao_sessao
+        request.session['ordem_cidade'] = cartorio_data.get('cidade', '')
+        request.session['ordem_cartorio_nome'] = cartorio_data.get('cartorio', '')
 
 
 # ─────────────────────────────────────────────
@@ -514,6 +578,7 @@ class CertidaoImovelView(BaseCertidaoCartorioView):
     title = 'Certidão de Imóvel — E-Registro Brasil'
     template_name = 'servicos/certidao_imovel_cartorio.html'
     dados_step_name = 'pages:certidao_imovel_tipo'
+    tipo_cartorio = 'imoveis'
     descricao_servico = (
         'Solicite certidões de imóvel, matrículas, transcrições e outros documentos '
         'do Registro de Imóveis com rapidez e segurança.'
@@ -657,6 +722,461 @@ class CertidaoImovelDadosView(View):
 
 
 # ─────────────────────────────────────────────
+#  Certidão de Escritura
+# ─────────────────────────────────────────────
+
+class CertidaoEscrituraView(BaseCertidaoCartorioView):
+    title = 'Certidão de Escritura — E-Registro Brasil'
+    template_name = 'servicos/certidao_escritura_cartorio.html'
+    dados_step_name = 'pages:certidao_escritura_dados'
+    tipo_cartorio = 'notas'
+    descricao_servico = (
+        'Solicite a certidão de escritura pública lavrada em cartório de notas. '
+        'Atendemos escrituras de compra e venda, doação, inventário, divórcio e outras.'
+    )
+    imagem_static = 'img/certidao-de-nascimento.png'
+    _product_slug = 'certidao-de-escritura'
+
+    def _ctx(self, dados_ec, form):
+        from products.services import get_state_prices_dict
+        from products.models import Product
+        ctx = super()._ctx(dados_ec, form)
+        ctx['passos'] = _PASSOS
+        try:
+            product = Product.objects.get(slug=self._product_slug, is_active=True)
+            ctx['state_prices_json'] = json.dumps(get_state_prices_dict(product))
+            ctx['product_base_price'] = str(product.price)
+        except Product.DoesNotExist:
+            ctx['state_prices_json'] = '{}'
+            ctx['product_base_price'] = '0'
+        return ctx
+
+
+class CertidaoEscrituraDadosView(BaseCertidaoDadosView):
+    title = 'Dados da Escritura — Certidão de Escritura'
+    form_class = CertidaoEscrituraForm
+    template_name = 'servicos/certidao_escritura_dados.html'
+    product_slug = 'certidao-de-escritura'
+    step1_url = 'pages:certidao_escritura'
+    date_fields = ['data_ato']
+    date_field_ids = ['id_data_ato']
+    descricao_step2 = 'Informe os dados do outorgante para localização da escritura no cartório.'
+
+    def _add_to_cart(self, request, cartorio_data, dados):
+        from products.models import Product, State
+        from products.services import obter_preco_por_estado
+        from orders.models import Cart, CartItem
+        try:
+            product = Product.objects.get(slug=self.product_slug, is_active=True)
+        except Product.DoesNotExist:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = str(dados.get('nome_completo', ''))[:200]
+        item.requester_document = str(dados.get('cpf', ''))[:30]
+
+        estado_uf = cartorio_data.get('estado_uf', '')
+        if estado_uf:
+            unit_price = obter_preco_por_estado(product, estado_uf)
+            if unit_price is not None:
+                item.unit_price = unit_price
+            state_obj = State.objects.filter(code=estado_uf).first()
+            if state_obj:
+                item.state = state_obj
+
+        item.save()
+
+        # Propaga tipo e cidade para o pedido no checkout
+        request.session['ordem_tipo_certidao'] = 'escritura'
+        request.session['ordem_cidade'] = cartorio_data.get('cidade', '')
+        request.session['ordem_cartorio_nome'] = cartorio_data.get('cartorio', '')
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Escritura de União Estável
+# ─────────────────────────────────────────────
+
+class CertidaoUniaoEstavelView(BaseCertidaoCartorioView):
+    title = 'Certidão de Escritura de União Estável — E-Registro Brasil'
+    template_name = 'servicos/certidao_uniao_estavel_cartorio.html'
+    dados_step_name = 'pages:certidao_uniao_estavel_dados'
+    tipo_cartorio = 'notas'
+    descricao_servico = (
+        'Solicite a certidão de escritura de união estável lavrada em cartório de notas. '
+        'Comprova juridicamente a existência da união, essencial para heranças, financiamentos e benefícios.'
+    )
+    imagem_static = 'img/certidao-de-nascimento.png'
+    _product_slug = 'certidao-de-escritura-de-uniao-estavel'
+
+    def _ctx(self, dados_ec, form):
+        from products.services import get_state_prices_dict
+        from products.models import Product
+        ctx = super()._ctx(dados_ec, form)
+        ctx['passos'] = _PASSOS
+        try:
+            product = Product.objects.get(slug=self._product_slug, is_active=True)
+            ctx['state_prices_json'] = json.dumps(get_state_prices_dict(product))
+            ctx['product_base_price'] = str(product.price)
+        except Product.DoesNotExist:
+            ctx['state_prices_json'] = '{}'
+            ctx['product_base_price'] = '0'
+        return ctx
+
+
+class CertidaoUniaoEstavelDadosView(BaseCertidaoDadosView):
+    title = 'Dados da Escritura — Certidão de União Estável'
+    form_class = CertidaoUniaoEstavelForm
+    template_name = 'servicos/certidao_uniao_estavel_dados.html'
+    product_slug = 'certidao-de-escritura-de-uniao-estavel'
+    step1_url = 'pages:certidao_uniao_estavel'
+    date_fields = ['data_ato']
+    date_field_ids = ['id_data_ato']
+    descricao_step2 = 'Informe os dados do casal para localização da escritura de união estável no cartório.'
+
+    def _add_to_cart(self, request, cartorio_data, dados):
+        from products.models import Product, State
+        from products.services import obter_preco_por_estado
+        from orders.models import Cart, CartItem
+        try:
+            product = Product.objects.get(slug=self.product_slug, is_active=True)
+        except Product.DoesNotExist:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = str(dados.get('nome_completo', ''))[:200]
+        item.requester_document = str(dados.get('cpf', ''))[:30]
+
+        estado_uf = cartorio_data.get('estado_uf', '')
+        if estado_uf:
+            unit_price = obter_preco_por_estado(product, estado_uf)
+            if unit_price is not None:
+                item.unit_price = unit_price
+            state_obj = State.objects.filter(code=estado_uf).first()
+            if state_obj:
+                item.state = state_obj
+
+        item.save()
+
+        request.session['ordem_tipo_certidao'] = 'uniao_estavel'
+        request.session['ordem_cidade'] = cartorio_data.get('cidade', '')
+        request.session['ordem_cartorio_nome'] = cartorio_data.get('cartorio', '')
+
+
+# ─────────────────────────────────────────────
+#  ESCRITURA — Mixins base reutilizáveis (não instanciar diretamente)
+# ─────────────────────────────────────────────
+
+class _EscrituraCartorioMixin(BaseCertidaoCartorioView):
+    """
+    Mixin compartilhado por todos os serviços de escritura (etapa 1).
+    Subclasses definem: title, template_name, dados_step_name,
+    descricao_servico, _product_slug.
+    """
+    imagem_static = 'img/certidao-de-nascimento.png'
+    tipo_cartorio = 'notas'
+
+    def _ctx(self, dados_ec, form):
+        from products.services import get_state_prices_dict
+        from products.models import Product
+        ctx = super()._ctx(dados_ec, form)
+        ctx['passos'] = _PASSOS
+        try:
+            product = Product.objects.get(slug=self._product_slug, is_active=True)
+            ctx['state_prices_json'] = json.dumps(get_state_prices_dict(product))
+            ctx['product_base_price'] = str(product.price)
+        except Product.DoesNotExist:
+            ctx['state_prices_json'] = '{}'
+            ctx['product_base_price'] = '0'
+        return ctx
+
+
+class _EscrituraDadosMixin(BaseCertidaoDadosView):
+    """
+    Mixin compartilhado por todos os serviços de escritura (etapa 2).
+    Subclasses definem: title, template_name, product_slug, step1_url,
+    tipo_certidao, descricao_step2.
+    """
+    form_class = CertidaoEscrituraForm
+    date_fields = ['data_ato']
+    date_field_ids = ['id_data_ato']
+    tipo_certidao = ''
+
+    def _add_to_cart(self, request, cartorio_data, dados):
+        from products.models import Product, State
+        from products.services import obter_preco_por_estado
+        from orders.models import Cart, CartItem
+        try:
+            product = Product.objects.get(slug=self.product_slug, is_active=True)
+        except Product.DoesNotExist:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = str(dados.get('nome_completo', ''))[:200]
+        item.requester_document = str(dados.get('cpf', ''))[:30]
+        estado_uf = cartorio_data.get('estado_uf', '')
+        if estado_uf:
+            unit_price = obter_preco_por_estado(product, estado_uf)
+            if unit_price is not None:
+                item.unit_price = unit_price
+            state_obj = State.objects.filter(code=estado_uf).first()
+            if state_obj:
+                item.state = state_obj
+        item.save()
+        request.session['ordem_tipo_certidao'] = self.tipo_certidao
+        request.session['ordem_cidade'] = cartorio_data.get('cidade', '')
+        request.session['ordem_cartorio_nome'] = cartorio_data.get('cartorio', '')
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Escritura de Ata Notarial
+# ─────────────────────────────────────────────
+
+class CertidaoEscrituraAtaNotarialView(_EscrituraCartorioMixin):
+    title = 'Certidão de Escritura de Ata Notarial — E-Registro Brasil'
+    template_name = 'servicos/certidao_escritura_ata_notarial_cartorio.html'
+    dados_step_name = 'pages:certidao_escritura_ata_notarial_dados'
+    descricao_servico = (
+        'Solicite a certidão de ata notarial lavrada em cartório de notas. '
+        'Documento com fé pública que narra fatos ou situações presenciadas pelo tabelião.'
+    )
+    _product_slug = 'certidao-de-escritura-de-ata-notarial'
+
+
+class CertidaoEscrituraAtaNotarialDadosView(_EscrituraDadosMixin):
+    title = 'Dados da Certidão — Ata Notarial'
+    template_name = 'servicos/certidao_escritura_ata_notarial_dados.html'
+    product_slug = 'certidao-de-escritura-de-ata-notarial'
+    step1_url = 'pages:certidao_escritura_ata_notarial'
+    tipo_certidao = 'escritura_ata_notarial'
+    descricao_step2 = 'Informe os dados do requerente para localização da ata notarial no cartório.'
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Escritura de Compra e Venda
+# ─────────────────────────────────────────────
+
+class CertidaoEscrituraCompraVendaView(_EscrituraCartorioMixin):
+    title = 'Certidão de Escritura de Compra e Venda — E-Registro Brasil'
+    template_name = 'servicos/certidao_escritura_compra_venda_cartorio.html'
+    dados_step_name = 'pages:certidao_escritura_compra_venda_dados'
+    descricao_servico = (
+        'Solicite a certidão de escritura de compra e venda lavrada em cartório de notas. '
+        'Documento essencial para transferência de imóveis e regularização fundiária.'
+    )
+    _product_slug = 'certidao-de-escritura-de-compra-e-venda'
+
+
+class CertidaoEscrituraCompraVendaDadosView(_EscrituraDadosMixin):
+    title = 'Dados da Certidão — Compra e Venda'
+    template_name = 'servicos/certidao_escritura_compra_venda_dados.html'
+    product_slug = 'certidao-de-escritura-de-compra-e-venda'
+    step1_url = 'pages:certidao_escritura_compra_venda'
+    tipo_certidao = 'escritura_compra_venda'
+    descricao_step2 = 'Informe os dados das partes para localização da escritura de compra e venda no cartório.'
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Escritura de Divórcio
+# ─────────────────────────────────────────────
+
+class CertidaoEscrituraDivorcioView(_EscrituraCartorioMixin):
+    title = 'Certidão de Escritura de Divórcio — E-Registro Brasil'
+    template_name = 'servicos/certidao_escritura_divorcio_cartorio.html'
+    dados_step_name = 'pages:certidao_escritura_divorcio_dados'
+    descricao_servico = (
+        'Solicite a certidão de escritura de divórcio extrajudicial lavrada em cartório de notas. '
+        'Comprova a dissolução do casamento de forma consensual, com validade jurídica plena.'
+    )
+    _product_slug = 'certidao-de-escritura-de-divorcio'
+
+
+class CertidaoEscrituraDivorcioDadosView(_EscrituraDadosMixin):
+    title = 'Dados da Certidão — Divórcio'
+    template_name = 'servicos/certidao_escritura_divorcio_dados.html'
+    product_slug = 'certidao-de-escritura-de-divorcio'
+    step1_url = 'pages:certidao_escritura_divorcio'
+    tipo_certidao = 'escritura_divorcio'
+    descricao_step2 = 'Informe os dados das partes para localização da escritura de divórcio no cartório.'
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Escritura de Doação
+# ─────────────────────────────────────────────
+
+class CertidaoEscrituraDoacaoView(_EscrituraCartorioMixin):
+    title = 'Certidão de Escritura de Doação — E-Registro Brasil'
+    template_name = 'servicos/certidao_escritura_doacao_cartorio.html'
+    dados_step_name = 'pages:certidao_escritura_doacao_dados'
+    descricao_servico = (
+        'Solicite a certidão de escritura de doação lavrada em cartório de notas. '
+        'Comprova a transferência gratuita de bens entre pessoas, com validade jurídica plena.'
+    )
+    _product_slug = 'certidao-de-escritura-de-doacao'
+
+
+class CertidaoEscrituraDoacaoDadosView(_EscrituraDadosMixin):
+    title = 'Dados da Certidão — Doação'
+    template_name = 'servicos/certidao_escritura_doacao_dados.html'
+    product_slug = 'certidao-de-escritura-de-doacao'
+    step1_url = 'pages:certidao_escritura_doacao'
+    tipo_certidao = 'escritura_doacao'
+    descricao_step2 = 'Informe os dados do doador para localização da escritura de doação no cartório.'
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Escritura de Emancipação
+# ─────────────────────────────────────────────
+
+class CertidaoEscrituraEmancipacaoView(_EscrituraCartorioMixin):
+    title = 'Certidão de Escritura de Emancipação — E-Registro Brasil'
+    template_name = 'servicos/certidao_escritura_emancipacao_cartorio.html'
+    dados_step_name = 'pages:certidao_escritura_emancipacao_dados'
+    descricao_servico = (
+        'Solicite a certidão de escritura de emancipação lavrada em cartório de notas. '
+        'Comprova a antecipação da maioridade civil, conferindo plena capacidade jurídica ao menor.'
+    )
+    _product_slug = 'certidao-de-escritura-de-emancipacao'
+
+
+class CertidaoEscrituraEmancipacaoDadosView(_EscrituraDadosMixin):
+    title = 'Dados da Certidão — Emancipação'
+    template_name = 'servicos/certidao_escritura_emancipacao_dados.html'
+    product_slug = 'certidao-de-escritura-de-emancipacao'
+    step1_url = 'pages:certidao_escritura_emancipacao'
+    tipo_certidao = 'escritura_emancipacao'
+    descricao_step2 = 'Informe os dados do emancipado para localização da escritura de emancipação no cartório.'
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Escritura de Hipoteca
+# ─────────────────────────────────────────────
+
+class CertidaoEscrituraHipotecaView(_EscrituraCartorioMixin):
+    title = 'Certidão de Escritura de Hipoteca — E-Registro Brasil'
+    template_name = 'servicos/certidao_escritura_hipoteca_cartorio.html'
+    dados_step_name = 'pages:certidao_escritura_hipoteca_dados'
+    descricao_servico = (
+        'Solicite a certidão de escritura de hipoteca lavrada em cartório de notas. '
+        'Comprova a constituição de garantia real sobre imóvel para fins creditícios ou judiciais.'
+    )
+    _product_slug = 'certidao-de-escritura-de-hipoteca'
+
+
+class CertidaoEscrituraHipotecaDadosView(_EscrituraDadosMixin):
+    title = 'Dados da Certidão — Hipoteca'
+    template_name = 'servicos/certidao_escritura_hipoteca_dados.html'
+    product_slug = 'certidao-de-escritura-de-hipoteca'
+    step1_url = 'pages:certidao_escritura_hipoteca'
+    tipo_certidao = 'escritura_hipoteca'
+    descricao_step2 = 'Informe os dados do devedor para localização da escritura de hipoteca no cartório.'
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Escritura de Inventário
+# ─────────────────────────────────────────────
+
+class CertidaoEscrituraInventarioView(_EscrituraCartorioMixin):
+    title = 'Certidão de Escritura de Inventário — E-Registro Brasil'
+    template_name = 'servicos/certidao_escritura_inventario_cartorio.html'
+    dados_step_name = 'pages:certidao_escritura_inventario_dados'
+    descricao_servico = (
+        'Solicite a certidão de escritura de inventário extrajudicial lavrada em cartório de notas. '
+        'Viabiliza a partilha de bens de forma ágil, sem necessidade de processo judicial.'
+    )
+    _product_slug = 'certidao-de-escritura-de-inventario'
+
+
+class CertidaoEscrituraInventarioDadosView(_EscrituraDadosMixin):
+    title = 'Dados da Certidão — Inventário'
+    template_name = 'servicos/certidao_escritura_inventario_dados.html'
+    product_slug = 'certidao-de-escritura-de-inventario'
+    step1_url = 'pages:certidao_escritura_inventario'
+    tipo_certidao = 'escritura_inventario'
+    descricao_step2 = 'Informe os dados do inventariado para localização da escritura de inventário no cartório.'
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Escritura de Pacto Antenupcial
+# ─────────────────────────────────────────────
+
+class CertidaoEscrituraPactoAntenupcialView(_EscrituraCartorioMixin):
+    title = 'Certidão de Escritura de Pacto Antenupcial — E-Registro Brasil'
+    template_name = 'servicos/certidao_escritura_pacto_antenupcial_cartorio.html'
+    dados_step_name = 'pages:certidao_escritura_pacto_antenupcial_dados'
+    descricao_servico = (
+        'Solicite a certidão de escritura de pacto antenupcial lavrada em cartório de notas. '
+        'Comprova as condições patrimoniais estabelecidas entre os cônjuges antes do casamento.'
+    )
+    _product_slug = 'certidao-de-escritura-de-pacto-antenupcial'
+
+
+class CertidaoEscrituraPactoAntenupcialDadosView(_EscrituraDadosMixin):
+    title = 'Dados da Certidão — Pacto Antenupcial'
+    template_name = 'servicos/certidao_escritura_pacto_antenupcial_dados.html'
+    product_slug = 'certidao-de-escritura-de-pacto-antenupcial'
+    step1_url = 'pages:certidao_escritura_pacto_antenupcial'
+    tipo_certidao = 'escritura_pacto_antenupcial'
+    descricao_step2 = 'Informe os dados dos cônjuges para localização do pacto antenupcial no cartório.'
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Escritura de Permuta
+# ─────────────────────────────────────────────
+
+class CertidaoEscrituraPermutaView(_EscrituraCartorioMixin):
+    title = 'Certidão de Escritura de Permuta — E-Registro Brasil'
+    template_name = 'servicos/certidao_escritura_permuta_cartorio.html'
+    dados_step_name = 'pages:certidao_escritura_permuta_dados'
+    descricao_servico = (
+        'Solicite a certidão de escritura de permuta lavrada em cartório de notas. '
+        'Comprova a troca de bens entre partes, com toda a formalidade legal exigida.'
+    )
+    _product_slug = 'certidao-de-escritura-de-permuta'
+
+
+class CertidaoEscrituraPermutaDadosView(_EscrituraDadosMixin):
+    title = 'Dados da Certidão — Permuta'
+    template_name = 'servicos/certidao_escritura_permuta_dados.html'
+    product_slug = 'certidao-de-escritura-de-permuta'
+    step1_url = 'pages:certidao_escritura_permuta'
+    tipo_certidao = 'escritura_permuta'
+    descricao_step2 = 'Informe os dados das partes para localização da escritura de permuta no cartório.'
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Escritura de Testamento
+# ─────────────────────────────────────────────
+
+class CertidaoEscrituraTestamentoView(_EscrituraCartorioMixin):
+    title = 'Certidão de Testamento Público — E-Registro Brasil'
+    template_name = 'servicos/certidao_escritura_testamento_cartorio.html'
+    dados_step_name = 'pages:certidao_escritura_testamento_dados'
+    descricao_servico = (
+        'Solicite a certidão de testamento público lavrado em cartório de notas. '
+        'Comprova a manifestação de última vontade do testador perante o tabelião.'
+    )
+    _product_slug = 'certidao-de-escritura-de-testamento'
+
+
+class CertidaoEscrituraTestamentoDadosView(_EscrituraDadosMixin):
+    title = 'Dados da Certidão — Testamento'
+    template_name = 'servicos/certidao_escritura_testamento_dados.html'
+    product_slug = 'certidao-de-escritura-de-testamento'
+    step1_url = 'pages:certidao_escritura_testamento'
+    tipo_certidao = 'escritura_testamento'
+    descricao_step2 = 'Informe os dados do testador para localização do testamento no cartório.'
+
+
+# ─────────────────────────────────────────────
 #  Certidão de Penhor de Safra
 # ─────────────────────────────────────────────
 
@@ -664,6 +1184,7 @@ class CertidaoPenhorSafraView(BaseCertidaoCartorioView):
     """Etapa 1: seleção de estado, cidade e cartório para Penhor de Safra."""
     title = 'Certidão de Penhor de Safra — E-Registro Brasil'
     template_name = 'servicos/certidao_penhor_safra_cartorio.html'
+    tipo_cartorio = 'imoveis'
     dados_step_name = 'pages:certidao_penhor_safra_dados'
     descricao_servico = (
         'Solicite a certidão de penhor de safra registrada em cartório '
@@ -728,6 +1249,7 @@ class PacoteCertidoesCompraVendaView(BaseCertidaoCartorioView):
     title = 'Pacote de Certidões — Compra e Venda de Imóvel'
     template_name = 'servicos/pacote_certidoes_compra_venda_cartorio.html'
     dados_step_name = 'pages:pacote_certidoes_compra_venda_dados'
+    tipo_cartorio = 'imoveis'
     descricao_servico = 'Pacote completo de certidões necessárias para transações de compra e venda de imóvel.'
     imagem_static = 'img/certidao-de-nascimento.png'
     _product_slug = 'pacote-de-certidoes-compra-e-venda-de-imovel'

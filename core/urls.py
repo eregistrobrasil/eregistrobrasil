@@ -29,6 +29,7 @@ from products.api_views import (
     ServicePriceByStateView,
     ImovelPriceByStateView,
 )
+from registry.views import CartorioAPIView
 from blog.sitemaps import BlogPostSitemap
 
 admin.site.site_header = 'E-Registro Brasil — Administração'
@@ -75,6 +76,7 @@ urlpatterns = [
     path('api/servicos/<slug:slug>/', ServicoDetailAPIView.as_view(), name='api-servico-detail'),
     path('api/preco/', ServicePriceByStateView.as_view(), name='api-preco-estado'),
     path('api/preco-imovel/', ImovelPriceByStateView.as_view(), name='api-preco-imovel'),
+    path('api/cartorios/', CartorioAPIView.as_view(), name='api-cartorios'),
 ]
 
 if settings.DEBUG:

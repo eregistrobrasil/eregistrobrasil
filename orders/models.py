@@ -5,6 +5,44 @@ from django.utils import timezone
 from products.models import Product
 
 
+# ─── Categorias do Painel Operacional ───────────────────────────────────────
+
+CATEGORIA_PAINEL_CHOICES = [
+    ('registro_civil',      'Registro Civil'),
+    ('notas',               'Tabelionato de Notas'),
+    ('imoveis',             'Registro de Imóveis'),
+    ('protestos',           'Tabelionato de Protestos'),
+    ('federais_estaduais',  'Federais e Estaduais'),
+    ('busca',               'Busca'),
+    ('apostilamento',       'Apostilamento'),
+    ('outros',              'Outros'),
+]
+
+# Mapa centralizado: tipo_certidao → categoria_painel
+TIPO_CERTIDAO_PARA_CATEGORIA = {
+    'nascimento':               'registro_civil',
+    'casamento':                'registro_civil',
+    'obito':                    'registro_civil',
+    'interdicao':               'registro_civil',
+    'procuracao':               'notas',
+    'escritura':                'notas',
+    'uniao_estavel':            'notas',
+    'escritura_ata_notarial':   'notas',
+    'escritura_compra_venda':   'notas',
+    'escritura_divorcio':       'notas',
+    'escritura_doacao':         'notas',
+    'escritura_emancipacao':    'notas',
+    'escritura_hipoteca':       'notas',
+    'escritura_inventario':     'notas',
+    'escritura_pacto_antenupcial': 'notas',
+    'escritura_permuta':        'notas',
+    'escritura_testamento':     'notas',
+    'imovel':                   'imoveis',
+    'cnd_federal':              'federais_estaduais',
+    'outros':                   'outros',
+}
+
+
 class Cart(models.Model):
     session_key = models.CharField('Sessão', max_length=40, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -56,6 +94,19 @@ class Order(models.Model):
         ('imovel', 'Certidão de Imóvel'),
         ('interdicao', 'Certidão de Interdição'),
         ('procuracao', 'Certidão de Procuração'),
+        ('escritura', 'Certidão de Escritura'),
+        ('uniao_estavel', 'Certidão de Escritura de União Estável'),
+        # Variantes de escritura
+        ('escritura_ata_notarial', 'Certidão de Escritura de Ata Notarial'),
+        ('escritura_compra_venda', 'Certidão de Escritura de Compra e Venda'),
+        ('escritura_divorcio', 'Certidão de Escritura de Divórcio'),
+        ('escritura_doacao', 'Certidão de Escritura de Doação'),
+        ('escritura_emancipacao', 'Certidão de Escritura de Emancipação'),
+        ('escritura_hipoteca', 'Certidão de Escritura de Hipoteca'),
+        ('escritura_inventario', 'Certidão de Escritura de Inventário'),
+        ('escritura_pacto_antenupcial', 'Certidão de Escritura de Pacto Antenupcial'),
+        ('escritura_permuta', 'Certidão de Escritura de Permuta'),
+        ('escritura_testamento', 'Certidão de Escritura de Testamento'),
         ('cnd_federal', 'CND Federal'),
         ('outros', 'Outros'),
     ]
@@ -138,7 +189,7 @@ class Order(models.Model):
 
     # Dados operacionais
     tipo_certidao = models.CharField(
-        'Tipo de Certidão', max_length=20, choices=TIPO_CERTIDAO_CHOICES, blank=True
+        'Tipo de Certidão', max_length=40, choices=TIPO_CERTIDAO_CHOICES, blank=True
     )
     estado = models.CharField('Estado (UF)', max_length=2, blank=True)
     cidade = models.CharField('Cidade', max_length=100, blank=True)
@@ -166,6 +217,12 @@ class Order(models.Model):
     payment_id = models.CharField('ID do Pagamento', max_length=200, blank=True)
     payment_method = models.CharField('Método de Pagamento', max_length=50, blank=True)
 
+    # Categoria operacional (derivada automaticamente de tipo_certidao)
+    categoria_painel = models.CharField(
+        'Categoria do Painel', max_length=30,
+        choices=CATEGORIA_PAINEL_CHOICES, blank=True, db_index=True,
+    )
+
     notes = models.TextField('Observações', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -178,10 +235,22 @@ class Order(models.Model):
             models.Index(fields=['status', '-created_at']),
             models.Index(fields=['responsavel', 'status']),
             models.Index(fields=['prazo_entrega']),
+            models.Index(fields=['categoria_painel', '-created_at']),
+            models.Index(fields=['categoria_painel', 'status']),
         ]
 
     def __str__(self):
         return f'Pedido #{str(self.id)[:8].upper()}'
+
+    def save(self, *args, **kwargs):
+        # Auto-deriva a categoria operacional a partir do tipo_certidao
+        if self.tipo_certidao:
+            self.categoria_painel = TIPO_CERTIDAO_PARA_CATEGORIA.get(
+                self.tipo_certidao, 'outros'
+            )
+        elif not self.categoria_painel:
+            self.categoria_painel = 'outros'
+        super().save(*args, **kwargs)
 
     @property
     def short_id(self):

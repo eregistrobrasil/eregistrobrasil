@@ -158,9 +158,58 @@
         });
     });
 
-    // Botão "Não sei o cartório"
-    document.getElementById('btn-nao-sei-cartorio').addEventListener('click', function () {
-      document.getElementById('nome-cartorio').value = 'Cartório não informado';
+    // Cartório dinâmico
+    const TIPO_CARTORIO = '{{ tipo_cartorio }}';
+    const $selectCartorio = $('#select-cartorio');
+    const $cartorioLoading = $('#cartorio-loading');
+    const $cartorioEmpty = $('#cartorio-empty');
+    const $cartorioError = $('#cartorio-error');
+    const $cartorioIdInput = $('#cartorio-id-input');
+    const $cartorioNomeInput = $('#cartorio-nome-input');
+
+    function resetCartorio(msg) {
+      $selectCartorio.empty().append('<option value="">' + msg + '</option>');
+      $selectCartorio.prop('disabled', true);
+      $cartorioIdInput.val('');
+      $cartorioNomeInput.val('');
+      $cartorioEmpty.addClass('hidden');
+      $cartorioError.addClass('hidden');
+    }
+
+    function loadCartorios(uf, cidade) {
+      if (!uf || !cidade) { resetCartorio('— Selecione primeiro a cidade —'); return; }
+      $cartorioLoading.removeClass('hidden');
+      $cartorioEmpty.addClass('hidden');
+      resetCartorio('Carregando...');
+      const params = { estado: uf, cidade: cidade };
+      if (TIPO_CARTORIO) params.tipo = TIPO_CARTORIO;
+      $.getJSON('{% url "api-cartorios" %}', params)
+        .done(function (data) {
+          $selectCartorio.empty().append('<option value="">— Selecione o cartório —</option>');
+          if (data.length === 0) {
+            $cartorioEmpty.removeClass('hidden');
+            $selectCartorio.prop('disabled', true);
+          } else {
+            data.forEach(function (c) { $selectCartorio.append($('<option>').val(c.id).text(c.nome).data('nome', c.nome)); });
+            $selectCartorio.prop('disabled', false);
+          }
+        })
+        .fail(function () { resetCartorio('Erro ao carregar cartórios'); })
+        .always(function () { $cartorioLoading.addClass('hidden'); });
+    }
+
+    $selectCartorio.on('change', function () {
+      const selected = $(this).find('option:selected');
+      $cartorioIdInput.val(selected.val() || '');
+      $cartorioNomeInput.val(selected.text() !== '— Selecione o cartório —' ? selected.text() : '');
+    });
+
+    // Dispara carga quando cidade muda
+    $('#select-cidade').on('change', function () {
+      const cidade = $(this).val();
+      const uf = $('#select-estado').val();
+      if (cidade) loadCartorios(uf, cidade);
+      else resetCartorio('— Selecione primeiro a cidade —');
     });
 
     $('#certidao-form').on('submit', function (e) {

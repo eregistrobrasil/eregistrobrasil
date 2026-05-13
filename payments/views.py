@@ -100,8 +100,29 @@ class ProcessPaymentView(View):
         data['external_reference'] = str(order.id)
         data['notification_url'] = f'{settings.SITE_URL}/pagamentos/webhook/'
 
+        # Garante transaction_amount como float (MP rejeita string)
+        try:
+            data['transaction_amount'] = float(data.get('transaction_amount', order.total))
+        except (TypeError, ValueError):
+            data['transaction_amount'] = float(order.total)
+
+        # Completa dados do pagador a partir do pedido (Brick PIX não envia email)
+        payer = data.get('payer') or {}
+        if not payer.get('email'):
+            payer['email'] = order.customer_email
+        if not (payer.get('identification') or {}).get('number'):
+            cpf_clean = re.sub(r'\D', '', order.customer_cpf)
+            payer['identification'] = {'type': 'CPF', 'number': cpf_clean}
+        name_parts = order.customer_name.split(None, 1)
+        payer.setdefault('first_name', name_parts[0] if name_parts else '')
+        payer.setdefault('last_name', name_parts[1] if len(name_parts) > 1 else '')
+        data['payer'] = payer
+
         sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
         result = sdk.payment().create(data)
+        logger.info('MP create payment response: status=%s detail=%s',
+                    result.get('response', {}).get('status'),
+                    result.get('response', {}).get('status_detail'))
         response = result.get('response', {})
 
         status = response.get('status', 'rejected')

@@ -261,9 +261,16 @@ class CertidaoObitoDadosView(BaseCertidaoDadosView):
     date_field_ids = ['id_data_obito']
     descricao_step2 = 'Informe os dados da pessoa constante na certidão de óbito.'
 
-    def _add_to_cart(self, request, product, dados, cartorio_data):
+    def _add_to_cart(self, request, cartorio_data, dados):
         from products.services import obter_preco_por_estado
-        from products.models import State
+        from products.models import Product, State
+        from orders.models import Cart, CartItem
+        try:
+            product = Product.objects.get(slug=self.product_slug, is_active=True)
+        except Product.DoesNotExist:
+            return
+        if not request.session.session_key:
+            request.session.create()
         cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
         item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
         item.quantity = 1
@@ -320,9 +327,16 @@ class CertidaoCasamentoDadosView(BaseCertidaoDadosView):
     date_field_ids = ['id_data_casamento']
     descricao_step2 = 'Informe os dados constantes na certidão de casamento.'
 
-    def _add_to_cart(self, request, product, dados, cartorio_data):
+    def _add_to_cart(self, request, cartorio_data, dados):
         from products.services import obter_preco_por_estado
-        from products.models import State
+        from products.models import Product, State
+        from orders.models import Cart, CartItem
+        try:
+            product = Product.objects.get(slug=self.product_slug, is_active=True)
+        except Product.DoesNotExist:
+            return
+        if not request.session.session_key:
+            request.session.create()
         cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
         item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
         item.quantity = 1
@@ -384,9 +398,16 @@ class CertidaoInterdicaoDadosView(BaseCertidaoDadosView):
         ctx['estados'] = _estados_list(_load_estados_cidades())
         return ctx
 
-    def _add_to_cart(self, request, product, dados, cartorio_data):
+    def _add_to_cart(self, request, cartorio_data, dados):
         from products.services import obter_preco_por_estado
-        from products.models import State
+        from products.models import Product, State
+        from orders.models import Cart, CartItem
+        try:
+            product = Product.objects.get(slug=self.product_slug, is_active=True)
+        except Product.DoesNotExist:
+            return
+        if not request.session.session_key:
+            request.session.create()
         cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
         item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
         item.quantity = 1

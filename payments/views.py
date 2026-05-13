@@ -190,31 +190,33 @@ class ProcessPaymentView(View):
             if not isinstance(status, str):
                 status = 'rejected'
 
+            # Salva pagamento no banco
+            payment, _ = Payment.objects.get_or_create(order=order, defaults={'amount': order.total})
+            payment.mercadopago_id = str(response.get('id', ''))
+            payment.status = status
+            payment.status_detail = response.get('status_detail', '')
+            payment.payment_method = response.get('payment_method_id', '')
+            payment.payment_type = response.get('payment_type_id', '')
+            payer_resp = response.get('payer') or {}
+            payment.payer_email = payer_resp.get('email', '') or ''
+            payment.raw_response = response
+            payment.save()
+
+            if status == 'approved':
+                order.status = 'paid'
+                order.payment_id = str(response.get('id', ''))
+                order.save()
+                redirect_url = f'/pagamentos/sucesso/{order.id}/'
+            elif status in ('in_process', 'pending', 'authorized'):
+                redirect_url = f'/pagamentos/pendente/{order.id}/'
+            else:
+                redirect_url = f'/pagamentos/falha/{order.id}/'
+
+            return JsonResponse({'status': status, 'redirect_url': redirect_url})
+
         except Exception as exc:
             logger.exception('Erro interno ao processar pagamento order=%s: %s', order_id, exc)
             return JsonResponse({'status': 'error', 'redirect_url': f'/pagamentos/falha/{order.id}/'}, status=500)
-
-        payment, _ = Payment.objects.get_or_create(order=order, defaults={'amount': order.total})
-        payment.mercadopago_id = str(response.get('id', ''))
-        payment.status = status
-        payment.status_detail = response.get('status_detail', '')
-        payment.payment_method = response.get('payment_method_id', '')
-        payment.payment_type = response.get('payment_type_id', '')
-        payment.payer_email = (response.get('payer') or {}).get('email', '')
-        payment.raw_response = response
-        payment.save()
-
-        if status == 'approved':
-            order.status = 'paid'
-            order.payment_id = str(response.get('id', ''))
-            order.save()
-            redirect_url = f'/pagamentos/sucesso/{order.id}/'
-        elif status in ('in_process', 'pending', 'authorized'):
-            redirect_url = f'/pagamentos/pendente/{order.id}/'
-        else:
-            redirect_url = f'/pagamentos/falha/{order.id}/'
-
-        return JsonResponse({'status': status, 'redirect_url': redirect_url})
 
 
 @method_decorator(csrf_exempt, name='dispatch')

@@ -1,19 +1,96 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="min-h-screen flex items-center justify-center py-12 px-4">
-  <div class="w-full max-w-md bg-white rounded-2xl border border-gray-200 p-10 text-center">
+  <div class="w-full max-w-lg bg-white rounded-2xl border border-gray-200 p-8 md:p-10 text-center">
+
+    {% if order.payment.pix_qr_code %}
+    {# ── PIX: exibe QR code ── #}
+    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 4v1m0 14v1M4.93 4.93l.707.707M18.364 18.364l.707.707M4 12H3m18 0h-1M4.93 19.07l.707-.707M18.364 5.636l.707-.707"/>
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-gray-900 mb-1">Pague com PIX</h1>
+    <p class="text-gray-500 text-sm mb-5">Escaneie o QR code ou copie o código abaixo.<br>O pagamento é confirmado em segundos.</p>
+
+    {% if order.payment.pix_qr_code_base64 %}
+    <div class="flex justify-center mb-4">
+      <img src="data:image/png;base64,{{ order.payment.pix_qr_code_base64 }}"
+           alt="QR Code PIX" class="w-52 h-52 border border-gray-200 rounded-xl p-2">
+    </div>
+    {% endif %}
+
+    <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 mb-4 text-left">
+      <p class="text-xs text-gray-500 mb-1 font-medium uppercase tracking-wide">PIX Copia e Cola</p>
+      <p id="pix-code" class="text-xs text-gray-700 break-all font-mono leading-relaxed select-all">{{ order.payment.pix_qr_code }}</p>
+    </div>
+    <button onclick="copyPix()" id="copy-btn"
+            class="w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-colors text-sm mb-4">
+      Copiar código PIX
+    </button>
+
+    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-5 text-sm text-yellow-800">
+      <strong>Pedido:</strong> #{{ order.short_id }} — <strong>Valor:</strong> R$ {{ order.total }}
+    </div>
+
+    <p class="text-xs text-gray-400 mb-5">
+      Após o pagamento, o status será atualizado automaticamente.<br>
+      O código PIX expira em <strong>30 minutos</strong>.
+    </p>
+
+    {% else %}
+    {# ── Outros métodos: análise em andamento ── #}
     <div class="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
       <svg class="w-10 h-10 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
       </svg>
     </div>
     <h1 class="text-2xl font-bold text-gray-900 mb-3">Pagamento em Análise</h1>
     <p class="text-gray-500 text-sm mb-2">Seu pagamento está sendo processado.</p>
     <p class="text-gray-500 text-sm mb-6">Você receberá uma confirmação assim que for aprovado.</p>
+    {% endif %}
+
     <a href="{% url 'orders:order_detail' order.pk %}"
-       class="inline-block bg-primary text-white font-bold px-8 py-3 rounded-xl hover:bg-primary-dark transition-colors text-sm">
+       class="inline-block text-sm text-gray-500 hover:text-primary transition-colors">
       Acompanhar pedido
     </a>
   </div>
 </div>
+
+{% if order.payment.pix_qr_code %}
+<script>
+function copyPix() {
+  var code = document.getElementById('pix-code').textContent.trim();
+  navigator.clipboard.writeText(code).then(function () {
+    var btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copiado!';
+    btn.classList.replace('bg-green-600', 'bg-gray-500');
+    setTimeout(function () {
+      btn.textContent = 'Copiar código PIX';
+      btn.classList.replace('bg-gray-500', 'bg-green-600');
+    }, 3000);
+  });
+}
+
+// Verifica aprovação a cada 5s e redireciona automaticamente
+(function poll() {
+  setTimeout(function () {
+    fetch('/pagamentos/status/{{ order.id }}/')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.status === 'approved') {
+          window.location.href = '/pagamentos/sucesso/{{ order.id }}/';
+        } else if (d.status !== 'pending' && d.status !== 'in_process') {
+          window.location.href = '/pagamentos/falha/{{ order.id }}/';
+        } else {
+          poll();
+        }
+      })
+      .catch(function () { poll(); });
+  }, 5000);
+})();
+</script>
+{% endif %}
 {% endblock %}

@@ -77,6 +77,17 @@ class PaymentPendingView(TemplateView):
         return ctx
 
 
+class PaymentStatusView(View):
+    """Endpoint de polling para verificar status do pagamento (usado pela página PIX)."""
+
+    def get(self, request, order_id):
+        order = get_object_or_404(Order, id=order_id)
+        status = 'pending'
+        if hasattr(order, 'payment'):
+            status = order.payment.status
+        return JsonResponse({'status': status})
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class ProcessPaymentView(View):
     """Recebe formData do Payment Brick e cria o pagamento via SDK."""
@@ -200,6 +211,13 @@ class ProcessPaymentView(View):
             payer_resp = response.get('payer') or {}
             payment.payer_email = payer_resp.get('email', '') or ''
             payment.raw_response = response
+
+            # Dados do PIX (QR code para pagamento pendente)
+            poi = response.get('point_of_interaction') or {}
+            tx_data = poi.get('transaction_data') or {}
+            payment.pix_qr_code = tx_data.get('qr_code', '') or ''
+            payment.pix_qr_code_base64 = tx_data.get('qr_code_base64', '') or ''
+
             payment.save()
 
             if status == 'approved':

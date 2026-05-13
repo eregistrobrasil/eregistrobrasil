@@ -9,5 +9,6 @@ urlpatterns = [
     path('sucesso/<uuid:order_id>/', views.PaymentSuccessView.as_view(), name='success'),
     path('falha/<uuid:order_id>/', views.PaymentFailureView.as_view(), name='failure'),
     path('pendente/<uuid:order_id>/', views.PaymentPendingView.as_view(), name='pending'),
+    path('status/<uuid:order_id>/', views.PaymentStatusView.as_view(), name='status'),
     path('webhook/', views.WebhookView.as_view(), name='webhook'),
 ]

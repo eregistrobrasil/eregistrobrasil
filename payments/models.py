@@ -26,6 +26,8 @@ class Payment(models.Model):
     payment_type = models.CharField('Tipo', max_length=50, blank=True)
     amount = models.DecimalField('Valor', max_digits=10, decimal_places=2)
     payer_email = models.EmailField('Email do Pagador', blank=True)
+    pix_qr_code = models.TextField('PIX Copia e Cola', blank=True)
+    pix_qr_code_base64 = models.TextField('PIX QR Code (base64)', blank=True)
     raw_response = models.JSONField('Resposta Bruta', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

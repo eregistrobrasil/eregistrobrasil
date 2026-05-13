@@ -122,12 +122,12 @@ class ProcessPaymentView(View):
         payer.setdefault('last_name', name_parts[1] if len(name_parts) > 1 else '')
         data['payer'] = payer
 
-        # Itens do pedido — melhora aprovação e reduz chances de fraude
+        # Itens do pedido — melhora aprovação (deve ficar em additional_info)
         order_items = list(
             order.items.select_related('product__category').all()
         )
         if order_items:
-            data['items'] = [
+            mp_items = [
                 {
                     'id': item.product.slug if item.product else str(item.pk),
                     'title': item.product_name[:256],
@@ -143,19 +143,28 @@ class ProcessPaymentView(View):
                 for item in order_items
             ]
         else:
-            # Fallback caso os itens não existam (pedido criado de outra forma)
-            data['items'] = [{
+            mp_items = [{
                 'id': str(order.id)[:36],
                 'title': f'Pedido #{order.short_id}',
-                'description': order.tipo_certidao or 'Serviço de Certidão',
+                'description': order.tipo_certidao or 'Servico de Certidao',
                 'category_id': 'services',
                 'quantity': 1,
                 'unit_price': float(order.total),
             }]
 
+        # additional_info é o campo correto da Payments API para itens e dados extras
+        additional_info = data.get('additional_info') or {}
+        additional_info['items'] = mp_items
+        name_parts = order.customer_name.split(None, 1)
+        additional_info.setdefault('payer', {
+            'first_name': name_parts[0] if name_parts else '',
+            'last_name': name_parts[1] if len(name_parts) > 1 else '',
+        })
+        data['additional_info'] = additional_info
+
         # description obrigatório para PIX
         if not data.get('description'):
-            titles = ', '.join(i['title'] for i in data['items'])
+            titles = ', '.join(i['title'] for i in mp_items)
             data['description'] = f'Pedido #{order.short_id} - {titles}'[:250]
 
         sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)

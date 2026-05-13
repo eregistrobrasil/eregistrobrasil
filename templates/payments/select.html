@@ -77,7 +77,7 @@
           creditCard: 'all',
           debitCard: 'all',
           ticket: 'all',
-          bankTransfer: 'all',
+          {% if mp_pix_enabled %}bankTransfer: 'all',{% endif %}
         },
         visual: {
           style: { theme: 'default' },

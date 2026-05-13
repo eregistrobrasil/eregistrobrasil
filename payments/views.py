@@ -35,6 +35,7 @@ class CreatePaymentView(View):
             'mp_public_key': settings.MERCADOPAGO_PUBLIC_KEY,
             'order_amount': str(order.total),
             'order_cpf': order_cpf,
+            'mp_pix_enabled': getattr(settings, 'MERCADOPAGO_PIX_ENABLED', True),
             'title': 'Escolha a Forma de Pagamento',
         })
 
@@ -106,6 +107,9 @@ class ProcessPaymentView(View):
         except (TypeError, ValueError):
             data['transaction_amount'] = float(order.total)
 
+        # Fatura do cartão (statement_descriptor): max 22 chars, sem caracteres especiais
+        data['statement_descriptor'] = 'E-REGISTRO BRASIL'
+
         # Completa dados do pagador a partir do pedido (Brick PIX não envia email)
         payer = data.get('payer') or {}
         if not payer.get('email'):
@@ -118,9 +122,41 @@ class ProcessPaymentView(View):
         payer.setdefault('last_name', name_parts[1] if len(name_parts) > 1 else '')
         data['payer'] = payer
 
-        # PIX exige campo description
+        # Itens do pedido — melhora aprovação e reduz chances de fraude
+        order_items = list(
+            order.items.select_related('product__category').all()
+        )
+        if order_items:
+            data['items'] = [
+                {
+                    'id': item.product.slug if item.product else str(item.pk),
+                    'title': item.product_name[:256],
+                    'description': (
+                        (item.product.short_description or item.product.description)[:256]
+                        if item.product and (item.product.short_description or item.product.description)
+                        else item.product_name[:256]
+                    ),
+                    'category_id': 'services',
+                    'quantity': item.quantity,
+                    'unit_price': float(item.price),
+                }
+                for item in order_items
+            ]
+        else:
+            # Fallback caso os itens não existam (pedido criado de outra forma)
+            data['items'] = [{
+                'id': str(order.id)[:36],
+                'title': f'Pedido #{order.short_id}',
+                'description': order.tipo_certidao or 'Serviço de Certidão',
+                'category_id': 'services',
+                'quantity': 1,
+                'unit_price': float(order.total),
+            }]
+
+        # description obrigatório para PIX
         if not data.get('description'):
-            data['description'] = f'Pedido #{order.short_id}'
+            titles = ', '.join(i['title'] for i in data['items'])
+            data['description'] = f'Pedido #{order.short_id} - {titles}'[:250]
 
         sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
         result = sdk.payment().create(data)

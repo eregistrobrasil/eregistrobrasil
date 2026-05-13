@@ -169,6 +169,9 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'E-Registro Brasil <no
 # Mercado Pago
 MERCADOPAGO_PUBLIC_KEY = os.environ.get('MP_PUBLIC_KEY', '')
 MERCADOPAGO_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN', '')
+# Habilitar PIX requer chave Pix cadastrada na conta Mercado Pago
+# Se a conta não tiver chave Pix, defina MP_PIX_ENABLED=False no .env
+MERCADOPAGO_PIX_ENABLED = os.environ.get('MP_PIX_ENABLED', 'True') == 'True'
 
 # Site
 SITE_NAME = 'E-Registro Brasil'

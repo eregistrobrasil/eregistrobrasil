@@ -118,14 +118,36 @@ class ProcessPaymentView(View):
         payer.setdefault('last_name', name_parts[1] if len(name_parts) > 1 else '')
         data['payer'] = payer
 
+        # PIX exige campo description
+        if not data.get('description'):
+            data['description'] = f'Pedido #{order.short_id}'
+
         sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
         result = sdk.payment().create(data)
-        logger.info('MP create payment response: status=%s detail=%s',
-                    result.get('response', {}).get('status'),
-                    result.get('response', {}).get('status_detail'))
+        http_status = result.get('status')
         response = result.get('response', {})
 
-        status = response.get('status', 'rejected')
+        logger.info(
+            'MP create payment: http=%s pay_status=%s detail=%s error=%s full=%s',
+            http_status,
+            response.get('status'),
+            response.get('status_detail'),
+            response.get('error'),
+            response,
+        )
+
+        if http_status not in (200, 201):
+            logger.error('MP API error %s: %s', http_status, response)
+            payment, _ = Payment.objects.get_or_create(order=order, defaults={'amount': order.total})
+            payment.status = 'rejected'
+            payment.status_detail = str(response.get('message') or response.get('error') or http_status)
+            payment.raw_response = response
+            payment.save()
+            return JsonResponse({'status': 'rejected', 'redirect_url': f'/pagamentos/falha/{order.id}/'})
+
+        status = response.get('status') or 'rejected'
+        if not isinstance(status, str):
+            status = 'rejected'
 
         payment, _ = Payment.objects.get_or_create(order=order, defaults={'amount': order.total})
         payment.mercadopago_id = str(response.get('id', ''))

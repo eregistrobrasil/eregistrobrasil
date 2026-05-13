@@ -112,6 +112,16 @@ class Product(models.Model):
     order = models.PositiveIntegerField('Ordem', default=0)
     meta_title = models.CharField('Meta Título', max_length=200, blank=True)
     meta_description = models.CharField('Meta Descrição', max_length=300, blank=True)
+    # ── Campos de controle do sistema ────────────────────────────────────────
+    is_system_service = models.BooleanField(
+        'Serviço do Sistema', default=False,
+        help_text='Serviços marcados pelo seed. Não pode ser criado/excluído manualmente.',
+    )
+    has_fixed_price = models.BooleanField(
+        'Preço Fixo Global', default=False,
+        help_text='Quando ativo, o preço é fixo (R$ 49,90 para Federais e Estaduais) '
+                  'independente do estado. Não usa tabela ServiceStatePrice.',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -1,0 +1,45 @@
+{% extends 'servicos/base_servico_simples.html' %}
+
+{% block form_campos %}
+<div class="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-5">
+  <h2 class="text-base font-semibold text-gray-800 border-b border-gray-100 pb-3 flex items-center gap-2">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+    </svg>
+    Dados para Pesquisa Nacional de Protestos
+  </h2>
+
+  <div>
+    <label for="{{ form.cpf_cnpj.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+      {{ form.cpf_cnpj.label }}<span class="text-red-500 ml-0.5">*</span>
+    </label>
+    <input type="text" name="{{ form.cpf_cnpj.html_name }}" id="{{ form.cpf_cnpj.id_for_label }}"
+      value="{{ form.cpf_cnpj.value|default:'' }}" required
+      placeholder="000.000.000-00 ou 00.000.000/0001-00"
+      class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
+        {% if form.cpf_cnpj.errors %}border-red-300{% endif %}">
+    {% if form.cpf_cnpj.errors %}
+      <p class="text-xs text-red-500 mt-1">{{ form.cpf_cnpj.errors.0 }}</p>
+    {% endif %}
+  </div>
+
+  <div>
+    <label for="{{ form.nome_completo.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+      {{ form.nome_completo.label }}<span class="text-red-500 ml-0.5">*</span>
+    </label>
+    <input type="text" name="{{ form.nome_completo.html_name }}" id="{{ form.nome_completo.id_for_label }}"
+      value="{{ form.nome_completo.value|default:'' }}" required
+      placeholder="Nome completo ou razão social"
+      class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
+        {% if form.nome_completo.errors %}border-red-300{% endif %}">
+    {% if form.nome_completo.errors %}
+      <p class="text-xs text-red-500 mt-1">{{ form.nome_completo.errors.0 }}</p>
+    {% endif %}
+  </div>
+
+  <div class="rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 text-sm text-blue-700">
+    <strong>Abrangência nacional:</strong> A pesquisa nacional verifica a existência de protestos
+    em todos os cartórios registrados no sistema de consulta integrada do IEPTB.
+  </div>
+</div>
+{% endblock %}

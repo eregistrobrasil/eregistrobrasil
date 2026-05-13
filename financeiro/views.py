@@ -104,20 +104,15 @@ class ServicoListView(View):
 
 @method_decorator(staff_required, name='dispatch')
 class ServicoCreateView(View):
-    template_name = 'financeiro/servico_form.html'
+    """Criação manual de serviços foi desativada — serviços são gerenciados pelo sistema."""
 
     def get(self, request):
-        ctx = {'title': 'Novo Serviço', 'form': ProductForm()}
-        return render(request, self.template_name, ctx)
+        messages.warning(request, 'A criação manual de serviços foi desativada. Os serviços são gerenciados pelo sistema.')
+        return redirect('financeiro:servicos')
 
     def post(self, request):
-        form = ProductForm(request.POST)
-        if form.is_valid():
-            servico = form.save()
-            messages.success(request, f'Serviço "{servico.name}" criado com sucesso.')
-            return redirect('financeiro:servicos')
-        ctx = {'title': 'Novo Serviço', 'form': form}
-        return render(request, self.template_name, ctx)
+        messages.warning(request, 'A criação manual de serviços foi desativada.')
+        return redirect('financeiro:servicos')
 
 
 @method_decorator(staff_required, name='dispatch')
@@ -165,6 +160,9 @@ class ServicoEditView(View):
 class ServicoDeleteView(View):
     def post(self, request, pk):
         servico = get_object_or_404(Product, pk=pk)
+        if servico.is_system_service:
+            messages.error(request, f'O serviço "{servico.name}" é um serviço do sistema e não pode ser excluído.')
+            return redirect('financeiro:servicos')
         nome = servico.name
         servico.delete()
         messages.success(request, f'Serviço "{nome}" excluído.')

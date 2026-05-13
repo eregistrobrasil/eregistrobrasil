@@ -1,0 +1,56 @@
+{% extends 'servicos/imoveis/_base_variante_dados.html' %}
+{% load static %}
+
+{% block form_campos %}
+<!-- Nome Completo -->
+<div>
+  <label for="{{ form.nome_completo.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+    Nome Completo ou Razão Social <span class="text-red-500">*</span>
+  </label>
+  <input type="text" name="{{ form.nome_completo.html_name }}"
+         id="{{ form.nome_completo.id_for_label }}"
+         value="{{ form.nome_completo.value|default:'' }}"
+         placeholder="Nome completo do proprietário ou razão social"
+         class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all duration-200{% if form.nome_completo.errors %} is-invalid{% endif %}"
+         autocomplete="name">
+  {% for error in form.nome_completo.errors %}
+    <p class="text-xs text-red-500 mt-1">{{ error }}</p>
+  {% endfor %}
+</div>
+
+<!-- CPF -->
+<div>
+  <label for="{{ form.cpf.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+    CPF / CNPJ <span class="text-red-500">*</span>
+  </label>
+  <input type="text" name="{{ form.cpf.html_name }}"
+         id="{{ form.cpf.id_for_label }}"
+         value="{{ form.cpf.value|default:'' }}"
+         placeholder="000.000.000-00"
+         class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all duration-200{% if form.cpf.errors %} is-invalid{% endif %}"
+         inputmode="numeric"
+         maxlength="18"
+         autocomplete="off">
+  {% for error in form.cpf.errors %}
+    <p class="text-xs text-red-500 mt-1">{{ error }}</p>
+  {% endfor %}
+</div>
+
+<!-- Número da Matrícula (Opcional) -->
+<div>
+  <label for="{{ form.numero_matricula.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+    Número da Matrícula
+    <span class="text-xs text-gray-400 font-normal ml-1">(opcional)</span>
+  </label>
+  <input type="text" name="{{ form.numero_matricula.html_name }}"
+         id="{{ form.numero_matricula.id_for_label }}"
+         value="{{ form.numero_matricula.value|default:'' }}"
+         placeholder="Ex: 12345 (se souber)"
+         class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all duration-200{% if form.numero_matricula.errors %} is-invalid{% endif %}"
+         inputmode="numeric">
+  <p class="text-xs text-gray-400 mt-1">Se não souber o número, deixe em branco — a pesquisa é feita pelo CPF.</p>
+  {% for error in form.numero_matricula.errors %}
+    <p class="text-xs text-red-500 mt-1">{{ error }}</p>
+  {% endfor %}
+</div>
+{% endblock %}

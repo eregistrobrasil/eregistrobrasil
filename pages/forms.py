@@ -692,3 +692,250 @@ class PacoteCertidoesCompraVendaForm(forms.Form):
             raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
         return cpf
 
+
+# ─────────────────────────────────────────────
+#  Protesto — Certidão de Protesto
+# ─────────────────────────────────────────────
+
+class CertidaoProtestoForm(forms.Form):
+    cpf_cnpj = forms.CharField(
+        label='CPF ou CNPJ',
+        max_length=18,
+        error_messages={'required': 'Informe o CPF ou CNPJ.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': '000.000.000-00 ou 00.000.000/0001-00',
+            'inputmode': 'numeric',
+            'maxlength': '18',
+            'data-mask': 'cpf-cnpj',
+        }),
+    )
+    nome_completo = _char_field('Nome Completo', 'Nome completo da pessoa ou razão social')
+
+    def clean_cpf_cnpj(self):
+        valor = re.sub(r'\D', '', self.cleaned_data.get('cpf_cnpj', ''))
+        if len(valor) not in (11, 14):
+            raise forms.ValidationError('Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.')
+        return valor
+
+
+class PesquisaProtestoNacionalForm(forms.Form):
+    cpf_cnpj = forms.CharField(
+        label='CPF ou CNPJ',
+        max_length=18,
+        error_messages={'required': 'Informe o CPF ou CNPJ.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': '000.000.000-00 ou 00.000.000/0001-00',
+            'inputmode': 'numeric',
+            'maxlength': '18',
+            'data-mask': 'cpf-cnpj',
+        }),
+    )
+    nome_completo = _char_field('Nome Completo', 'Nome completo da pessoa ou razão social')
+
+    def clean_cpf_cnpj(self):
+        valor = re.sub(r'\D', '', self.cleaned_data.get('cpf_cnpj', ''))
+        if len(valor) not in (11, 14):
+            raise forms.ValidationError('Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.')
+        return valor
+
+
+# ─────────────────────────────────────────────
+#  Federais e Estaduais — formulário genérico
+# ─────────────────────────────────────────────
+
+class ServicoFederalEstatualForm(forms.Form):
+    cpf_cnpj = forms.CharField(
+        label='CPF ou CNPJ',
+        max_length=18,
+        error_messages={'required': 'Informe o CPF ou CNPJ.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': '000.000.000-00 ou 00.000.000/0001-00',
+            'inputmode': 'numeric',
+            'maxlength': '18',
+            'data-mask': 'cpf-cnpj',
+        }),
+    )
+    nome_completo = _char_field('Nome Completo / Razão Social', 'Nome completo ou razão social')
+
+    def clean_cpf_cnpj(self):
+        valor = re.sub(r'\D', '', self.cleaned_data.get('cpf_cnpj', ''))
+        if len(valor) not in (11, 14):
+            raise forms.ValidationError('Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.')
+        return valor
+
+
+# ─────────────────────────────────────────────
+#  Busca em Cartórios
+# ─────────────────────────────────────────────
+
+class BuscaCartorioForm(forms.Form):
+    nome_completo = _char_field('Nome Completo', 'Nome completo da pessoa')
+    cpf = _cpf_field()
+    descricao_busca = forms.CharField(
+        label='O que está buscando?',
+        max_length=500,
+        error_messages={'required': 'Descreva o documento que está buscando.'},
+        widget=forms.Textarea(attrs={
+            'class': _INPUT_CLASS,
+            'rows': 3,
+            'placeholder': 'Ex: Certidão de nascimento, ano aproximado 1985...',
+        }),
+    )
+    ano_aproximado = forms.CharField(
+        label='Ano Aproximado',
+        max_length=4,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: 1985',
+            'inputmode': 'numeric',
+            'maxlength': '4',
+        }),
+    )
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+
+# ─────────────────────────────────────────────
+#  Apostilamento — Apostila de Haia
+# ─────────────────────────────────────────────
+
+_TIPO_DOCUMENTO_APOSTILA = [
+    ('', 'Selecione o tipo de documento'),
+    ('certidao_nascimento', 'Certidão de Nascimento'),
+    ('certidao_casamento', 'Certidão de Casamento'),
+    ('certidao_obito', 'Certidão de Óbito'),
+    ('diploma', 'Diploma / Histórico Escolar'),
+    ('procuracao', 'Procuração'),
+    ('escritura', 'Escritura Pública'),
+    ('declaracao', 'Declaração'),
+    ('outros', 'Outros'),
+]
+
+
+class ApostilaHaiaForm(forms.Form):
+    nome_completo = _char_field('Nome Completo', 'Nome completo')
+    cpf = _cpf_field()
+    tipo_documento = forms.ChoiceField(
+        label='Tipo de Documento',
+        choices=_TIPO_DOCUMENTO_APOSTILA,
+        error_messages={'required': 'Selecione o tipo de documento.'},
+        widget=forms.Select(attrs={'class': _INPUT_CLASS}),
+    )
+    descricao_documento = forms.CharField(
+        label='Descrição do Documento',
+        max_length=300,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Descreva o documento (opcional)',
+        }),
+    )
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+    def clean_tipo_documento(self):
+        valor = self.cleaned_data.get('tipo_documento', '').strip()
+        if not valor:
+            raise forms.ValidationError('Selecione o tipo de documento.')
+        return valor
+
+
+# ─────────────────────────────────────────────
+#  Tradução Juramentada
+# ─────────────────────────────────────────────
+
+_IDIOMA_CHOICES = [
+    ('', 'Selecione o idioma'),
+    ('ingles', 'Inglês'),
+    ('espanhol', 'Espanhol'),
+    ('frances', 'Francês'),
+    ('alemao', 'Alemão'),
+    ('italiano', 'Italiano'),
+    ('portugues', 'Português'),
+    ('outros', 'Outros'),
+]
+
+
+class TraducaoJuramentadaForm(forms.Form):
+    nome_completo = _char_field('Nome Completo', 'Nome completo do solicitante')
+    cpf = _cpf_field()
+    idioma_origem = forms.ChoiceField(
+        label='Idioma do Documento',
+        choices=_IDIOMA_CHOICES,
+        error_messages={'required': 'Selecione o idioma de origem.'},
+        widget=forms.Select(attrs={'class': _INPUT_CLASS}),
+    )
+    descricao_documento = forms.CharField(
+        label='Tipo / Descrição do Documento',
+        max_length=300,
+        error_messages={'required': 'Descreva o documento.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: Certidão de nascimento em inglês',
+        }),
+    )
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+    def clean_idioma_origem(self):
+        valor = self.cleaned_data.get('idioma_origem', '').strip()
+        if not valor:
+            raise forms.ValidationError('Selecione o idioma do documento.')
+        return valor
+
+
+# ─────────────────────────────────────────────
+#  Variantes de Registro de Imóveis
+# ─────────────────────────────────────────────
+
+class CertidaoAlienacaoFiduciariaForm(forms.Form):
+    """Certidão Negativa de Alienação Fiduciária — busca por pessoa ou matrícula."""
+    nome_completo = _char_field(
+        'Nome Completo ou Razão Social',
+        'Nome completo do proprietário ou razão social',
+        msg_label='o nome completo',
+    )
+    cpf = _cpf_field()
+    numero_matricula = forms.CharField(
+        label='Número da Matrícula (opcional)',
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: 12345 (se souber)',
+            'inputmode': 'numeric',
+        }),
+    )
+
+    def clean_cpf(self):
+        return _imovel_clean_cpf(self)
+
+
+class PesquisaBensImovelForm(forms.Form):
+    """Pesquisa de Bens — busca de imóveis registrados em nome de pessoa física/jurídica."""
+    nome_completo = _char_field(
+        'Nome Completo ou Razão Social',
+        'Nome completo do titular ou razão social',
+        msg_label='o nome completo',
+    )
+    cpf = _cpf_field()
+
+    def clean_cpf(self):
+        return _imovel_clean_cpf(self)
+

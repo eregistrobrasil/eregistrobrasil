@@ -1561,3 +1561,419 @@ class LegalView(TemplateView):
         ctx = super().get_context_data(**kwargs)
         ctx['title'] = 'Ressalva Legal — E-Registro Brasil'
         return ctx
+
+
+# ===========================================================================
+#  NOVOS SERVICOS - Protestos, Federais/Estaduais, Busca, Apostilamento
+# ===========================================================================
+
+from .forms import (
+    CertidaoProtestoForm,
+    PesquisaProtestoNacionalForm,
+    ServicoFederalEstatualForm,
+    BuscaCartorioForm,
+    ApostilaHaiaForm,
+    TraducaoJuramentadaForm,
+)
+from products.services import PRECO_FIXO_FEDERAL_ESTADUAL
+
+
+class BaseServicoSimplesDadosView(View):
+    """View generica para servicos sem etapa de cartorio."""
+    title = ""
+    form_class = None
+    template_name = ""
+    product_slug = ""
+    tipo_certidao_sessao = "outros"
+    fixed_price = False
+
+    def _get_product(self):
+        from products.models import Product
+        try:
+            return Product.objects.get(slug=self.product_slug, is_active=True)
+        except Product.DoesNotExist:
+            return None
+
+    def _ctx(self, form, product=None):
+        from products.services import get_state_prices_dict
+        import json as _json
+        ctx = {
+            "title": self.title,
+            "form": form,
+            "passos": _PASSOS,
+            "fixed_price": self.fixed_price,
+        }
+        if product:
+            ctx["product"] = product
+        if self.fixed_price:
+            preco = PRECO_FIXO_FEDERAL_ESTADUAL
+            ctx["price_display"] = "R$ {:,.2f}".format(preco).replace(",", "X").replace(".", ",").replace("X", ".")
+            ctx["state_prices_json"] = "{}"
+        else:
+            prices = get_state_prices_dict(product) if product else {}
+            ctx["state_prices_json"] = _json.dumps(prices)
+            ctx["product_base_price"] = str(product.price) if product else "0"
+        return ctx
+
+    def get(self, request):
+        product = self._get_product()
+        return render(request, self.template_name, self._ctx(self.form_class(), product))
+
+    def post(self, request):
+        product = self._get_product()
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            dados = {k: str(v) for k, v in cd.items()}
+            dados["tipo_servico"] = self.product_slug
+            request.session["certidao_dados"] = dados
+            self._add_to_cart(request, dados, product)
+            return redirect("orders:checkout")
+        return render(request, self.template_name, self._ctx(form, product))
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = str(dados.get("nome_completo", ""))[:200]
+        item.requester_document = str(dados.get("cpf_cnpj", "") or dados.get("cpf", ""))[:30]
+        if self.fixed_price:
+            item.unit_price = PRECO_FIXO_FEDERAL_ESTADUAL
+        item.save()
+        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
+
+
+# Protestos
+class CertidaoProtestoView(BaseServicoSimplesDadosView):
+    title = "Certidao de Protesto - E-Registro Brasil"
+    form_class = CertidaoProtestoForm
+    template_name = "servicos/certidao_protesto.html"
+    product_slug = "certidao-de-protesto"
+
+
+class PesquisaProtestoNacionalView(BaseServicoSimplesDadosView):
+    title = "Pesquisa de Protesto Nacional - E-Registro Brasil"
+    form_class = PesquisaProtestoNacionalForm
+    template_name = "servicos/pesquisa_protesto_nacional.html"
+    product_slug = "pesquisa-de-protesto-nacional"
+
+
+# Federais e Estaduais
+class CndFederalView(BaseServicoSimplesDadosView):
+    title = "CND Federal - E-Registro Brasil"
+    form_class = ServicoFederalEstatualForm
+    template_name = "servicos/federal_estadual_generic.html"
+    product_slug = "cnd-federal-receita-federal"
+    tipo_certidao_sessao = "cnd_federal"
+    fixed_price = True
+
+
+class CertidaoFgtsInssView(BaseServicoSimplesDadosView):
+    title = "Certidao FGTS / INSS - E-Registro Brasil"
+    form_class = ServicoFederalEstatualForm
+    template_name = "servicos/federal_estadual_generic.html"
+    product_slug = "certidao-fgts-inss"
+    tipo_certidao_sessao = "cnd_federal"
+    fixed_price = True
+
+
+class CndEstadualView(BaseServicoSimplesDadosView):
+    title = "CND Estadual - E-Registro Brasil"
+    form_class = ServicoFederalEstatualForm
+    template_name = "servicos/federal_estadual_generic.html"
+    product_slug = "cnd-estadual-sefaz"
+    tipo_certidao_sessao = "cnd_federal"
+    fixed_price = True
+
+
+class CertidaoNegativaMunicipioView(BaseServicoSimplesDadosView):
+    title = "Certidao Negativa de Debitos Municipais - E-Registro Brasil"
+    form_class = ServicoFederalEstatualForm
+    template_name = "servicos/federal_estadual_generic.html"
+    product_slug = "certidao-negativa-municipio"
+    tipo_certidao_sessao = "cnd_federal"
+    fixed_price = True
+
+
+class CertidaoRegularidadeCreView(BaseServicoSimplesDadosView):
+    title = "Certidao de Regularidade no CREA - E-Registro Brasil"
+    form_class = ServicoFederalEstatualForm
+    template_name = "servicos/federal_estadual_generic.html"
+    product_slug = "certidao-regularidade-crea"
+    tipo_certidao_sessao = "cnd_federal"
+    fixed_price = True
+
+
+class CertidaoAntecedentesCriminaisView(BaseServicoSimplesDadosView):
+    title = "Certidao de Antecedentes Criminais - E-Registro Brasil"
+    form_class = ServicoFederalEstatualForm
+    template_name = "servicos/federal_estadual_generic.html"
+    product_slug = "certidao-antecedentes-criminais"
+    tipo_certidao_sessao = "cnd_federal"
+    fixed_price = True
+
+
+# Busca em Cartorios
+class BuscaCartorioRegistroCivilView(BaseServicoSimplesDadosView):
+    title = "Busca em Cartorios de Registro Civil - E-Registro Brasil"
+    form_class = BuscaCartorioForm
+    template_name = "servicos/busca_cartorio.html"
+    product_slug = "busca-em-cartorios-registro-civil"
+
+
+class BuscaTabelionatoNotasView(BaseServicoSimplesDadosView):
+    title = "Busca em Tabelionatos de Notas - E-Registro Brasil"
+    form_class = BuscaCartorioForm
+    template_name = "servicos/busca_cartorio.html"
+    product_slug = "busca-em-tabelionatos-notas"
+
+
+# Apostilamento
+class ApostilaHaiaView(BaseServicoSimplesDadosView):
+    title = "Apostila de Haia - E-Registro Brasil"
+    form_class = ApostilaHaiaForm
+    template_name = "servicos/apostila_haia.html"
+    product_slug = "apostila-de-haia"
+
+
+class TraducaoJuramentadaView(BaseServicoSimplesDadosView):
+    title = "Traducao Juramentada - E-Registro Brasil"
+    form_class = TraducaoJuramentadaForm
+    template_name = "servicos/traducao_juramentada.html"
+    product_slug = "traducao-juramentada"
+
+
+# ===========================================================================
+#  VARIANTES DE REGISTRO DE IMÓVEIS
+#  Serviços: alienacao-fiduciaria, matricula-atualizada, onus-reais, pesquisa-bens
+#  Fluxo: Cartório (step1) → Formulário (step2) → Checkout
+#  Precificação: PrecoImovelEstado (mesma tabela da certidão-de-imovel)
+# ===========================================================================
+
+
+class BaseImovelVarianteView(BaseCertidaoCartorioView):
+    """
+    Etapa 1 genérica para variantes do Registro de Imóveis.
+    Herda BaseCertidaoCartorioView, filtra cartórios por tipo='imoveis',
+    e expõe state_prices_json via PrecoImovelEstado.
+    """
+    tipo_cartorio = "imoveis"
+    tipo_preco = "matricula"   # tipo de PrecoImovelEstado a usar para a exibição lateral
+    _product_slug = ""
+    imagem_static = "img/certidao-de-nascimento.png"
+
+    def _ctx(self, dados_ec, form):
+        from products.services import get_imovel_prices_dict
+        from products.models import Product
+        ctx = super()._ctx(dados_ec, form)
+        ctx["state_prices_json"] = json.dumps(get_imovel_prices_dict(self.tipo_preco))
+        try:
+            product = Product.objects.get(slug=self._product_slug, is_active=True)
+            ctx["product_base_price"] = str(product.price)
+        except Product.DoesNotExist:
+            ctx["product_base_price"] = "0"
+        return ctx
+
+
+class BaseImovelVarianteDadosView(View):
+    """
+    Etapa 2 genérica para variantes do Registro de Imóveis.
+    Exibe formulário, calcula preço via PrecoImovelEstado, adiciona ao carrinho.
+    """
+    title = ""
+    form_class = None
+    template_name = ""
+    product_slug = ""
+    step1_url = ""
+    tipo_preco = "matricula"
+    descricao_step2 = "Informe os dados do imóvel."
+    date_fields = []
+    date_field_ids = []
+
+    def _get_cartorio(self, request):
+        return request.session.get("certidao_cartorio")
+
+    def _ctx(self, form, cartorio_data):
+        from products.services import obter_preco_imovel
+        estado_uf = (cartorio_data or {}).get("estado_uf", "")
+        preco = obter_preco_imovel(self.tipo_preco, estado_uf) if estado_uf else None
+        preco_display = None
+        if preco is not None:
+            preco_display = "R$ " + f"{preco:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        return {
+            "title": self.title,
+            "form": form,
+            "cartorio_data": cartorio_data,
+            "step1_url": self.step1_url,
+            "date_field_ids": mark_safe(json.dumps(self.date_field_ids)),
+            "descricao_step2": self.descricao_step2,
+            "preco_display": preco_display,
+            "estado_uf": estado_uf,
+        }
+
+    def get(self, request):
+        cartorio_data = self._get_cartorio(request)
+        if not cartorio_data:
+            messages.warning(request, "Por favor, preencha os dados do cartório primeiro.")
+            return redirect(self.step1_url)
+        return render(request, self.template_name, self._ctx(self.form_class(), cartorio_data))
+
+    def post(self, request):
+        cartorio_data = self._get_cartorio(request)
+        if not cartorio_data:
+            return redirect(self.step1_url)
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            dados = {}
+            for key, val in cd.items():
+                if key in self.date_fields and hasattr(val, "strftime"):
+                    dados[key] = val.strftime("%d/%m/%Y")
+                else:
+                    dados[key] = val or ""
+            dados["tipo_certidao"] = self.tipo_preco
+            request.session["certidao_dados"] = dados
+            self._add_to_cart(request, cartorio_data, dados)
+            cartorio_id = cartorio_data.get("cartorio_id")
+            if cartorio_id:
+                request.session["ordem_cartorio_id"] = cartorio_id
+            return redirect("orders:checkout")
+        return render(request, self.template_name, self._ctx(form, cartorio_data))
+
+    def _add_to_cart(self, request, cartorio_data, dados):
+        from products.models import Product, State
+        from products.services import obter_preco_imovel
+        from orders.models import Cart, CartItem
+        try:
+            product = Product.objects.get(slug=self.product_slug, is_active=True)
+        except Product.DoesNotExist:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = str(
+            dados.get("nome_completo") or dados.get("numero_matricula") or ""
+        )[:200]
+        item.requester_document = str(dados.get("cpf", ""))[:30]
+
+        estado_uf = cartorio_data.get("estado_uf", "")
+        if estado_uf:
+            unit_price = obter_preco_imovel(self.tipo_preco, estado_uf)
+            if unit_price is None:
+                unit_price = product.price
+            item.unit_price = unit_price
+            state_obj = State.objects.filter(code=estado_uf).first()
+            if state_obj:
+                item.state = state_obj
+        item.save()
+
+        request.session["ordem_tipo_certidao"] = self.tipo_preco
+        request.session["ordem_cidade"] = cartorio_data.get("cidade", "")
+        request.session["ordem_cartorio_nome"] = cartorio_data.get("cartorio", "")
+
+
+# ─── Certidão Negativa de Alienação Fiduciária ──────────────────────────────
+
+class CertidaoAlienacaoFiduciariaView(BaseImovelVarianteView):
+    title = "Certidão Negativa de Alienação Fiduciária — E-Registro Brasil"
+    template_name = "servicos/imoveis/alienacao_fiduciaria_cartorio.html"
+    dados_step_name = "pages:certidao_alienacao_fiduciaria_dados"
+    _product_slug = "certidao-negativa-de-alienacao-fiduciaria"
+    tipo_preco = "matricula"
+    descricao_servico = (
+        "Certidão que comprova a inexistência de alienação fiduciária registrada em "
+        "nome do titular no Cartório de Registro de Imóveis."
+    )
+
+
+class CertidaoAlienacaoFiduciariaDadosView(BaseImovelVarianteDadosView):
+    from .forms import CertidaoAlienacaoFiduciariaForm as _CertidaoAlienacaoFiduciariaForm
+    title = "Certidão Negativa de Alienação Fiduciária — E-Registro Brasil"
+    form_class = _CertidaoAlienacaoFiduciariaForm
+    template_name = "servicos/imoveis/alienacao_fiduciaria_dados.html"
+    product_slug = "certidao-negativa-de-alienacao-fiduciaria"
+    step1_url = "pages:certidao_alienacao_fiduciaria"
+    tipo_preco = "matricula"
+    descricao_step2 = "Informe o nome e CPF do titular para pesquisa de alienação fiduciária."
+
+
+# ─── Certidão de Matrícula Atualizada ───────────────────────────────────────
+
+class CertidaoMatriculaAtualizadaView(BaseImovelVarianteView):
+    title = "Certidão de Matrícula Atualizada — E-Registro Brasil"
+    template_name = "servicos/imoveis/matricula_atualizada_cartorio.html"
+    dados_step_name = "pages:certidao_matricula_atualizada_dados"
+    _product_slug = "certidao-de-matricula-atualizada"
+    tipo_preco = "matricula"
+    descricao_servico = (
+        "Certidão atualizada que reflete a situação jurídica atual do imóvel: "
+        "titularidade, ônus, gravames e histórico completo de transações."
+    )
+
+
+class CertidaoMatriculaAtualizadaDadosView(BaseImovelVarianteDadosView):
+    from .forms import CertidaoImovelMatriculaForm as _CertidaoImovelMatriculaForm
+    title = "Certidão de Matrícula Atualizada — E-Registro Brasil"
+    form_class = _CertidaoImovelMatriculaForm
+    template_name = "servicos/imoveis/matricula_atualizada_dados.html"
+    product_slug = "certidao-de-matricula-atualizada"
+    step1_url = "pages:certidao_matricula_atualizada"
+    tipo_preco = "matricula"
+    descricao_step2 = "Informe o número da matrícula do imóvel."
+
+
+# ─── Certidão de Ônus Reais ──────────────────────────────────────────────────
+
+class CertidaoOnusReaisView(BaseImovelVarianteView):
+    title = "Certidão de Ônus Reais — E-Registro Brasil"
+    template_name = "servicos/imoveis/onus_reais_cartorio.html"
+    dados_step_name = "pages:certidao_onus_reais_dados"
+    _product_slug = "certidao-de-onus-reais"
+    tipo_preco = "inteiro_teor"
+    descricao_servico = (
+        "Certidão que lista todos os ônus, hipotecas, penhoras e gravames "
+        "incidentes sobre o imóvel, incluindo cópia integral da matrícula."
+    )
+
+
+class CertidaoOnusReaisDadosView(BaseImovelVarianteDadosView):
+    from .forms import CertidaoImovelInteiroTeorForm as _CertidaoImovelInteiroTeorForm
+    title = "Certidão de Ônus Reais — E-Registro Brasil"
+    form_class = _CertidaoImovelInteiroTeorForm
+    template_name = "servicos/imoveis/onus_reais_dados.html"
+    product_slug = "certidao-de-onus-reais"
+    step1_url = "pages:certidao_onus_reais"
+    tipo_preco = "inteiro_teor"
+    descricao_step2 = "Informe o número da matrícula para a certidão de ônus reais."
+
+
+# ─── Pesquisa de Bens ────────────────────────────────────────────────────────
+
+class PesquisaBensView(BaseImovelVarianteView):
+    title = "Pesquisa de Bens — E-Registro Brasil"
+    template_name = "servicos/imoveis/pesquisa_bens_cartorio.html"
+    dados_step_name = "pages:pesquisa_bens_dados"
+    _product_slug = "pesquisa-de-bens"
+    tipo_preco = "matricula"
+    descricao_servico = (
+        "Pesquisa de bens imóveis registrados em nome de pessoa física ou jurídica "
+        "no Cartório de Registro de Imóveis."
+    )
+
+
+class PesquisaBensDadosView(BaseImovelVarianteDadosView):
+    from .forms import PesquisaBensImovelForm as _PesquisaBensImovelForm
+    title = "Pesquisa de Bens — E-Registro Brasil"
+    form_class = _PesquisaBensImovelForm
+    template_name = "servicos/imoveis/pesquisa_bens_dados.html"
+    product_slug = "pesquisa-de-bens"
+    step1_url = "pages:pesquisa_bens"
+    tipo_preco = "matricula"
+    descricao_step2 = "Informe o nome e CPF do titular para pesquisa de bens imóveis registrados."

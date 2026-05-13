@@ -330,13 +330,26 @@ def obter_preco_certidao_uniao_estavel(estado: str) -> Optional[Decimal]:
     return PRECOS_CERTIDAO_UNIAO_ESTAVEL.get(code)
 
 
+PRECO_FIXO_FEDERAL_ESTADUAL = Decimal("49.90")
+
+
 def obter_preco_por_estado(product: "Product", estado: str) -> Optional[Decimal]:
     """
-    Consulta o banco de dados para obter o preço vigente de *qualquer* produto
-    para um estado específico.
-    Retorna None se não houver registro ativo, indicando fallback para o preço base.
-    Esta é a função usada nas views — nunca confia no preço vindo do frontend.
+    Retorna o preço correto do serviço para o estado informado.
+
+    Regras (ordem de prioridade):
+    1. Serviços com has_fixed_price=True (Federais e Estaduais)
+       → retorna PRECO_FIXO_FEDERAL_ESTADUAL (R$ 49,90) sempre.
+    2. Demais serviços → consulta ServiceStatePrice no banco.
+    3. Se não houver registro ativo → retorna None (sinaliza fallback ao product.price).
+
+    NUNCA confia no preço enviado pelo frontend.
     """
+    # Regra 1: preço fixo global (Federais e Estaduais)
+    if getattr(product, 'has_fixed_price', False):
+        return PRECO_FIXO_FEDERAL_ESTADUAL
+
+    # Regra 2: preço estadual
     code = (estado or "").strip().upper()
     if not code or code not in _CODIGOS_VALIDOS:
         return None
@@ -353,7 +366,14 @@ def get_state_prices_dict(product: "Product") -> dict[str, str]:
     """
     Retorna um dicionário {sigla: preco_string} para todos os estados ativos
     de um produto. Usado no template para evitar chamadas AJAX por estado.
+
+    Para serviços com has_fixed_price=True, retorna o mesmo valor fixo
+    para todos os 27 estados, permitindo que o frontend exiba corretamente.
     """
+    if getattr(product, 'has_fixed_price', False):
+        preco = str(PRECO_FIXO_FEDERAL_ESTADUAL)
+        return {code: preco for code, _ in ESTADOS_BR}
+
     return {
         ssp.state.code: str(ssp.display_price)
         for ssp in product.state_prices.filter(is_active=True).select_related("state")

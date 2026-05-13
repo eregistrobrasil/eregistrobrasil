@@ -1,0 +1,35 @@
+
+
+#Abrir Pasta
+cd /opt/eregistro-brasil
+
+
+#fazer pull dos arquivos
+git pull origin master
+
+
+#Reiniciar o Servidor
+docker compose restart web
+
+
+#Recriar Imagem
+docker compose build --no-cache web celery
+
+
+# aplicar migrações banco de dados
+docker compose run --rm web python manage.py migrate --no-input
+
+
+#Coletar os arquivos estaticos 
+docker compose run --rm web python manage.py collectstatic --no-input --clear
+
+
+#subir as imagens 
+docker compose up -d --force-recreate web celery
+
+
+
+#verificar se as imagens estão rodando
+docker compose ps
+
+

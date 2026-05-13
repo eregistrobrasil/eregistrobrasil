@@ -1,0 +1,22 @@
+{% extends 'servicos/imoveis/_base_variante_dados.html' %}
+{% load static %}
+
+{% block form_campos %}
+<!-- Número da Matrícula -->
+<div>
+  <label for="{{ form.numero_matricula.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+    Número da Matrícula <span class="text-red-500">*</span>
+  </label>
+  <input type="text" name="{{ form.numero_matricula.html_name }}"
+         id="{{ form.numero_matricula.id_for_label }}"
+         value="{{ form.numero_matricula.value|default:'' }}"
+         placeholder="Ex: 12345"
+         class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all duration-200{% if form.numero_matricula.errors %} is-invalid{% endif %}"
+         inputmode="numeric"
+         autocomplete="off">
+  <p class="text-xs text-gray-400 mt-1">O número da matrícula consta na escritura pública ou no carnê do IPTU.</p>
+  {% for error in form.numero_matricula.errors %}
+    <p class="text-xs text-red-500 mt-1">{{ error }}</p>
+  {% endfor %}
+</div>
+{% endblock %}

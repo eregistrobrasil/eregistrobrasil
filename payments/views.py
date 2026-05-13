@@ -98,101 +98,101 @@ class ProcessPaymentView(View):
         if not settings.MERCADOPAGO_ACCESS_TOKEN:
             return JsonResponse({'error': 'Gateway não configurado.'}, status=503)
 
-        data['external_reference'] = str(order.id)
-        data['notification_url'] = f'{settings.SITE_URL}/pagamentos/webhook/'
-
-        # Garante transaction_amount como float (MP rejeita string)
         try:
-            data['transaction_amount'] = float(data.get('transaction_amount', order.total))
-        except (TypeError, ValueError):
-            data['transaction_amount'] = float(order.total)
+            data['external_reference'] = str(order.id)
+            data['notification_url'] = f'{settings.SITE_URL}/pagamentos/webhook/'
 
-        # Fatura do cartão (statement_descriptor): max 22 chars, sem caracteres especiais
-        data['statement_descriptor'] = 'E-REGISTRO BRASIL'
+            # Garante transaction_amount como float (MP rejeita string)
+            try:
+                data['transaction_amount'] = float(data.get('transaction_amount', order.total))
+            except (TypeError, ValueError):
+                data['transaction_amount'] = float(order.total)
 
-        # Completa dados do pagador a partir do pedido (Brick PIX não envia email)
-        payer = data.get('payer') or {}
-        if not payer.get('email'):
-            payer['email'] = order.customer_email
-        if not (payer.get('identification') or {}).get('number'):
-            cpf_clean = re.sub(r'\D', '', order.customer_cpf)
-            payer['identification'] = {'type': 'CPF', 'number': cpf_clean}
-        name_parts = order.customer_name.split(None, 1)
-        payer.setdefault('first_name', name_parts[0] if name_parts else '')
-        payer.setdefault('last_name', name_parts[1] if len(name_parts) > 1 else '')
-        data['payer'] = payer
+            # Fatura do cartão (statement_descriptor): max 22 chars, sem caracteres especiais
+            data['statement_descriptor'] = 'E-REGISTRO BRASIL'
 
-        # Itens do pedido — melhora aprovação (deve ficar em additional_info)
-        order_items = list(
-            order.items.select_related('product__category').all()
-        )
-        if order_items:
-            mp_items = [
-                {
-                    'id': item.product.slug if item.product else str(item.pk),
-                    'title': item.product_name[:256],
-                    'description': (
-                        (item.product.short_description or item.product.description)[:256]
-                        if item.product and (item.product.short_description or item.product.description)
-                        else item.product_name[:256]
-                    ),
+            # Completa dados do pagador a partir do pedido (Brick PIX não envia email)
+            payer = data.get('payer') or {}
+            if not payer.get('email'):
+                payer['email'] = order.customer_email
+            if not (payer.get('identification') or {}).get('number'):
+                cpf_clean = re.sub(r'\D', '', order.customer_cpf)
+                payer['identification'] = {'type': 'CPF', 'number': cpf_clean}
+            name_parts = order.customer_name.split(None, 1)
+            payer.setdefault('first_name', name_parts[0] if name_parts else '')
+            payer.setdefault('last_name', name_parts[1] if len(name_parts) > 1 else '')
+            data['payer'] = payer
+
+            # Itens do pedido em additional_info (Payments API)
+            order_items = list(order.items.select_related('product').all())
+            if order_items:
+                mp_items = []
+                for item in order_items:
+                    desc = item.product_name
+                    if item.product:
+                        desc = item.product.short_description or item.product.description or item.product_name
+                    mp_items.append({
+                        'id': (item.product.slug if item.product else str(item.pk))[:256],
+                        'title': item.product_name[:256],
+                        'description': str(desc)[:256],
+                        'category_id': 'services',
+                        'quantity': int(item.quantity),
+                        'unit_price': float(item.price),
+                    })
+            else:
+                mp_items = [{
+                    'id': order.short_id,
+                    'title': f'Pedido {order.short_id}',
+                    'description': 'Servico de Certidao',
                     'category_id': 'services',
-                    'quantity': item.quantity,
-                    'unit_price': float(item.price),
-                }
-                for item in order_items
-            ]
-        else:
-            mp_items = [{
-                'id': str(order.id)[:36],
-                'title': f'Pedido #{order.short_id}',
-                'description': order.tipo_certidao or 'Servico de Certidao',
-                'category_id': 'services',
-                'quantity': 1,
-                'unit_price': float(order.total),
-            }]
+                    'quantity': 1,
+                    'unit_price': float(order.total),
+                }]
 
-        # additional_info é o campo correto da Payments API para itens e dados extras
-        additional_info = data.get('additional_info') or {}
-        additional_info['items'] = mp_items
-        name_parts = order.customer_name.split(None, 1)
-        additional_info.setdefault('payer', {
-            'first_name': name_parts[0] if name_parts else '',
-            'last_name': name_parts[1] if len(name_parts) > 1 else '',
-        })
-        data['additional_info'] = additional_info
+            additional_info = data.get('additional_info') or {}
+            if not isinstance(additional_info, dict):
+                additional_info = {}
+            additional_info['items'] = mp_items
+            additional_info.setdefault('payer', {
+                'first_name': name_parts[0] if name_parts else '',
+                'last_name': name_parts[1] if len(name_parts) > 1 else '',
+            })
+            data['additional_info'] = additional_info
 
-        # description obrigatório para PIX
-        if not data.get('description'):
-            titles = ', '.join(i['title'] for i in mp_items)
-            data['description'] = f'Pedido #{order.short_id} - {titles}'[:250]
+            # description obrigatório para PIX
+            if not data.get('description'):
+                titles = ', '.join(i['title'] for i in mp_items)
+                data['description'] = f'Pedido {order.short_id} - {titles}'[:250]
 
-        sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
-        result = sdk.payment().create(data)
-        http_status = result.get('status')
-        response = result.get('response', {})
+            sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
+            result = sdk.payment().create(data)
+            http_status = result.get('status')
+            response = result.get('response', {})
 
-        logger.info(
-            'MP create payment: http=%s pay_status=%s detail=%s error=%s full=%s',
-            http_status,
-            response.get('status'),
-            response.get('status_detail'),
-            response.get('error'),
-            response,
-        )
+            logger.info(
+                'MP create payment: http=%s pay_status=%s detail=%s error=%s',
+                http_status,
+                response.get('status'),
+                response.get('status_detail'),
+                response.get('message') or response.get('error'),
+            )
 
-        if http_status not in (200, 201):
-            logger.error('MP API error %s: %s', http_status, response)
-            payment, _ = Payment.objects.get_or_create(order=order, defaults={'amount': order.total})
-            payment.status = 'rejected'
-            payment.status_detail = str(response.get('message') or response.get('error') or http_status)
-            payment.raw_response = response
-            payment.save()
-            return JsonResponse({'status': 'rejected', 'redirect_url': f'/pagamentos/falha/{order.id}/'})
+            if http_status not in (200, 201):
+                logger.error('MP API error %s: %s', http_status, response)
+                payment, _ = Payment.objects.get_or_create(order=order, defaults={'amount': order.total})
+                payment.status = 'rejected'
+                payment.status_detail = str(response.get('message') or response.get('error') or http_status)
+                payment.raw_response = response
+                payment.save()
+                return JsonResponse({'status': 'rejected', 'redirect_url': f'/pagamentos/falha/{order.id}/'})
 
-        status = response.get('status') or 'rejected'
-        if not isinstance(status, str):
-            status = 'rejected'
+            status = response.get('status') or 'rejected'
+            if not isinstance(status, str):
+                status = 'rejected'
+
+        except Exception as exc:
+            logger.exception('Erro interno ao processar pagamento order=%s: %s', order_id, exc)
+            return JsonResponse({'status': 'error', 'redirect_url': f'/pagamentos/falha/{order.id}/'}, status=500)
 
         payment, _ = Payment.objects.get_or_create(order=order, defaults={'amount': order.total})
         payment.mercadopago_id = str(response.get('id', ''))

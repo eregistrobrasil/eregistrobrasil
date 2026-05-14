@@ -1,3 +1,5 @@
+#SSH
+ssh root@72.60.144.18
 
 
 #Abrir Pasta

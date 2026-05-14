@@ -45,8 +45,11 @@ python manage.py collectstatic --noinput --clear
 echo "==> Corrigindo permissões dos volumes..."
 chown -R appuser:appgroup /app/staticfiles /app/mediafiles
 
-echo "==> Populando produtos iniciais..."
-python manage.py seed_products
+echo "==> Populando estados brasileiros..."
+python manage.py seed_states
+
+echo "==> Sincronizando todos os serviços do sistema (idempotente)..."
+python manage.py seed_all_services
 
 echo "==> Iniciando servidor Gunicorn..."
 exec gosu appuser gunicorn core.wsgi:application \

@@ -1,30 +1,360 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block meta_description %}Termos de Uso da E-Registro Brasil — leia as condições para utilização dos nossos serviços de intermediação documental.{% endblock %}
+
+{% block extra_head %}
+<style>
+  .terms-section { scroll-margin-top: 90px; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="max-w-3xl mx-auto px-4 py-16">
-  <h1 class="text-3xl font-bold text-gray-900 mb-8">Termos de Uso</h1>
-  <div class="bg-white rounded-2xl border border-gray-200 p-10 prose prose-slate max-w-none">
-    <p class="text-gray-500 text-sm mb-6">Última atualização: Janeiro de 2025</p>
 
-    <h2>1. Aceitação dos Termos</h2>
-    <p>Ao utilizar os serviços do E-Registro Brasil, você concorda com os presentes Termos de Uso. Caso não concorde, não utilize nossos serviços.</p>
+<!-- ── Page Header ──────────────────────────────────────────────────── -->
+<div class="bg-white border-b border-gray-200">
+  <div class="max-w-5xl mx-auto px-4 py-10">
 
-    <h2>2. Descrição dos Serviços</h2>
-    <p>O E-Registro Brasil presta serviços de correspondência cartorial, auxiliando na solicitação e obtenção de certidões e documentos em cartórios de todo o Brasil.</p>
+    <!-- Breadcrumb -->
+    <nav class="text-xs text-gray-400 mb-5 flex items-center gap-1.5" aria-label="Breadcrumb">
+      <a href="{% url 'products:home' %}" class="hover:text-primary transition-colors">Início</a>
+      <svg class="w-3 h-3 opacity-35" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      <span class="text-gray-600 font-medium">Termos de Uso</span>
+    </nav>
 
-    <h2>3. Responsabilidades do Usuário</h2>
-    <p>O usuário é responsável pela veracidade das informações fornecidas. Dados incorretos podem acarretar atraso ou impossibilidade de emissão do documento solicitado.</p>
-
-    <h2>4. Prazo de Entrega</h2>
-    <p>Os prazos informados são estimados e podem variar conforme o cartório competente. O E-Registro Brasil não se responsabiliza por atrasos decorrentes de fatores externos.</p>
-
-    <h2>5. Política de Reembolso</h2>
-    <p>Em caso de impossibilidade de emissão do documento por dados incorretos fornecidos pelo cliente, não haverá reembolso das taxas pagas ao cartório.</p>
-
-    <h2>6. Privacidade</h2>
-    <p>Seus dados são tratados conforme nossa <a href="{% url 'pages:privacy' %}" class="text-primary hover:underline">Política de Privacidade</a>.</p>
-
-    <h2>7. Foro</h2>
-    <p>Fica eleito o foro da Comarca de São Paulo/SP para dirimir quaisquer controvérsias oriundas destes termos.</p>
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight mb-2">Termos de Uso</h1>
+        <p class="text-gray-400 text-sm">Última atualização: 14/05/2024</p>
+      </div>
+      <a href="{% url 'pages:privacy' %}"
+         class="inline-flex items-center gap-2 text-sm font-semibold text-primary border border-primary/30 bg-primary/5 hover:bg-primary/10 px-4 py-2 rounded-xl transition-all flex-shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Política de Privacidade
+      </a>
+    </div>
   </div>
 </div>
+
+<!-- ── Main ─────────────────────────────────────────────────────────── -->
+<div class="bg-gray-50 min-h-screen">
+<div class="max-w-5xl mx-auto px-4 py-12">
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+
+    <!-- Índice (sticky) -->
+    <aside class="lg:col-span-1 hidden lg:block" style="position:sticky;top:84px;align-self:start;">
+      <div class="bg-white rounded-2xl border border-gray-200 p-5">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Índice</p>
+        <nav class="space-y-0.5">
+          {% for item in "123456789" %}{% endfor %}
+          <a href="#sec-1" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">1. Identificação</a>
+          <a href="#sec-2" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">2. Sobre os Serviços</a>
+          <a href="#sec-3" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">3. Aceitação</a>
+          <a href="#sec-4" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">4. Cadastro</a>
+          <a href="#sec-5" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">5. Prazos</a>
+          <a href="#sec-6" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">6. Pagamentos</a>
+          <a href="#sec-7" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">7. Cancelamento</a>
+          <a href="#sec-8" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">8. Responsabilidade</a>
+          <a href="#sec-9" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">9. Propriedade Intelectual</a>
+          <a href="#sec-10" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">10. Privacidade</a>
+          <a href="#sec-11" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">11. Alterações</a>
+          <a href="#sec-12" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">12. Foro</a>
+          <a href="#sec-13" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">13. Contato</a>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Conteúdo -->
+    <div class="lg:col-span-3 space-y-6">
+
+      <!-- Introdução -->
+      <div class="bg-white rounded-2xl border border-gray-200 p-7">
+        <p class="text-gray-700 text-sm leading-relaxed mb-3">
+          Seja bem-vindo ao site da <strong class="text-gray-900">E-Registro Brasil</strong>.
+        </p>
+        <p class="text-gray-600 text-sm leading-relaxed">
+          Estes Termos de Uso regulam o acesso e a utilização dos serviços disponibilizados por nossa plataforma digital. Ao acessar ou utilizar o site, o usuário declara ter lido, compreendido e concordado com os presentes Termos de Uso.
+        </p>
+      </div>
+
+      <!-- 1. Identificação -->
+      <div id="sec-1" class="terms-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">1</span>
+          <h2 class="text-base font-extrabold text-gray-900">Identificação da Empresa</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-4">O site <strong class="text-gray-800">eregistrobrasil.com.br</strong> é administrado por:</p>
+        <div class="bg-gray-50 rounded-xl border border-gray-200 p-5 text-sm text-gray-700 space-y-1.5">
+          <p><span class="font-semibold text-gray-500 w-20 inline-block">Empresa:</span> E REGISTRO BRASIL</p>
+          <p><span class="font-semibold text-gray-500 w-20 inline-block">CNPJ:</span> [00.000.000/0000-00]</p>
+          <p><span class="font-semibold text-gray-500 w-20 inline-block">Endereço:</span> SC/S QD 1 BL L SL 905, ASA SUL, BRASÍLIA - DF</p>
+        </div>
+        <p class="text-gray-500 text-xs mt-3">Doravante denominada apenas <em>"Empresa"</em>.</p>
+      </div>
+
+      <!-- 2. Sobre os Serviços -->
+      <div id="sec-2" class="terms-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">2</span>
+          <h2 class="text-base font-extrabold text-gray-900">Sobre os Serviços</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-4">
+          A Empresa atua como <strong class="text-gray-800">intermediadora digital</strong> na solicitação, acompanhamento e obtenção de documentos, certidões e pesquisas documentais junto a cartórios, órgãos públicos e instituições competentes em todo o território nacional.
+        </p>
+        <p class="text-gray-600 text-sm leading-relaxed mb-5">
+          Nosso objetivo é facilitar o acesso do usuário aos serviços documentais, oferecendo praticidade, suporte e acompanhamento durante o processo de solicitação.
+        </p>
+        <div class="bg-amber-50 rounded-xl border border-amber-200 p-5">
+          <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="text-sm text-amber-800">
+              <p class="font-bold mb-2">IMPORTANTE</p>
+              <p class="leading-relaxed mb-1.5">A Empresa <strong>NÃO</strong> é cartório, órgão público, autarquia, junta comercial ou entidade governamental emissora de documentos.</p>
+              <p class="leading-relaxed">A Empresa atua exclusivamente como <strong>facilitadora/intermediadora privada</strong>, sem qualquer vínculo societário, institucional ou comercial com cartórios ou órgãos públicos emissores.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Aceitação -->
+      <div id="sec-3" class="terms-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">3</span>
+          <h2 class="text-base font-extrabold text-gray-900">Aceitação dos Termos</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-3">
+          Ao utilizar o site, o usuário concorda integralmente com estes Termos de Uso e com a <a href="{% url 'pages:privacy' %}" class="text-primary font-semibold hover:underline">Política de Privacidade</a> da plataforma.
+        </p>
+        <p class="text-gray-600 text-sm leading-relaxed">
+          Caso não concorde com qualquer disposição aqui prevista, o usuário não deverá utilizar os serviços oferecidos.
+        </p>
+      </div>
+
+      <!-- 4. Cadastro -->
+      <div id="sec-4" class="terms-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">4</span>
+          <h2 class="text-base font-extrabold text-gray-900">Cadastro e Responsabilidade do Usuário</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-4">
+          Para utilizar determinados serviços, o usuário deverá fornecer informações verdadeiras, completas e atualizadas. O usuário declara ser responsável:
+        </p>
+        <ul class="space-y-2 mb-5">
+          {% for item in "1234" %}{% endfor %}
+          <li class="flex items-start gap-2.5 text-sm text-gray-600">
+            <svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            pela veracidade dos dados informados;
+          </li>
+          <li class="flex items-start gap-2.5 text-sm text-gray-600">
+            <svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            pelo correto preenchimento das solicitações;
+          </li>
+          <li class="flex items-start gap-2.5 text-sm text-gray-600">
+            <svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            pela conferência das informações antes da conclusão do pedido;
+          </li>
+          <li class="flex items-start gap-2.5 text-sm text-gray-600">
+            <svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            pela guarda de seus dados de acesso.
+          </li>
+        </ul>
+        <p class="text-gray-500 text-xs bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 leading-relaxed">
+          A Empresa não se responsabiliza por erros decorrentes de informações incorretas fornecidas pelo usuário.
+        </p>
+      </div>
+
+      <!-- 5. Prazos -->
+      <div id="sec-5" class="terms-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">5</span>
+          <h2 class="text-base font-extrabold text-gray-900">Serviços e Prazos</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-4">
+          Após a confirmação do pagamento, a solicitação será encaminhada para início do processamento. Os prazos informados no site são <strong class="text-gray-800">estimativas</strong> e podem variar conforme:
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-5">
+          {% for label in "123456" %}{% endfor %}
+          <div class="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+            <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            cartório responsável
+          </div>
+          <div class="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+            <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            órgão emissor
+          </div>
+          <div class="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+            <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            estado e município
+          </div>
+          <div class="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+            <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            exigências adicionais
+          </div>
+          <div class="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+            <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            períodos de alta demanda
+          </div>
+          <div class="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+            <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            instabilidades de sistemas externos
+          </div>
+        </div>
+        <p class="text-gray-500 text-xs bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 leading-relaxed">
+          A Empresa não possui ingerência sobre o prazo interno dos cartórios e órgãos responsáveis pela emissão oficial dos documentos.
+        </p>
+      </div>
+
+      <!-- 6. Pagamentos -->
+      <div id="sec-6" class="terms-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">6</span>
+          <h2 class="text-base font-extrabold text-gray-900">Pagamentos</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-4">Os valores cobrados poderão incluir:</p>
+        <ul class="space-y-2 mb-5">
+          <li class="flex items-center gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-primary/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>taxas cartorárias</li>
+          <li class="flex items-center gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-primary/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>emolumentos</li>
+          <li class="flex items-center gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-primary/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>custos operacionais</li>
+          <li class="flex items-center gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-primary/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>serviços de intermediação</li>
+          <li class="flex items-center gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-primary/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>taxas administrativas</li>
+          <li class="flex items-center gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-primary/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>frete ou envio, quando aplicável</li>
+        </ul>
+        <p class="text-gray-600 text-sm leading-relaxed mb-2">Os preços estarão disponíveis antes da finalização da contratação.</p>
+        <p class="text-gray-600 text-sm leading-relaxed">Os pagamentos poderão ser realizados pelos meios disponibilizados na plataforma.</p>
+      </div>
+
+      <!-- 7. Cancelamento -->
+      <div id="sec-7" class="terms-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">7</span>
+          <h2 class="text-base font-extrabold text-gray-900">Política de Cancelamento e Reembolso</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-4">O usuário poderá solicitar cancelamento ou reembolso quando:</p>
+        <ul class="space-y-2 mb-5">
+          <li class="flex items-start gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>o pedido ainda não tiver sido protocolado junto ao órgão emissor;</li>
+          <li class="flex items-start gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>houver cobrança em duplicidade;</li>
+          <li class="flex items-start gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>ocorrer impossibilidade técnica de prestação do serviço.</li>
+        </ul>
+        <div class="space-y-3 text-sm text-gray-600 leading-relaxed">
+          <p class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+            Após o protocolo da solicitação junto ao cartório ou órgão competente, poderá não ser possível realizar cancelamento ou devolução integral dos valores pagos, considerando que os serviços administrativos já terão sido iniciados.
+          </p>
+          <p>Pedidos com informações incorretas preenchidas pelo usuário não geram obrigação de reembolso.</p>
+          <p>O prazo para análise das solicitações de reembolso poderá ser de até <strong class="text-gray-800">30 (trinta) dias</strong>.</p>
+        </div>
+      </div>
+
+      <!-- 8. Responsabilidade -->
+      <div id="sec-8" class="terms-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">8</span>
+          <h2 class="text-base font-extrabold text-gray-900">Limitação de Responsabilidade</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-4">A Empresa não se responsabiliza por:</p>
+        <ul class="space-y-2 mb-5">
+          <li class="flex items-start gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>atrasos causados por cartórios, órgãos públicos ou terceiros;</li>
+          <li class="flex items-start gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>indisponibilidade de sistemas externos;</li>
+          <li class="flex items-start gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>erros constantes em documentos emitidos pelos órgãos responsáveis;</li>
+          <li class="flex items-start gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>recusa de emissão por parte do órgão competente;</li>
+          <li class="flex items-start gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>prejuízos decorrentes de informações incorretas fornecidas pelo usuário;</li>
+          <li class="flex items-start gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>falhas de internet, sistemas ou dispositivos do usuário.</li>
+        </ul>
+        <p class="text-gray-500 text-xs bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 leading-relaxed">
+          A responsabilidade pela autenticidade e validade jurídica dos documentos emitidos pertence exclusivamente ao órgão emissor competente.
+        </p>
+      </div>
+
+      <!-- 9. Propriedade Intelectual -->
+      <div id="sec-9" class="terms-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">9</span>
+          <h2 class="text-base font-extrabold text-gray-900">Propriedade Intelectual</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-3">
+          Todo o conteúdo do site, incluindo textos, imagens, logotipos, marcas, layout e materiais institucionais, é protegido pela legislação de propriedade intelectual.
+        </p>
+        <p class="text-gray-600 text-sm leading-relaxed">
+          É proibida a reprodução, distribuição ou utilização do conteúdo sem autorização prévia e expressa da Empresa.
+        </p>
+      </div>
+
+      <!-- 10. Privacidade -->
+      <div id="sec-10" class="terms-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">10</span>
+          <h2 class="text-base font-extrabold text-gray-900">Privacidade e Proteção de Dados</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-3">
+          O tratamento de dados pessoais ocorre conforme a legislação vigente, especialmente a <strong class="text-gray-800">Lei Geral de Proteção de Dados (LGPD – Lei nº 13.709/2018)</strong>.
+        </p>
+        <p class="text-gray-600 text-sm leading-relaxed">
+          Ao utilizar os serviços, o usuário autoriza o tratamento dos dados necessários para execução das solicitações contratadas. Consulte nossa <a href="{% url 'pages:privacy' %}" class="text-primary font-semibold hover:underline">Política de Privacidade</a> para mais detalhes.
+        </p>
+      </div>
+
+      <!-- 11. Alterações -->
+      <div id="sec-11" class="terms-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">11</span>
+          <h2 class="text-base font-extrabold text-gray-900">Alterações dos Termos</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-3">
+          A Empresa poderá alterar estes Termos de Uso a qualquer momento, mediante publicação atualizada no site.
+        </p>
+        <p class="text-gray-600 text-sm leading-relaxed">
+          Recomendamos que o usuário revise periodicamente este conteúdo.
+        </p>
+      </div>
+
+      <!-- 12. Foro -->
+      <div id="sec-12" class="terms-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">12</span>
+          <h2 class="text-base font-extrabold text-gray-900">Foro</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed">
+          Fica eleito o foro da comarca de <strong class="text-gray-800">Brasília - DF</strong>, para dirimir quaisquer dúvidas ou controvérsias relacionadas a estes Termos de Uso, com renúncia expressa a qualquer outro, por mais privilegiado que seja.
+        </p>
+      </div>
+
+      <!-- 13. Contato -->
+      <div id="sec-13" class="terms-section bg-primary/5 rounded-2xl border border-primary/15 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">13</span>
+          <h2 class="text-base font-extrabold text-gray-900">Contato</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-5">Em caso de dúvidas, solicitações ou suporte, entre em contato:</p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-white rounded-xl border border-gray-200 p-4">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">E-mail</p>
+            <p class="text-sm text-gray-700">contato@eregistrobrasil.com.br</p>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 p-4">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">WhatsApp</p>
+            <p class="text-sm text-gray-700">+55 61 99999-9999</p>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 p-4">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Horário</p>
+            <p class="text-sm text-gray-700">Das 9h às 18h </p>
+          </div>
+        </div>
+        <div class="mt-5 text-center">
+          <a href="{% url 'pages:contact' %}"
+             class="inline-flex items-center gap-2 bg-primary text-white font-bold px-6 py-2.5 rounded-xl hover:bg-primary-dark transition-all text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+            Ir para Fale Conosco
+          </a>
+        </div>
+      </div>
+
+      <!-- Nota final -->
+      <p class="text-center text-xs text-gray-400 pb-4">
+        Este documento foi elaborado para fins institucionais e poderá ser ajustado conforme as necessidades operacionais e jurídicas da empresa.
+      </p>
+
+    </div>
+  </div>
+</div>
+</div>
+
 {% endblock %}

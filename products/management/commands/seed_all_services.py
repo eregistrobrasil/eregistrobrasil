@@ -19,6 +19,16 @@ from django.core.management.base import BaseCommand
 from django.utils.text import slugify
 
 from products.models import Category, Product, TipoServico
+from products.services import criar_precos_para_todos_estados
+
+# Slugs das variantes de Registro de Imóveis que usam ServiceStatePrice
+# (igual ao registro-civil — gerenciados em /financeiro/precos/)
+IMOVEIS_VARIANTES_SLUGS = [
+    "certidao-de-matricula-atualizada",
+    "certidao-de-onus-reais",
+    "certidao-negativa-de-alienacao-fiduciaria",
+    "pesquisa-de-bens",
+]
 
 # ─── Definição canônica de todos os serviços do sistema ───────────────────────
 # Estrutura: cada entrada em CATEGORIES define uma categoria e seus serviços.
@@ -823,3 +833,24 @@ class Command(BaseCommand):
                 f'{total_svcs} serviço(s) criado(s), {updated_svcs} atualizado(s).'
             )
         )
+
+        # Garante que os preços por estado (ServiceStatePrice) existam para as
+        # variantes de Imóveis que usam a mesma tabela que registro-civil.
+        # Idempotente: criar_precos_para_todos_estados usa get_or_create internamente.
+        self.stdout.write('\nGarantindo ServiceStatePrice para variantes de Imóveis...')
+        for slug in IMOVEIS_VARIANTES_SLUGS:
+            try:
+                product = Product.objects.get(slug=slug)
+                from products.models import ServiceStatePrice, State
+                existentes_antes = ServiceStatePrice.objects.filter(service=product).count()
+                criar_precos_para_todos_estados(product)
+                existentes_depois = ServiceStatePrice.objects.filter(service=product).count()
+                criados = existentes_depois - existentes_antes
+                if criados:
+                    self.stdout.write(f'  + {slug}: {criados} estado(s) criado(s)')
+                else:
+                    self.stdout.write(f'  ~ {slug}: preços já existiam ({existentes_depois} estados)')
+            except Product.DoesNotExist:
+                self.stdout.write(
+                    self.style.WARNING(f'  ! {slug}: produto não encontrado, pulando')
+                )

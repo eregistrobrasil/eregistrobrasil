@@ -19,6 +19,8 @@
 <meta property="article:published_time" content="{{ post.published_at|date:'c' }}">
 <meta property="article:modified_time" content="{{ post.updated_at|date:'c' }}">
 {% if post.author %}<meta property="article:author" content="{{ post.author.get_full_name|default:post.author.username }}">{% endif %}
+{% if post.category %}<meta property="article:section" content="{{ post.category.name }}">{% endif %}
+{% for tag in post.get_tags_list %}<meta property="article:tag" content="{{ tag }}">{% endfor %}
 {% endblock %}
 
 {% block extra_head %}
@@ -30,144 +32,314 @@
   "description": "{{ meta_description|escapejs }}",
   "datePublished": "{{ post.published_at|date:'c' }}",
   "dateModified": "{{ post.updated_at|date:'c' }}",
-  "author": {
-    "@type": "Person",
-    "name": "{{ post.author.get_full_name|default:post.author.username|escapejs }}"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "E-Registro Brasil",
-    "url": "{{ request.scheme }}://{{ request.get_host }}"
-  }{% if post.cover_image %},
-  "image": "{{ request.scheme }}://{{ request.get_host }}{{ post.cover_image.url }}"{% endif %}
+  "author": { "@type": "Person", "name": "{{ post.author.get_full_name|default:post.author.username|escapejs }}" },
+  "publisher": { "@type": "Organization", "name": "E-Registro Brasil", "url": "{{ request.scheme }}://{{ request.get_host }}" }
+  {% if post.cover_image %},"image": "{{ request.scheme }}://{{ request.get_host }}{{ post.cover_image.url }}"{% endif %}
 }
 </script>
+<style>
+  .prose-blog h2 { font-size:1.35rem; font-weight:800; color:#1B4F72; margin-top:2rem; margin-bottom:.75rem; padding-bottom:.5rem; border-bottom:2px solid #e2ecf4; }
+  .prose-blog h3 { font-size:1.1rem; font-weight:700; color:#1e4d6b; margin-top:1.5rem; margin-bottom:.5rem; }
+  .prose-blog p { margin-bottom:1.25rem; color:#374151; line-height:1.8; }
+  .prose-blog ul, .prose-blog ol { padding-left:1.5rem; margin-bottom:1.25rem; }
+  .prose-blog ul { list-style-type:disc; }
+  .prose-blog ol { list-style-type:decimal; }
+  .prose-blog li { color:#374151; line-height:1.8; margin-bottom:.4rem; }
+  .prose-blog a { color:#1B4F72; text-decoration:underline; text-underline-offset:3px; }
+  .prose-blog a:hover { color:#154360; }
+  .prose-blog strong { color:#1a1a2e; font-weight:700; }
+  .prose-blog blockquote { border-left:4px solid #1B4F72; padding:1rem 1.25rem; background:#f0f6fb; margin:1.5rem 0; border-radius:0 .75rem .75rem 0; }
+  .prose-blog blockquote p { color:#1B4F72; font-style:italic; margin:0; }
+  .prose-blog code { background:#f0f6fb; color:#1B4F72; padding:.15rem .4rem; border-radius:.375rem; font-size:.85em; }
+  .scrollbar-hide::-webkit-scrollbar { display:none; }
+  .scrollbar-hide { -ms-overflow-style:none; scrollbar-width:none; }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto px-4 py-10">
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+<div class="bg-gray-100 min-h-screen">
 
-    <!-- Artigo principal -->
-    <article class="lg:col-span-2">
-      <!-- Breadcrumb -->
-      <nav class="text-sm text-gray-500 mb-6 flex items-center gap-1.5">
-        <a href="/" class="hover:text-primary transition-colors">Início</a>
-        <span>/</span>
-        <a href="{% url 'blog:list' %}" class="hover:text-primary transition-colors">Blog</a>
-        <span>/</span>
-        <span class="text-gray-800 truncate max-w-xs">{{ post.title }}</span>
-      </nav>
-
-      {% if post.category %}
-      <a href="{% url 'blog:list' %}?categoria={{ post.category.slug }}"
-         class="inline-block text-xs font-medium text-primary bg-primary/10 px-3 py-1 rounded-full mb-4 hover:bg-primary/20 transition-colors">
-        {{ post.category.name }}
-      </a>
-      {% endif %}
-
-      <h1 class="text-3xl font-bold text-gray-900 leading-tight mb-4">{{ post.title }}</h1>
-
-      <div class="flex items-center gap-4 text-sm text-gray-400 mb-8 flex-wrap">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-            {{ post.author.first_name|first|upper }}{{ post.author.last_name|first|upper }}
-          </div>
-          <span class="text-gray-600 font-medium">{{ post.author.get_full_name|default:post.author.username }}</span>
-        </div>
-        <span>·</span>
-        <span>{{ post.published_at|default:post.created_at|date:"d \d\e F \d\e Y" }}</span>
-        <span>·</span>
-        <span class="flex items-center gap-1">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          {{ post.reading_time }} min de leitura
-        </span>
-      </div>
-
-      {% if post.cover_image %}
-      <div class="rounded-2xl overflow-hidden mb-8 aspect-video">
-        <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" class="w-full h-full object-cover" loading="lazy">
-      </div>
-      {% endif %}
-
-      <!-- Conteúdo -->
-      <div class="prose prose-slate prose-headings:text-primary prose-a:text-primary max-w-none text-gray-700 leading-relaxed">
-        {{ post.content|safe }}
-      </div>
-
-      <!-- Compartilhar -->
-      <div class="mt-10 pt-8 border-t border-gray-200">
-        <p class="text-sm font-semibold text-gray-700 mb-3">Compartilhar artigo:</p>
-        <div class="flex gap-3 flex-wrap">
-          <a href="https://wa.me/?text={{ request.build_absolute_uri|urlencode }}"
-             target="_blank" rel="noopener noreferrer"
-             class="inline-flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-            </svg>
-            WhatsApp
-          </a>
-          <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri|urlencode }}"
-             target="_blank" rel="noopener noreferrer"
-             class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-            </svg>
-            Facebook
-          </a>
-          <button onclick="navigator.clipboard.writeText(window.location.href); this.textContent='Copiado!';"
-                  class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-            </svg>
-            Copiar link
-          </button>
-        </div>
-      </div>
-
-      <div class="mt-8">
-        <a href="{% url 'blog:list' %}" class="inline-flex items-center gap-2 text-sm text-primary hover:underline">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-          </svg>
-          Voltar para o Blog
+  <!-- Cover Image Banner -->
+  {% if post.cover_image %}
+  <div class="w-full overflow-hidden relative" style="height:clamp(220px,32vw,400px);">
+    <img src="{{ post.cover_image.url }}" alt="{{ post.title }}"
+         class="w-full h-full object-cover" loading="eager">
+    <div class="absolute inset-0" style="background:linear-gradient(to bottom,rgba(0,0,0,.2) 0%,rgba(0,0,0,.55) 100%);"></div>
+    <div class="absolute bottom-0 left-0 right-0 px-4 pb-6 pt-10">
+      <div class="max-w-7xl mx-auto">
+        {% if post.category %}
+        <a href="{% url 'blog:category' post.category.slug %}"
+           class="inline-block text-xs font-semibold text-white/85 bg-white/20 backdrop-blur-sm border border-white/25 px-3 py-1 rounded-full mb-3 hover:bg-white/30 transition-colors">
+          {{ post.category.name }}
         </a>
+        {% endif %}
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-snug max-w-3xl drop-shadow-sm">
+          {{ post.title }}
+        </h1>
       </div>
-    </article>
+    </div>
+  </div>
+  {% endif %}
 
-    <!-- Sidebar -->
-    <aside class="lg:col-span-1">
-      {% if recent_posts %}
-      <div class="bg-white rounded-2xl border border-gray-200 p-6 sticky top-6">
-        <h3 class="font-bold text-gray-900 mb-4 text-base">Artigos Recentes</h3>
-        <div class="flex flex-col gap-4">
-          {% for recent in recent_posts %}
-          {% if recent.pk != post.pk %}
-          <a href="{% url 'blog:detail' recent.slug %}" class="flex gap-3 group">
-            {% if recent.cover_image %}
-            <div class="w-16 h-14 rounded-lg overflow-hidden flex-shrink-0">
-              <img src="{{ recent.cover_image.url }}" alt="{{ recent.title }}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-            </div>
-            {% else %}
-            <div class="w-16 h-14 rounded-lg bg-gradient-to-br from-primary to-blue-800 flex-shrink-0"></div>
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+      <!-- ─ Article (2/3) ─────────────────────────────────────────── -->
+      <article class="lg:col-span-2">
+
+        <!-- Breadcrumb -->
+        <nav class="text-xs text-gray-500 mb-5 flex items-center gap-1.5 flex-wrap" aria-label="Breadcrumb">
+          <a href="{% url 'products:home' %}" class="hover:text-primary transition-colors">Início</a>
+          <svg class="w-3 h-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <a href="{% url 'blog:list' %}" class="hover:text-primary transition-colors">Blog</a>
+          {% if post.category %}
+          <svg class="w-3 h-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <a href="{% url 'blog:category' post.category.slug %}" class="hover:text-primary transition-colors">{{ post.category.name }}</a>
+          {% endif %}
+          <svg class="w-3 h-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <span class="text-gray-700 truncate max-w-xs">{{ post.title|truncatechars:40 }}</span>
+        </nav>
+
+        <!-- Article Card -->
+        <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+
+          <!-- Header (shown when there's no cover image) -->
+          {% if not post.cover_image %}
+          <div class="bg-gradient-to-br from-primary to-[#0e3055] p-8">
+            {% if post.category %}
+            <a href="{% url 'blog:category' post.category.slug %}"
+               class="inline-block text-xs font-semibold text-white/75 bg-white/20 border border-white/20 px-3 py-1 rounded-full mb-4 hover:bg-white/30 transition-colors">
+              {{ post.category.name }}
+            </a>
             {% endif %}
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-gray-800 group-hover:text-primary transition-colors leading-snug line-clamp-2">{{ recent.title }}</p>
-              <span class="text-xs text-gray-400">{{ recent.published_at|default:recent.created_at|date:"d/m/Y" }}</span>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white leading-snug">{{ post.title }}</h1>
+          </div>
+          {% else %}
+          {% if post.category %}
+          <div class="px-6 pt-5">
+            <a href="{% url 'blog:category' post.category.slug %}"
+               class="inline-block text-xs font-semibold text-primary bg-primary/8 px-3 py-1 rounded-full hover:bg-primary/15 transition-colors">
+              {{ post.category.name }}
+            </a>
+          </div>
+          {% endif %}
+          <div class="px-6 pt-4">
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-snug">{{ post.title }}</h1>
+          </div>
+          {% endif %}
+
+          <!-- Meta Bar -->
+          <div class="px-6 py-4 flex flex-wrap items-center gap-4 text-sm text-gray-400 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">
+                {{ post.author.first_name|first|upper }}{% if post.author.last_name %}{{ post.author.last_name|first|upper }}{% endif %}
+              </div>
+              <span class="font-semibold text-gray-700">{{ post.author.get_full_name|default:post.author.username }}</span>
             </div>
+            <div class="flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              {{ post.published_at|default:post.created_at|date:"d \d\e F \d\e Y" }}
+            </div>
+            <div class="flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              {{ post.reading_time }} min de leitura
+            </div>
+            <div class="flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              {{ post.views_count }} visualizações
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="px-6 py-8 prose-blog">
+            {{ post.content|safe }}
+          </div>
+
+          <!-- Tags -->
+          {% with tags=post.get_tags_list %}
+          {% if tags %}
+          <div class="px-6 pb-6 flex flex-wrap gap-2 items-center">
+            <span class="text-xs text-gray-400 font-medium mr-1">Tags:</span>
+            {% for tag in tags %}
+            <span class="text-xs bg-gray-100 hover:bg-primary/10 hover:text-primary text-gray-600 px-3 py-1 rounded-full cursor-default transition-colors">#{{ tag }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% endwith %}
+
+          <!-- Share -->
+          <div class="px-6 pb-8 pt-2 border-t border-gray-100">
+            <p class="text-sm font-bold text-gray-700 mb-3">Compartilhar artigo:</p>
+            <div class="flex gap-2 flex-wrap">
+              <a href="https://wa.me/?text={{ post.title|urlencode }}%20{{ request.build_absolute_uri|urlencode }}"
+                 target="_blank" rel="noopener noreferrer"
+                 class="inline-flex items-center gap-2 px-4 py-2 bg-[#25D366] hover:bg-[#1ebe5a] text-white text-xs font-bold rounded-xl transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                WhatsApp
+              </a>
+              <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri|urlencode }}"
+                 target="_blank" rel="noopener noreferrer"
+                 class="inline-flex items-center gap-2 px-4 py-2 bg-[#1877F2] hover:bg-[#166fe5] text-white text-xs font-bold rounded-xl transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                Facebook
+              </a>
+              <a href="https://twitter.com/intent/tweet?text={{ post.title|urlencode }}&url={{ request.build_absolute_uri|urlencode }}"
+                 target="_blank" rel="noopener noreferrer"
+                 class="inline-flex items-center gap-2 px-4 py-2 bg-black hover:bg-gray-900 text-white text-xs font-bold rounded-xl transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.738-8.85L2.25 2.25h6.845l4.254 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                X (Twitter)
+              </a>
+              <button onclick="navigator.clipboard.writeText(window.location.href);this.innerHTML='<svg class=\'w-4 h-4\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M5 13l4 4L19 7\'/></svg> Copiado!'"
+                      class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                Copiar link
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Back link -->
+        <div class="mt-6 flex items-center gap-4">
+          <a href="{% url 'blog:list' %}" class="inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            Voltar ao Blog
+          </a>
+          {% if post.category %}
+          <a href="{% url 'blog:category' post.category.slug %}" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-primary hover:underline font-medium">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+            Ver todos em {{ post.category.name }}
           </a>
           {% endif %}
-          {% endfor %}
         </div>
-        <div class="mt-5 pt-4 border-t border-gray-100">
-          <a href="{% url 'blog:list' %}" class="block text-center text-sm text-primary font-medium hover:underline">Ver todos os artigos →</a>
-        </div>
-      </div>
-      {% endif %}
-    </aside>
 
+        <!-- Related Posts -->
+        {% if related_posts %}
+        <div class="mt-10">
+          <h2 class="text-base font-bold text-gray-900 mb-5">Artigos Relacionados</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {% for related in related_posts %}
+            <a href="{% url 'blog:detail' related.slug %}" class="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col">
+              <div class="aspect-video overflow-hidden bg-gradient-to-br from-primary to-[#0e3055]">
+                {% if related.cover_image %}
+                <img src="{{ related.cover_image.url }}" alt="{{ related.title }}" loading="lazy"
+                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"/>
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center">
+                  <svg class="w-10 h-10 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                {% endif %}
+              </div>
+              <div class="p-4 flex-1 flex flex-col">
+                {% if related.category %}
+                <span class="text-xs text-primary font-semibold mb-1">{{ related.category.name }}</span>
+                {% endif %}
+                <p class="text-sm font-bold text-gray-800 group-hover:text-primary transition-colors leading-snug flex-1" style="-webkit-line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;">{{ related.title }}</p>
+                <span class="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  {{ related.reading_time }} min
+                </span>
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+      </article>
+
+      <!-- ─ Sidebar (1/3) ───────────────────────────────────────── -->
+      <aside class="lg:col-span-1 space-y-6">
+
+        <!-- Author Card -->
+        <div class="bg-white rounded-2xl border border-gray-200 p-5">
+          <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Sobre o Autor</h3>
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-lg font-extrabold text-primary flex-shrink-0">
+              {{ post.author.first_name|first|upper }}{% if post.author.last_name %}{{ post.author.last_name|first|upper }}{% endif %}
+            </div>
+            <div>
+              <p class="font-bold text-gray-800 text-sm">{{ post.author.get_full_name|default:post.author.username }}</p>
+              <p class="text-xs text-gray-400 mt-0.5">Equipe E-Registro Brasil</p>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-4 leading-relaxed">
+            Especialistas em documentação cartorial, certidões e regularização de documentos em todo o Brasil.
+          </p>
+        </div>
+
+        <!-- Categories -->
+        {% if sidebar_categories %}
+        <div class="bg-white rounded-2xl border border-gray-200 p-5">
+          <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Categorias</h3>
+          <ul class="space-y-0.5">
+            {% for cat in sidebar_categories %}
+            <li>
+              <a href="{% url 'blog:category' cat.slug %}"
+                 class="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-primary/6 text-gray-700 hover:text-primary text-sm font-medium transition-all group {% if post.category and post.category.slug == cat.slug %}bg-primary/8 text-primary{% endif %}">
+                <span class="flex items-center gap-2">
+                  <svg class="w-3.5 h-3.5 text-primary/40 group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                  {{ cat.name }}
+                </span>
+                <span class="text-xs text-gray-400 bg-gray-100 group-hover:bg-primary/10 group-hover:text-primary px-2 py-0.5 rounded-full transition-colors font-semibold">{{ cat.published_count }}</span>
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <!-- Recent Posts -->
+        {% if sidebar_recent %}
+        <div class="bg-white rounded-2xl border border-gray-200 p-5">
+          <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Artigos Recentes</h3>
+          <div class="space-y-4">
+            {% for recent in sidebar_recent %}
+            {% if recent.pk != post.pk %}
+            <a href="{% url 'blog:detail' recent.slug %}" class="flex gap-3 group items-start">
+              <div class="w-14 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-primary to-[#0e3055]">
+                {% if recent.cover_image %}
+                <img src="{{ recent.cover_image.url }}" alt="{{ recent.title }}" loading="lazy"
+                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white/25" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                {% endif %}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-gray-800 group-hover:text-primary transition-colors leading-snug" style="-webkit-line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;">{{ recent.title }}</p>
+                <span class="text-xs text-gray-400 mt-1">{{ recent.published_at|default:recent.created_at|date:"d/m/Y" }}</span>
+              </div>
+            </a>
+            {% endif %}
+            {% endfor %}
+          </div>
+          <div class="mt-4 pt-4 border-t border-gray-100">
+            <a href="{% url 'blog:list' %}" class="text-xs font-semibold text-primary hover:underline">Ver todos os artigos →</a>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- CTA Box -->
+        <div class="bg-gradient-to-br from-primary to-[#0e3055] rounded-2xl p-6 text-white relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-36 h-36 rounded-full bg-white/5 -translate-y-1/3 translate-x-1/3 pointer-events-none"></div>
+          <div class="relative z-10">
+            <div class="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center mb-3">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <h3 class="font-extrabold text-white text-sm mb-2">Precisa de uma certidão?</h3>
+            <p class="text-white/65 text-xs mb-4 leading-relaxed">Solicite online com rapidez e segurança. Atendemos todo o Brasil.</p>
+            <a href="{% url 'products:home' %}"
+               class="flex items-center justify-center gap-1.5 bg-white text-primary text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-all w-full">
+              Ver Serviços
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </a>
+          </div>
+        </div>
+
+      </aside>
+    </div>
   </div>
 </div>
 {% endblock %}

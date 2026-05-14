@@ -1759,23 +1759,26 @@ class TraducaoJuramentadaView(BaseServicoSimplesDadosView):
 class BaseImovelVarianteView(BaseCertidaoCartorioView):
     """
     Etapa 1 genérica para variantes do Registro de Imóveis.
-    Herda BaseCertidaoCartorioView, filtra cartórios por tipo='imoveis',
-    e expõe state_prices_json via PrecoImovelEstado.
+    Herda BaseCertidaoCartorioView, filtra cartórios por tipo='imoveis'.
+    Usa ServiceStatePrice — mesma tabela de /financeiro/precos/ — para exibição
+    e cobrança de preços dinâmicos por estado, igual ao registro-civil.
     """
     tipo_cartorio = "imoveis"
-    tipo_preco = "matricula"   # tipo de PrecoImovelEstado a usar para a exibição lateral
     _product_slug = ""
     imagem_static = "img/certidao-de-nascimento.png"
 
     def _ctx(self, dados_ec, form):
-        from products.services import get_imovel_prices_dict
+        from products.services import get_state_prices_dict
         from products.models import Product
         ctx = super()._ctx(dados_ec, form)
-        ctx["state_prices_json"] = json.dumps(get_imovel_prices_dict(self.tipo_preco))
         try:
-            product = Product.objects.get(slug=self._product_slug, is_active=True)
+            product = Product.objects.select_related('category').get(
+                slug=self._product_slug, is_active=True
+            )
+            ctx["state_prices_json"] = json.dumps(get_state_prices_dict(product))
             ctx["product_base_price"] = str(product.price)
         except Product.DoesNotExist:
+            ctx["state_prices_json"] = "{}"
             ctx["product_base_price"] = "0"
         return ctx
 
@@ -1783,14 +1786,14 @@ class BaseImovelVarianteView(BaseCertidaoCartorioView):
 class BaseImovelVarianteDadosView(View):
     """
     Etapa 2 genérica para variantes do Registro de Imóveis.
-    Exibe formulário, calcula preço via PrecoImovelEstado, adiciona ao carrinho.
+    Usa ServiceStatePrice (mesma fonte de /financeiro/precos/) para calcular e
+    cobrar preços por estado — padrão idêntico ao registro-civil.
     """
     title = ""
     form_class = None
     template_name = ""
     product_slug = ""
     step1_url = ""
-    tipo_preco = "matricula"
     descricao_step2 = "Informe os dados do imóvel."
     date_fields = []
     date_field_ids = []
@@ -1798,10 +1801,23 @@ class BaseImovelVarianteDadosView(View):
     def _get_cartorio(self, request):
         return request.session.get("certidao_cartorio")
 
+    def _get_product(self):
+        from products.models import Product
+        try:
+            return Product.objects.get(slug=self.product_slug, is_active=True)
+        except Product.DoesNotExist:
+            return None
+
     def _ctx(self, form, cartorio_data):
-        from products.services import obter_preco_imovel
+        from products.services import obter_preco_por_estado
         estado_uf = (cartorio_data or {}).get("estado_uf", "")
-        preco = obter_preco_imovel(self.tipo_preco, estado_uf) if estado_uf else None
+        preco = None
+        if estado_uf:
+            product = self._get_product()
+            if product:
+                preco = obter_preco_por_estado(product, estado_uf)
+                if preco is None:
+                    preco = product.price
         preco_display = None
         if preco is not None:
             preco_display = "R$ " + f"{preco:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
@@ -1846,12 +1862,11 @@ class BaseImovelVarianteDadosView(View):
         return render(request, self.template_name, self._ctx(form, cartorio_data))
 
     def _add_to_cart(self, request, cartorio_data, dados):
-        from products.models import Product, State
-        from products.services import obter_preco_imovel
+        from products.models import State
+        from products.services import obter_preco_por_estado
         from orders.models import Cart, CartItem
-        try:
-            product = Product.objects.get(slug=self.product_slug, is_active=True)
-        except Product.DoesNotExist:
+        product = self._get_product()
+        if not product:
             return
         if not request.session.session_key:
             request.session.create()
@@ -1863,9 +1878,10 @@ class BaseImovelVarianteDadosView(View):
         )[:200]
         item.requester_document = str(dados.get("cpf", ""))[:30]
 
+        # Preço sempre recalculado do banco — nunca confia no frontend
         estado_uf = cartorio_data.get("estado_uf", "")
         if estado_uf:
-            unit_price = obter_preco_imovel(self.tipo_preco, estado_uf)
+            unit_price = obter_preco_por_estado(product, estado_uf)
             if unit_price is None:
                 unit_price = product.price
             item.unit_price = unit_price
@@ -1874,7 +1890,6 @@ class BaseImovelVarianteDadosView(View):
                 item.state = state_obj
         item.save()
 
-        request.session["ordem_tipo_certidao"] = self.tipo_preco
         request.session["ordem_cidade"] = cartorio_data.get("cidade", "")
         request.session["ordem_cartorio_nome"] = cartorio_data.get("cartorio", "")
 
@@ -1886,7 +1901,6 @@ class CertidaoAlienacaoFiduciariaView(BaseImovelVarianteView):
     template_name = "servicos/imoveis/alienacao_fiduciaria_cartorio.html"
     dados_step_name = "pages:certidao_alienacao_fiduciaria_dados"
     _product_slug = "certidao-negativa-de-alienacao-fiduciaria"
-    tipo_preco = "matricula"
     descricao_servico = (
         "Certidão que comprova a inexistência de alienação fiduciária registrada em "
         "nome do titular no Cartório de Registro de Imóveis."
@@ -1900,7 +1914,6 @@ class CertidaoAlienacaoFiduciariaDadosView(BaseImovelVarianteDadosView):
     template_name = "servicos/imoveis/alienacao_fiduciaria_dados.html"
     product_slug = "certidao-negativa-de-alienacao-fiduciaria"
     step1_url = "pages:certidao_alienacao_fiduciaria"
-    tipo_preco = "matricula"
     descricao_step2 = "Informe o nome e CPF do titular para pesquisa de alienação fiduciária."
 
 
@@ -1911,7 +1924,6 @@ class CertidaoMatriculaAtualizadaView(BaseImovelVarianteView):
     template_name = "servicos/imoveis/matricula_atualizada_cartorio.html"
     dados_step_name = "pages:certidao_matricula_atualizada_dados"
     _product_slug = "certidao-de-matricula-atualizada"
-    tipo_preco = "matricula"
     descricao_servico = (
         "Certidão atualizada que reflete a situação jurídica atual do imóvel: "
         "titularidade, ônus, gravames e histórico completo de transações."
@@ -1925,7 +1937,6 @@ class CertidaoMatriculaAtualizadaDadosView(BaseImovelVarianteDadosView):
     template_name = "servicos/imoveis/matricula_atualizada_dados.html"
     product_slug = "certidao-de-matricula-atualizada"
     step1_url = "pages:certidao_matricula_atualizada"
-    tipo_preco = "matricula"
     descricao_step2 = "Informe o número da matrícula do imóvel."
 
 
@@ -1936,7 +1947,6 @@ class CertidaoOnusReaisView(BaseImovelVarianteView):
     template_name = "servicos/imoveis/onus_reais_cartorio.html"
     dados_step_name = "pages:certidao_onus_reais_dados"
     _product_slug = "certidao-de-onus-reais"
-    tipo_preco = "inteiro_teor"
     descricao_servico = (
         "Certidão que lista todos os ônus, hipotecas, penhoras e gravames "
         "incidentes sobre o imóvel, incluindo cópia integral da matrícula."
@@ -1950,7 +1960,6 @@ class CertidaoOnusReaisDadosView(BaseImovelVarianteDadosView):
     template_name = "servicos/imoveis/onus_reais_dados.html"
     product_slug = "certidao-de-onus-reais"
     step1_url = "pages:certidao_onus_reais"
-    tipo_preco = "inteiro_teor"
     descricao_step2 = "Informe o número da matrícula para a certidão de ônus reais."
 
 
@@ -1961,7 +1970,6 @@ class PesquisaBensView(BaseImovelVarianteView):
     template_name = "servicos/imoveis/pesquisa_bens_cartorio.html"
     dados_step_name = "pages:pesquisa_bens_dados"
     _product_slug = "pesquisa-de-bens"
-    tipo_preco = "matricula"
     descricao_servico = (
         "Pesquisa de bens imóveis registrados em nome de pessoa física ou jurídica "
         "no Cartório de Registro de Imóveis."
@@ -1975,5 +1983,4 @@ class PesquisaBensDadosView(BaseImovelVarianteDadosView):
     template_name = "servicos/imoveis/pesquisa_bens_dados.html"
     product_slug = "pesquisa-de-bens"
     step1_url = "pages:pesquisa_bens"
-    tipo_preco = "matricula"
     descricao_step2 = "Informe o nome e CPF do titular para pesquisa de bens imóveis registrados."

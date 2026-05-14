@@ -1794,6 +1794,7 @@ class BaseImovelVarianteDadosView(View):
     template_name = ""
     product_slug = ""
     step1_url = ""
+    tipo_preco = ""          # identificador do tipo de certidão (ex: 'matricula')
     descricao_step2 = "Informe os dados do imóvel."
     date_fields = []
     date_field_ids = []
@@ -1914,6 +1915,7 @@ class CertidaoAlienacaoFiduciariaDadosView(BaseImovelVarianteDadosView):
     template_name = "servicos/imoveis/alienacao_fiduciaria_dados.html"
     product_slug = "certidao-negativa-de-alienacao-fiduciaria"
     step1_url = "pages:certidao_alienacao_fiduciaria"
+    tipo_preco = "alienacao_fiduciaria"
     descricao_step2 = "Informe o nome e CPF do titular para pesquisa de alienação fiduciária."
 
 
@@ -1937,6 +1939,7 @@ class CertidaoMatriculaAtualizadaDadosView(BaseImovelVarianteDadosView):
     template_name = "servicos/imoveis/matricula_atualizada_dados.html"
     product_slug = "certidao-de-matricula-atualizada"
     step1_url = "pages:certidao_matricula_atualizada"
+    tipo_preco = "matricula"
     descricao_step2 = "Informe o número da matrícula do imóvel."
 
 
@@ -1960,6 +1963,7 @@ class CertidaoOnusReaisDadosView(BaseImovelVarianteDadosView):
     template_name = "servicos/imoveis/onus_reais_dados.html"
     product_slug = "certidao-de-onus-reais"
     step1_url = "pages:certidao_onus_reais"
+    tipo_preco = "inteiro_teor"
     descricao_step2 = "Informe o número da matrícula para a certidão de ônus reais."
 
 
@@ -1983,4 +1987,5 @@ class PesquisaBensDadosView(BaseImovelVarianteDadosView):
     template_name = "servicos/imoveis/pesquisa_bens_dados.html"
     product_slug = "pesquisa-de-bens"
     step1_url = "pages:pesquisa_bens"
+    tipo_preco = "pesquisa_bens"
     descricao_step2 = "Informe o nome e CPF do titular para pesquisa de bens imóveis registrados."

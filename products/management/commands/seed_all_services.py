@@ -632,6 +632,59 @@ CATEGORIES = [
                 "meta_title": "Certidão de Antecedentes Criminais Online — E-Registro Brasil",
                 "meta_desc": "Certidão de antecedentes criminais Polícia Federal online. R$ 49,90.",
             },
+            {
+                "name": "TSE — Certidão de Quitação Eleitoral",
+                "slug": "tse-certidao-de-quitacao-eleitoral",
+                "short": "Certidão que comprova a regularidade eleitoral perante a Justiça Eleitoral.",
+                "description": (
+                    "Certidão de Quitação Eleitoral emitida pelo Tribunal Superior Eleitoral (TSE). "
+                    "Comprova que o eleitor está quite com a Justiça Eleitoral, sem débitos de multas ou "
+                    "justificativas pendentes. Exigida para posse em cargos públicos, concursos, passaportes "
+                    "e financiamentos."
+                ),
+                "price": "49.90",
+                "original_price": "69.90",
+                "days": 1,
+                "featured": False,
+                "has_fixed_price": True,
+                "meta_title": "Certidão de Quitação Eleitoral TSE Online — E-Registro Brasil",
+                "meta_desc": "Solicite a Certidão de Quitação Eleitoral do TSE online. R$ 49,90.",
+            },
+            {
+                "name": "CND ITR — Receita Federal",
+                "slug": "cnd-itr-receita-federal",
+                "short": "Certidão Negativa de Débitos do Imposto Territorial Rural para imóveis rurais.",
+                "description": (
+                    "Certidão Negativa de Débitos do ITR (Imposto Territorial Rural), emitida pela Receita "
+                    "Federal do Brasil. Exigida em transações imobiliárias rurais, concessão de crédito rural, "
+                    "participação em licitações e regularização fundiária de imóveis no INCRA."
+                ),
+                "price": "49.90",
+                "original_price": "69.90",
+                "days": 1,
+                "featured": False,
+                "has_fixed_price": True,
+                "meta_title": "CND ITR Receita Federal Online — E-Registro Brasil",
+                "meta_desc": "Solicite a Certidão Negativa de Débitos do ITR online. R$ 49,90.",
+            },
+            {
+                "name": "CNJ — Improbidade Administrativa e Inelegibilidade",
+                "slug": "cnj-improbidade-administrativa-e-inelegibilidade",
+                "short": "Certidão do CNJ sobre condenações por improbidade administrativa e inelegibilidade.",
+                "description": (
+                    "Certidão emitida pelo Conselho Nacional de Justiça (CNJ) que comprova a ausência de "
+                    "condenações por atos de improbidade administrativa (Lei nº 8.429/1992) e inelegibilidade "
+                    "(LC 64/1990). Indispensável para posse em cargos públicos, candidaturas, licitações e "
+                    "credenciamentos junto à Administração Pública."
+                ),
+                "price": "49.90",
+                "original_price": "69.90",
+                "days": 1,
+                "featured": False,
+                "has_fixed_price": True,
+                "meta_title": "Certidão CNJ Improbidade Administrativa Online — E-Registro Brasil",
+                "meta_desc": "Solicite a certidão CNJ de improbidade administrativa e inelegibilidade online. R$ 49,90.",
+            },
         ],
     },
     # ─── Busca em Cartórios ───────────────────────────────────────────────────

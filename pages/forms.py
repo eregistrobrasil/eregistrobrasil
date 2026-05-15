@@ -768,6 +768,68 @@ class ServicoFederalEstatualForm(forms.Form):
 
 
 # ─────────────────────────────────────────────
+#  Certidão de Antecedentes Criminais
+# ─────────────────────────────────────────────
+
+class CertidaoAntecedentesCriminaisForm(forms.Form):
+    nome_completo = _char_field('Nome Completo', 'Nome completo do solicitante', msg_label='o nome completo')
+    cpf = _cpf_field()
+    data_nascimento = _date_field('Data de Nascimento', msg_label='a data de nascimento')
+    nome_mae = _char_field('Nome da Mãe', 'Nome completo da mãe', msg_label='o nome da mãe')
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+
+# ─────────────────────────────────────────────
+#  CND Federal — Receita Federal (PF simplificado)
+# ─────────────────────────────────────────────
+
+class CndFederalPFForm(forms.Form):
+    cpf = _cpf_field()
+    data_nascimento = _date_field('Data de Nascimento', msg_label='a data de nascimento')
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+
+# ─────────────────────────────────────────────
+#  TSE — Certidão de Quitação Eleitoral
+# ─────────────────────────────────────────────
+
+class TseQuitacaoEleitoralForm(forms.Form):
+    nome_eleitor = _char_field('Nome do Eleitor', 'Nome completo do eleitor', msg_label='o nome do eleitor')
+    titulo_cpf = forms.CharField(
+        label='Número do Título ou CPF',
+        max_length=20,
+        error_messages={'required': 'Informe o número do título eleitoral ou CPF.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': '000.000.000-00 ou título eleitoral',
+            'inputmode': 'numeric',
+            'maxlength': '20',
+        }),
+    )
+    data_nascimento = _date_field('Data de Nascimento', msg_label='a data de nascimento')
+    nome_mae = _char_field('Nome da Mãe', 'Nome completo da mãe', msg_label='o nome da mãe')
+    nome_pai = _char_field('Nome do Pai', 'Nome completo do pai (opcional)', required=False, msg_label='o nome do pai')
+
+    def clean_titulo_cpf(self):
+        valor = self.cleaned_data.get('titulo_cpf', '')
+        apenas_digitos = re.sub(r'\D', '', valor)
+        # aceita CPF (11 dígitos) ou título eleitoral (12-14 dígitos)
+        if len(apenas_digitos) not in (11, 12, 13, 14):
+            raise forms.ValidationError('Informe um CPF válido (11 dígitos) ou número do título eleitoral.')
+        return apenas_digitos
+
+
+# ─────────────────────────────────────────────
 #  Busca em Cartórios
 # ─────────────────────────────────────────────
 
@@ -939,3 +1001,557 @@ class PesquisaBensImovelForm(forms.Form):
     def clean_cpf(self):
         return _imovel_clean_cpf(self)
 
+
+# ─────────────────────────────────────────────
+#  CND Estadual SEFAZ
+# ─────────────────────────────────────────────
+
+_ESTADOS_UF_CHOICES = [
+    ('', 'Selecione o estado'),
+    ('AC', 'Acre'),
+    ('AL', 'Alagoas'),
+    ('AM', 'Amazonas'),
+    ('AP', 'Amapá'),
+    ('BA', 'Bahia'),
+    ('CE', 'Ceará'),
+    ('DF', 'Distrito Federal'),
+    ('ES', 'Espírito Santo'),
+    ('GO', 'Goiás'),
+    ('MA', 'Maranhão'),
+    ('MG', 'Minas Gerais'),
+    ('MS', 'Mato Grosso do Sul'),
+    ('MT', 'Mato Grosso'),
+    ('PA', 'Pará'),
+    ('PB', 'Paraíba'),
+    ('PE', 'Pernambuco'),
+    ('PI', 'Piauí'),
+    ('PR', 'Paraná'),
+    ('RJ', 'Rio de Janeiro'),
+    ('RN', 'Rio Grande do Norte'),
+    ('RO', 'Rondônia'),
+    ('RR', 'Roraima'),
+    ('RS', 'Rio Grande do Sul'),
+    ('SC', 'Santa Catarina'),
+    ('SE', 'Sergipe'),
+    ('SP', 'São Paulo'),
+    ('TO', 'Tocantins'),
+]
+
+
+class CndEstadualSefazForm(forms.Form):
+    estado = forms.ChoiceField(
+        label='Estado',
+        choices=_ESTADOS_UF_CHOICES,
+        error_messages={'required': 'Selecione o estado.'},
+        widget=forms.Select(attrs={'class': _INPUT_CLASS, 'id': 'id_estado_sefaz'}),
+    )
+    cpf = _cpf_field()
+
+    def clean_estado(self):
+        valor = self.cleaned_data.get('estado', '').strip()
+        if not valor:
+            raise forms.ValidationError('Selecione o estado.')
+        valid_ufs = {c[0] for c in _ESTADOS_UF_CHOICES if c[0]}
+        if valor not in valid_ufs:
+            raise forms.ValidationError('Estado inválido.')
+        return valor
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+
+# ─────────────────────────────────────────────
+#  CND ITR — Receita Federal
+# ─────────────────────────────────────────────
+
+class CndItrReceitaFederalForm(forms.Form):
+    nirf = forms.CharField(
+        label='NIRF',
+        max_length=20,
+        error_messages={'required': 'Informe o número do NIRF.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: 1234567-8',
+            'inputmode': 'numeric',
+            'maxlength': '20',
+            'autocomplete': 'off',
+        }),
+    )
+
+    def clean_nirf(self):
+        nirf = re.sub(r'[\s\-\.]', '', self.cleaned_data.get('nirf', ''))
+        if not nirf:
+            raise forms.ValidationError('Informe o número do NIRF.')
+        if not re.match(r'^\d{1,20}$', nirf):
+            raise forms.ValidationError('NIRF inválido. Informe apenas dígitos.')
+        if len(nirf) < 5:
+            raise forms.ValidationError('NIRF deve ter pelo menos 5 dígitos.')
+        return nirf
+
+
+# ─────────────────────────────────────────────
+#  CNJ — Improbidade Administrativa e Inelegibilidade
+# ─────────────────────────────────────────────
+
+class CnjImprobidadeAdministrativaForm(forms.Form):
+    cpf = _cpf_field()
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+
+# ─────────────────────────────────────────────
+#  CAFIR — Cadastro de Imóveis Rurais
+# ─────────────────────────────────────────────
+
+class CafirForm(forms.Form):
+    nirf_cib = forms.CharField(
+        label='NIRF / CIB',
+        max_length=30,
+        error_messages={'required': 'Informe o NIRF ou CIB.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: 1234567-8',
+            'inputmode': 'text',
+            'maxlength': '30',
+            'autocomplete': 'off',
+        }),
+    )
+
+    def clean_nirf_cib(self):
+        valor = self.cleaned_data.get('nirf_cib', '').strip()
+        if not valor:
+            raise forms.ValidationError('Informe o NIRF ou CIB.')
+        cleaned = re.sub(r'\s', '', valor)
+        if len(cleaned) < 3:
+            raise forms.ValidationError('NIRF/CIB inválido. Informe um código válido.')
+        if not re.match(r'^[A-Za-z0-9\-\/\.]+$', cleaned):
+            raise forms.ValidationError('NIRF/CIB contém caracteres inválidos.')
+        return cleaned
+
+
+# ─────────────────────────────────────────────
+#  Certidão FGTS / INSS
+# ─────────────────────────────────────────────
+
+_SELECT_STYLE = (
+    "appearance:none;-webkit-appearance:none;"
+    "background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' "
+    "width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' "
+    "stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E\");"
+    "background-repeat:no-repeat;background-position:right 0.75rem center;"
+    "background-size:1rem;padding-right:2.5rem;cursor:pointer;"
+)
+
+
+class CertidaoFgtsInssForm(forms.Form):
+    cnpj = forms.CharField(
+        label='CNPJ',
+        max_length=18,
+        error_messages={'required': 'Informe o CNPJ.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': '00.000.000/0001-00',
+            'inputmode': 'numeric',
+            'maxlength': '18',
+            'data-mask': 'cnpj',
+        }),
+    )
+    cei = forms.CharField(
+        label='CEI',
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Código CEI — opcional',
+            'inputmode': 'numeric',
+            'maxlength': '20',
+        }),
+    )
+    estado = forms.ChoiceField(
+        label='Escolha do Estado',
+        choices=_ESTADOS_UF_CHOICES,
+        error_messages={'required': 'Selecione o estado.'},
+        widget=forms.Select(attrs={
+            'class': _INPUT_CLASS,
+            'style': _SELECT_STYLE,
+        }),
+    )
+
+    def clean_cnpj(self):
+        cnpj = re.sub(r'\D', '', self.cleaned_data.get('cnpj', ''))
+        if len(cnpj) != 14:
+            raise forms.ValidationError('CNPJ inválido. Informe os 14 dígitos.')
+        return cnpj
+
+    def clean_estado(self):
+        valor = self.cleaned_data.get('estado', '').strip()
+        if not valor:
+            raise forms.ValidationError('Selecione o estado.')
+        valid_ufs = {c[0] for c in _ESTADOS_UF_CHOICES if c[0]}
+        if valor not in valid_ufs:
+            raise forms.ValidationError('Estado inválido.')
+        return valor
+
+
+# ─────────────────────────────────────────────
+#  Certidão IBAMA — Certidão de Embargos
+# ─────────────────────────────────────────────
+
+class CertidaoIbamaEmbargosForm(forms.Form):
+    nome_completo = _char_field(
+        'Nome Completo', 'Nome completo do solicitante', msg_label='o nome completo'
+    )
+    cpf = _cpf_field()
+    cep = forms.CharField(
+        label='CEP',
+        max_length=9,
+        error_messages={'required': 'Informe o CEP.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': '00000-000',
+            'inputmode': 'numeric',
+            'maxlength': '9',
+            'data-mask': 'cep',
+        }),
+    )
+    estado = forms.ChoiceField(
+        label='Estado',
+        choices=_ESTADOS_UF_CHOICES,
+        error_messages={'required': 'Selecione o estado.'},
+        widget=forms.Select(attrs={
+            'class': _INPUT_CLASS,
+            'id': 'id_estado_ibama',
+            'style': _SELECT_STYLE,
+        }),
+    )
+    cidade = forms.CharField(
+        label='Cidade',
+        max_length=100,
+        error_messages={'required': 'Selecione a cidade.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'id': 'id_cidade_ibama_hidden',
+            'autocomplete': 'off',
+        }),
+    )
+    endereco = forms.CharField(
+        label='Endereço',
+        max_length=300,
+        error_messages={'required': 'Informe o endereço.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Rua, número, bairro',
+            'autocomplete': 'street-address',
+        }),
+    )
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+    def clean_cep(self):
+        cep = re.sub(r'\D', '', self.cleaned_data.get('cep', ''))
+        if len(cep) != 8:
+            raise forms.ValidationError('CEP inválido. Informe os 8 dígitos.')
+        return cep
+
+    def clean_estado(self):
+        valor = self.cleaned_data.get('estado', '').strip()
+        if not valor:
+            raise forms.ValidationError('Selecione o estado.')
+        valid_ufs = {c[0] for c in _ESTADOS_UF_CHOICES if c[0]}
+        if valor not in valid_ufs:
+            raise forms.ValidationError('Estado inválido.')
+        return valor
+
+    def clean_cidade(self):
+        valor = self.cleaned_data.get('cidade', '').strip()
+        if not valor:
+            raise forms.ValidationError('Selecione a cidade.')
+        return valor
+
+
+# ─────────────────────────────────────────────
+#  Certidão Negativa de Ações Criminais
+# ─────────────────────────────────────────────
+
+class CertidaoNegativaAcoesCriminaisForm(forms.Form):
+    nome_completo = _char_field(
+        'Nome Completo', 'Nome completo do solicitante', msg_label='o nome completo'
+    )
+    cpf = _cpf_field()
+    data_nascimento = _date_field('Data de Nascimento', msg_label='a data de nascimento')
+    nome_mae = _char_field('Nome da Mãe', 'Nome completo da mãe', msg_label='o nome da mãe')
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+
+# ─────────────────────────────────────────────
+#  Certidão Negativa de Débitos Ambientais
+# ─────────────────────────────────────────────
+
+class CertidaoNegativaDebitosAmbientaisForm(forms.Form):
+    cpf = _cpf_field()
+    estado = forms.ChoiceField(
+        label='Estado',
+        choices=_ESTADOS_UF_CHOICES,
+        error_messages={'required': 'Selecione o estado.'},
+        widget=forms.Select(attrs={
+            'class': _INPUT_CLASS,
+            'style': _SELECT_STYLE,
+        }),
+    )
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+    def clean_estado(self):
+        valor = self.cleaned_data.get('estado', '').strip()
+        if not valor:
+            raise forms.ValidationError('Selecione o estado.')
+        valid_ufs = {c[0] for c in _ESTADOS_UF_CHOICES if c[0]}
+        if valor not in valid_ufs:
+            raise forms.ValidationError('Estado inválido.')
+        return valor
+
+
+# ─────────────────────────────────────────────
+#  Certidão Negativa de Débitos Municipais
+# ─────────────────────────────────────────────
+
+class CertidaoNegativaMunicipioForm(forms.Form):
+    cpf = _cpf_field()
+    estado = forms.ChoiceField(
+        label='Estado',
+        choices=_ESTADOS_UF_CHOICES,
+        error_messages={'required': 'Selecione o estado.'},
+        widget=forms.Select(attrs={
+            'class': _INPUT_CLASS,
+            'id': 'id_estado_municipio',
+            'style': _SELECT_STYLE,
+        }),
+    )
+    cidade = forms.CharField(
+        label='Cidade',
+        max_length=100,
+        error_messages={'required': 'Selecione a cidade.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'id': 'id_cidade_municipio_hidden',
+            'autocomplete': 'off',
+        }),
+    )
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+    def clean_estado(self):
+        valor = self.cleaned_data.get('estado', '').strip()
+        if not valor:
+            raise forms.ValidationError('Selecione o estado.')
+        valid_ufs = {c[0] for c in _ESTADOS_UF_CHOICES if c[0]}
+        if valor not in valid_ufs:
+            raise forms.ValidationError('Estado inválido.')
+        return valor
+
+    def clean_cidade(self):
+        valor = self.cleaned_data.get('cidade', '').strip()
+        if not valor:
+            raise forms.ValidationError('Selecione a cidade.')
+        return valor
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Cumprimento da Cota Legal de PCDs
+# ─────────────────────────────────────────────
+
+class CotaLegalPcdsForm(forms.Form):
+    cnpj = forms.CharField(
+        label='CNPJ',
+        max_length=18,
+        error_messages={'required': 'Informe o CNPJ da empresa.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': '00.000.000/0001-00',
+            'inputmode': 'numeric',
+            'maxlength': '18',
+            'autocomplete': 'off',
+        }),
+    )
+
+    def clean_cnpj(self):
+        cnpj = re.sub(r'\D', '', self.cleaned_data.get('cnpj', ''))
+        if len(cnpj) != 14:
+            raise forms.ValidationError('CNPJ inválido. Informe os 14 dígitos.')
+        return cnpj
+
+
+# ─────────────────────────────────────────────
+#  Certidão Negativa de Débitos Trabalhistas
+# ─────────────────────────────────────────────
+
+class DebitosTrabalhalistasForm(forms.Form):
+    cpf = _cpf_field()
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Propriedade de Aeronave
+# ─────────────────────────────────────────────
+
+class PropriedadeAeronaveForm(forms.Form):
+    cpf_cnpj = forms.CharField(
+        label='CPF ou CNPJ',
+        max_length=18,
+        error_messages={'required': 'Informe o CPF ou CNPJ.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': '000.000.000-00 ou 00.000.000/0001-00',
+            'inputmode': 'numeric',
+            'maxlength': '18',
+            'autocomplete': 'off',
+            'id': 'id_cpf_cnpj_aeronave',
+        }),
+    )
+    nome_razao_social = forms.CharField(
+        label='Nome / Razão Social',
+        max_length=200,
+        error_messages={'required': 'Informe o nome ou razão social.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Nome completo ou razão social',
+            'autocomplete': 'name',
+            'id': 'id_nome_razao_aeronave',
+        }),
+    )
+
+    def clean_cpf_cnpj(self):
+        valor = re.sub(r'\D', '', self.cleaned_data.get('cpf_cnpj', ''))
+        if len(valor) not in (11, 14):
+            raise forms.ValidationError(
+                'Documento inválido. Informe um CPF (11 dígitos) ou CNPJ (14 dígitos).'
+            )
+        return valor
+
+    def clean_nome_razao_social(self):
+        valor = self.cleaned_data.get('nome_razao_social', '').strip()
+        if not valor:
+            raise forms.ValidationError('Informe o nome ou razão social.')
+        if len(valor) < 3:
+            raise forms.ValidationError('Nome muito curto. Informe o nome completo.')
+        return valor
+
+
+# ─────────────────────────────────────────────
+#  Junta Comercial — Certidão da Empresa
+# ─────────────────────────────────────────────
+
+class JuntaComercialCertidaoEmpresaForm(forms.Form):
+    cnpj = forms.CharField(
+        label='CNPJ',
+        max_length=18,
+        error_messages={'required': 'Informe o CNPJ da empresa.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': '00.000.000/0001-00',
+            'inputmode': 'numeric',
+            'maxlength': '18',
+            'autocomplete': 'off',
+            'id': 'id_cnpj_junta',
+        }),
+    )
+    estado = forms.ChoiceField(
+        label='Estado',
+        choices=_ESTADOS_UF_CHOICES,
+        error_messages={'required': 'Selecione o estado da Junta Comercial.'},
+        widget=forms.Select(attrs={
+            'class': _INPUT_CLASS,
+            'id': 'id_estado_junta',
+            'style': _SELECT_STYLE,
+        }),
+    )
+
+    def clean_cnpj(self):
+        valor = re.sub(r'\D', '', self.cleaned_data.get('cnpj', ''))
+        if len(valor) != 14:
+            raise forms.ValidationError('CNPJ inválido. Informe os 14 dígitos.')
+        return valor
+
+    def clean_estado(self):
+        valor = self.cleaned_data.get('estado', '').strip()
+        if not valor:
+            raise forms.ValidationError('Selecione o estado da Junta Comercial.')
+        valid_ufs = {c[0] for c in _ESTADOS_UF_CHOICES if c[0]}
+        if valor not in valid_ufs:
+            raise forms.ValidationError('Estado inválido.')
+        return valor
+
+
+# ─────────────────────────────────────────────
+#  Certidão de Regularidade CREA
+# ─────────────────────────────────────────────
+
+class CertidaoRegularidadeCreacForm(forms.Form):
+    estado = forms.ChoiceField(
+        label='Estado do CREA',
+        choices=_ESTADOS_UF_CHOICES,
+        error_messages={'required': 'Selecione o estado do CREA.'},
+        widget=forms.Select(attrs={
+            'class': _INPUT_CLASS,
+            'id': 'id_estado_crea',
+            'style': _SELECT_STYLE,
+        }),
+    )
+    cpf = _cpf_field()
+    nome_completo = _char_field(
+        'Nome Completo',
+        'Nome completo do profissional',
+        msg_label='o nome completo',
+    )
+
+    def clean_estado(self):
+        valor = self.cleaned_data.get('estado', '').strip()
+        if not valor:
+            raise forms.ValidationError('Selecione o estado do CREA.')
+        valid_ufs = {c[0] for c in _ESTADOS_UF_CHOICES if c[0]}
+        if valor not in valid_ufs:
+            raise forms.ValidationError('Estado inválido.')
+        return valor
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+    def clean_nome_completo(self):
+        valor = self.cleaned_data.get('nome_completo', '').strip()
+        if not valor:
+            raise forms.ValidationError('Informe o nome completo do profissional.')
+        if len(valor) < 3:
+            raise forms.ValidationError('Nome muito curto. Informe o nome completo.')
+        return valor

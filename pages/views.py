@@ -22,6 +22,12 @@ from .forms import (
     PacoteCertidoesCompraVendaForm,
     TIPOS_CERTIDAO_IMOVEL_DICT,
     IMOVEL_FORM_MAP,
+    CertidaoAntecedentesCriminaisForm,
+    CndFederalPFForm,
+    TseQuitacaoEleitoralForm,
+    CndEstadualSefazForm,
+    CndItrReceitaFederalForm,
+    CnjImprobidadeAdministrativaForm,
 )
 
 
@@ -1574,6 +1580,17 @@ from .forms import (
     BuscaCartorioForm,
     ApostilaHaiaForm,
     TraducaoJuramentadaForm,
+    CafirForm,
+    CertidaoFgtsInssForm,
+    CertidaoIbamaEmbargosForm,
+    CertidaoNegativaAcoesCriminaisForm,
+    CertidaoNegativaDebitosAmbientaisForm,
+    CertidaoNegativaMunicipioForm,
+    CotaLegalPcdsForm,
+    DebitosTrabalhalistasForm,
+    PropriedadeAeronaveForm,
+    JuntaComercialCertidaoEmpresaForm,
+    CertidaoRegularidadeCreacForm,
 )
 from products.services import PRECO_FIXO_FEDERAL_ESTADUAL
 
@@ -1624,7 +1641,7 @@ class BaseServicoSimplesDadosView(View):
         form = self.form_class(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
-            dados = {k: str(v) for k, v in cd.items()}
+            dados = {k: v.strftime('%d/%m/%Y') if hasattr(v, 'strftime') else str(v) for k, v in cd.items()}
             dados["tipo_servico"] = self.product_slug
             request.session["certidao_dados"] = dados
             self._add_to_cart(request, dados, product)
@@ -1665,57 +1682,385 @@ class PesquisaProtestoNacionalView(BaseServicoSimplesDadosView):
 
 # Federais e Estaduais
 class CndFederalView(BaseServicoSimplesDadosView):
-    title = "CND Federal - E-Registro Brasil"
-    form_class = ServicoFederalEstatualForm
-    template_name = "servicos/federal_estadual_generic.html"
+    title = "CND Federal — Receita Federal"
+    form_class = CndFederalPFForm
+    template_name = "servicos/federais_estaduais/cnd_federal_receita_federal.html"
     product_slug = "cnd-federal-receita-federal"
     tipo_certidao_sessao = "cnd_federal"
     fixed_price = True
 
 
 class CertidaoFgtsInssView(BaseServicoSimplesDadosView):
-    title = "Certidao FGTS / INSS - E-Registro Brasil"
-    form_class = ServicoFederalEstatualForm
-    template_name = "servicos/federal_estadual_generic.html"
+    title = "Certidão FGTS / INSS — E-Registro Brasil"
+    form_class = CertidaoFgtsInssForm
+    template_name = "servicos/federais_estaduais/certidao-fgts-inss.html"
     product_slug = "certidao-fgts-inss"
-    tipo_certidao_sessao = "cnd_federal"
+    tipo_certidao_sessao = "fgts_inss"
     fixed_price = True
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_document = str(dados.get("cnpj", ""))[:30]
+        item.unit_price = PRECO_FIXO_FEDERAL_ESTADUAL
+        item.save()
+        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
 
 
 class CndEstadualView(BaseServicoSimplesDadosView):
-    title = "CND Estadual - E-Registro Brasil"
-    form_class = ServicoFederalEstatualForm
-    template_name = "servicos/federal_estadual_generic.html"
+    title = "CND Estadual SEFAZ — E-Registro Brasil"
+    form_class = CndEstadualSefazForm
+    template_name = "servicos/federais_estaduais/cnd_estadual_sefaz.html"
     product_slug = "cnd-estadual-sefaz"
-    tipo_certidao_sessao = "cnd_federal"
+    tipo_certidao_sessao = "cnd_estadual"
     fixed_price = True
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_document = str(dados.get("cpf", ""))[:30]
+        item.unit_price = PRECO_FIXO_FEDERAL_ESTADUAL
+        item.save()
+        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
+
+
+class CndItrReceitaFederalView(BaseServicoSimplesDadosView):
+    title = "CND ITR — Receita Federal"
+    form_class = CndItrReceitaFederalForm
+    template_name = "servicos/federais_estaduais/cnd_itr_receita_federal.html"
+    product_slug = "cnd-itr-receita-federal"
+    tipo_certidao_sessao = "cnd_itr"
+    fixed_price = True
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_document = str(dados.get("nirf", ""))[:30]
+        item.unit_price = PRECO_FIXO_FEDERAL_ESTADUAL
+        item.save()
+        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
+
+
+class CnjImprobidadeAdministrativaView(BaseServicoSimplesDadosView):
+    title = "CNJ — Improbidade Administrativa e Inelegibilidade"
+    form_class = CnjImprobidadeAdministrativaForm
+    template_name = "servicos/federais_estaduais/cnj_improbidade_administrativa.html"
+    product_slug = "cnj-improbidade-administrativa-e-inelegibilidade"
+    tipo_certidao_sessao = "cnj_improbidade"
+    fixed_price = True
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_document = str(dados.get("cpf", ""))[:30]
+        item.unit_price = PRECO_FIXO_FEDERAL_ESTADUAL
+        item.save()
+        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
+
+
+class CafirView(BaseServicoSimplesDadosView):
+    title = "Cadastro de Imóveis Rurais CAFIR — E-Registro Brasil"
+    form_class = CafirForm
+    template_name = "servicos/federais_estaduais/cadastro-de-imoveis-rurais-cafir.html"
+    product_slug = "cadastro-de-imoveis-rurais-cafir"
+    tipo_certidao_sessao = "cafir"
+    fixed_price = True
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_document = str(dados.get("nirf_cib", ""))[:30]
+        item.unit_price = PRECO_FIXO_FEDERAL_ESTADUAL
+        item.save()
+        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
+
+
+class CertidaoIbamaEmbargosView(BaseServicoSimplesDadosView):
+    title = "Certidão IBAMA — Certidão de Embargos | E-Registro Brasil"
+    form_class = CertidaoIbamaEmbargosForm
+    template_name = "servicos/federais_estaduais/certidao-ibama-certidao-de-embargos.html"
+    product_slug = "certidao-ibama-certidao-de-embargos"
+    tipo_certidao_sessao = "ibama_embargos"
+    fixed_price = True
+
+    def _ctx(self, form, product=None):
+        ctx = super()._ctx(form, product)
+        ctx["estados"] = _estados_list(_load_estados_cidades())
+        return ctx
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = str(dados.get("nome_completo", ""))[:200]
+        item.requester_document = str(dados.get("cpf", ""))[:30]
+        item.unit_price = PRECO_FIXO_FEDERAL_ESTADUAL
+        item.save()
+        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
+
+
+class CertidaoNegativaAcoesCriminaisView(BaseServicoSimplesDadosView):
+    title = "Certidão Negativa de Ações Criminais — E-Registro Brasil"
+    form_class = CertidaoNegativaAcoesCriminaisForm
+    template_name = "servicos/federais_estaduais/certidao-negativa-de-acoes-criminais.html"
+    product_slug = "certidao-negativa-de-acoes-criminais"
+    tipo_certidao_sessao = "certidao_negativa_acoes_criminais"
+    fixed_price = True
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = str(dados.get("nome_completo", ""))[:200]
+        item.requester_document = str(dados.get("cpf", ""))[:30]
+        item.unit_price = PRECO_FIXO_FEDERAL_ESTADUAL
+        item.save()
+        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
+
+
+class CertidaoNegativaDebitosAmbientaisView(BaseServicoSimplesDadosView):
+    title = "Certidão Negativa de Débitos Ambientais — E-Registro Brasil"
+    form_class = CertidaoNegativaDebitosAmbientaisForm
+    template_name = "servicos/federais_estaduais/certidao-negativa-de-debitos-ambientais.html"
+    product_slug = "certidao-negativa-de-debitos-ambientais"
+    tipo_certidao_sessao = "certidao_negativa_debitos_ambientais"
+    fixed_price = True
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = ""
+        item.requester_document = str(dados.get("cpf", ""))[:30]
+        item.unit_price = PRECO_FIXO_FEDERAL_ESTADUAL
+        item.save()
+        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
 
 
 class CertidaoNegativaMunicipioView(BaseServicoSimplesDadosView):
-    title = "Certidao Negativa de Debitos Municipais - E-Registro Brasil"
-    form_class = ServicoFederalEstatualForm
-    template_name = "servicos/federal_estadual_generic.html"
+    title = "Certidão Negativa de Débitos Municipais — E-Registro Brasil"
+    form_class = CertidaoNegativaMunicipioForm
+    template_name = "servicos/federais_estaduais/certidao-negativa-municipio.html"
     product_slug = "certidao-negativa-municipio"
-    tipo_certidao_sessao = "cnd_federal"
+    tipo_certidao_sessao = "certidao_negativa_municipio"
     fixed_price = True
+
+    def _ctx(self, form, product=None):
+        ctx = super()._ctx(form, product)
+        ctx["estados"] = _estados_list(_load_estados_cidades())
+        return ctx
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = ""
+        item.requester_document = str(dados.get("cpf", ""))[:30]
+        item.unit_price = PRECO_FIXO_FEDERAL_ESTADUAL
+        item.save()
+        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
+
+
+class CotaLegalPcdsView(BaseServicoSimplesDadosView):
+    title = "Certidão de Cumprimento da Cota Legal de PCDs — E-Registro Brasil"
+    form_class = CotaLegalPcdsForm
+    template_name = "servicos/federais_estaduais/certidao-de-cumprimento-da-cota-legal-de-pcds.html"
+    product_slug = "certidao-de-cumprimento-da-cota-legal-de-pcds"
+    tipo_certidao_sessao = "cota_legal_pcds"
+    fixed_price = True
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = ""
+        item.requester_document = str(dados.get("cnpj", ""))[:30]
+        item.unit_price = PRECO_FIXO_FEDERAL_ESTADUAL
+        item.save()
+        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
+
+
+class DebitosTrabalhalistasView(BaseServicoSimplesDadosView):
+    title = "Certidão Negativa de Débitos Trabalhistas — E-Registro Brasil"
+    form_class = DebitosTrabalhalistasForm
+    template_name = "servicos/federais_estaduais/certidao-negativa-de-debitos-trabalhistas.html"
+    product_slug = "certidao-negativa-de-debitos-trabalhistas"
+    tipo_certidao_sessao = "debitos_trabalhistas"
+    fixed_price = True
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = ""
+        item.requester_document = str(dados.get("cpf", ""))[:30]
+        item.unit_price = PRECO_FIXO_FEDERAL_ESTADUAL
+        item.save()
+        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
+
+
+class PropriedadeAeronaveView(BaseServicoSimplesDadosView):
+    title = "Certidão de Propriedade de Aeronave — E-Registro Brasil"
+    form_class = PropriedadeAeronaveForm
+    template_name = "servicos/federais_estaduais/certidao-de-propriedade-de-aeronave.html"
+    product_slug = "certidao-de-propriedade-de-aeronave"
+    tipo_certidao_sessao = "propriedade_aeronave"
+    fixed_price = True
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = str(dados.get("nome_razao_social", ""))[:200]
+        item.requester_document = str(dados.get("cpf_cnpj", ""))[:30]
+        item.unit_price = PRECO_FIXO_FEDERAL_ESTADUAL
+        item.save()
+        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
+
+
+class JuntaComercialCertidaoEmpresaView(BaseServicoSimplesDadosView):
+    title = "Junta Comercial — Certidão da Empresa — E-Registro Brasil"
+    form_class = JuntaComercialCertidaoEmpresaForm
+    template_name = "servicos/federais_estaduais/junta-comercial-certidao-da-empresa.html"
+    product_slug = "junta-comercial-certidao-da-empresa"
+    tipo_certidao_sessao = "junta_comercial"
+    fixed_price = True
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_document = str(dados.get("cnpj", ""))[:30]
+        item.unit_price = PRECO_FIXO_FEDERAL_ESTADUAL
+        item.save()
+        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
 
 
 class CertidaoRegularidadeCreView(BaseServicoSimplesDadosView):
-    title = "Certidao de Regularidade no CREA - E-Registro Brasil"
-    form_class = ServicoFederalEstatualForm
-    template_name = "servicos/federal_estadual_generic.html"
+    title = "Certidão de Regularidade no CREA — E-Registro Brasil"
+    form_class = CertidaoRegularidadeCreacForm
+    template_name = "servicos/federais_estaduais/certidao-regularidade-crea.html"
     product_slug = "certidao-regularidade-crea"
-    tipo_certidao_sessao = "cnd_federal"
+    tipo_certidao_sessao = "regularidade_crea"
     fixed_price = True
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = str(dados.get("nome_completo", ""))[:200]
+        item.requester_document = str(dados.get("cpf", ""))[:30]
+        item.unit_price = PRECO_FIXO_FEDERAL_ESTADUAL
+        item.save()
+        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
 
 
 class CertidaoAntecedentesCriminaisView(BaseServicoSimplesDadosView):
-    title = "Certidao de Antecedentes Criminais - E-Registro Brasil"
-    form_class = ServicoFederalEstatualForm
-    template_name = "servicos/federal_estadual_generic.html"
+    title = "Certidão de Antecedentes Criminais — E-Registro Brasil"
+    form_class = CertidaoAntecedentesCriminaisForm
+    template_name = "servicos/federais_estaduais/certidao_antecedentes_criminais.html"
     product_slug = "certidao-antecedentes-criminais"
-    tipo_certidao_sessao = "cnd_federal"
+    tipo_certidao_sessao = "antecedentes_criminais"
     fixed_price = True
+
+
+class TseQuitacaoEleitoralView(BaseServicoSimplesDadosView):
+    title = "TSE — Certidão de Quitação Eleitoral"
+    form_class = TseQuitacaoEleitoralForm
+    template_name = "servicos/federais_estaduais/tse_certidao_quitacao_eleitoral.html"
+    product_slug = "tse-certidao-de-quitacao-eleitoral"
+    tipo_certidao_sessao = "tse_quitacao_eleitoral"
+    fixed_price = True
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = str(dados.get("nome_eleitor", ""))[:200]
+        item.requester_document = str(dados.get("titulo_cpf", ""))[:30]
+        item.unit_price = PRECO_FIXO_FEDERAL_ESTADUAL
+        item.save()
+        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
 
 
 # Busca em Cartorios

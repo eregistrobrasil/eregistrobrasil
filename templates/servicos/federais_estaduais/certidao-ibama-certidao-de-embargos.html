@@ -1,0 +1,521 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Certidão IBAMA — Certidão de Embargos | E-Registro Brasil{% endblock %}
+
+{% block meta_description %}Solicite online a Certidão de Embargos do IBAMA. Informe CPF, CEP e localização. Processo 100% digital, seguro e com acompanhamento por e-mail.{% endblock %}
+
+{% block extra_head %}
+<style>
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in   { animation: fadeInUp .55s ease both; }
+  .animate-delay-1   { animation-delay: .10s; }
+  .animate-delay-2   { animation-delay: .20s; }
+  .animate-delay-3   { animation-delay: .30s; }
+  .animate-delay-4   { animation-delay: .40s; }
+
+  .field-input:focus {
+    outline: none;
+    border-color: #1B4F72;
+    box-shadow: 0 0 0 3px rgba(27,79,114,.15);
+  }
+
+  /* Select com chevron customizado */
+  select.field-input {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+    cursor: pointer;
+  }
+  select.field-input:disabled {
+    background-color: #f9fafb;
+    color: #9ca3af;
+    cursor: not-allowed;
+  }
+
+  /* Skeleton loader */
+  .skeleton {
+    background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s infinite;
+    border-radius: 0.5rem;
+    height: 2.75rem;
+  }
+  @keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .badge-fixed-price {
+    background: linear-gradient(135deg, #1E8449, #27AE60);
+    color: #fff;
+    border-radius: .75rem;
+    padding: .75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="bg-white border-b border-gray-100">
+  <div class="max-w-6xl mx-auto px-4 py-3">
+    <nav class="text-sm text-gray-500 flex items-center gap-1.5" aria-label="Navegação">
+      <a href="{% url 'products:home' %}" class="hover:text-primary transition-colors">Início</a>
+      <span class="text-gray-300">/</span>
+      <span class="text-gray-400">Federais e Estaduais</span>
+      <span class="text-gray-300">/</span>
+      <span class="text-gray-700 font-medium">Certidão IBAMA — Embargos</span>
+    </nav>
+  </div>
+</div>
+
+<!-- Main -->
+<main class="bg-gray-50 min-h-screen py-10">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="grid lg:grid-cols-2 gap-10 items-start">
+
+      <!-- ── Coluna Esquerda: ilustração + formulário ── -->
+      <div class="space-y-6">
+
+        <!-- Ilustração -->
+        <div class="animate-fade-in bg-white rounded-2xl shadow-md overflow-hidden">
+          <div class="bg-gradient-to-br from-green-700 to-green-900 p-8 flex justify-center items-center" style="min-height:200px;">
+            <svg viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-56 h-auto" role="img" aria-label="Ilustração Certidão IBAMA Embargos">
+              <!-- Fundo -->
+              <rect x="0" y="0" width="200" height="160" rx="8" fill="rgba(255,255,255,0.04)"/>
+              <!-- Terra / solo -->
+              <ellipse cx="100" cy="150" rx="90" ry="20" fill="rgba(255,255,255,0.06)"/>
+              <!-- Árvore esquerda -->
+              <rect x="40" y="100" width="8" height="38" rx="2" fill="rgba(255,255,255,0.25)"/>
+              <circle cx="44" cy="88"  r="18" fill="rgba(255,255,255,0.18)"/>
+              <circle cx="34" cy="96"  r="12" fill="rgba(255,255,255,0.14)"/>
+              <circle cx="54" cy="96"  r="12" fill="rgba(255,255,255,0.14)"/>
+              <!-- Árvore direita -->
+              <rect x="152" y="108" width="8" height="30" rx="2" fill="rgba(255,255,255,0.25)"/>
+              <circle cx="156" cy="96"  r="16" fill="rgba(255,255,255,0.18)"/>
+              <circle cx="146" cy="104" r="11" fill="rgba(255,255,255,0.14)"/>
+              <circle cx="166" cy="104" r="11" fill="rgba(255,255,255,0.14)"/>
+              <!-- Documento IBAMA central -->
+              <rect x="72" y="20" width="56" height="76" rx="5" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.50)" stroke-width="1.5"/>
+              <!-- Cabeçalho doc -->
+              <rect x="72" y="20" width="56" height="18" rx="5" fill="rgba(255,255,255,0.28)"/>
+              <rect x="80" y="26" width="40" height="5" rx="2" fill="rgba(255,255,255,0.65)"/>
+              <!-- Linhas de texto -->
+              <rect x="80" y="46" width="40" height="4" rx="2" fill="rgba(255,255,255,0.35)"/>
+              <rect x="80" y="55" width="30" height="4" rx="2" fill="rgba(255,255,255,0.25)"/>
+              <rect x="80" y="64" width="36" height="4" rx="2" fill="rgba(255,255,255,0.25)"/>
+              <rect x="80" y="73" width="24" height="4" rx="2" fill="rgba(255,255,255,0.20)"/>
+              <!-- Ícone folha / checkmark no rodapé do documento -->
+              <circle cx="100" cy="88" r="9" fill="rgba(255,255,255,0.20)" stroke="rgba(255,255,255,0.45)" stroke-width="1.2"/>
+              <path d="M95 88 L99 92 L106 84" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="px-6 py-4 bg-green-700/10 border-t border-green-700/20">
+            <p class="text-xs text-green-800 font-semibold uppercase tracking-wider text-center">
+              IBAMA — Instituto Brasileiro do Meio Ambiente e dos Recursos Naturais Renováveis
+            </p>
+          </div>
+        </div>
+
+        <!-- Formulário -->
+        <div class="animate-fade-in animate-delay-1 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h2 class="text-lg font-bold text-gray-800 mb-1">Dados do Solicitante</h2>
+          <p class="text-sm text-gray-500 mb-6">
+            Preencha seus dados pessoais e de localização para solicitar a Certidão de Embargos do IBAMA.
+          </p>
+
+          <form method="post" novalidate id="form-ibama">
+            {% csrf_token %}
+            <div class="space-y-5">
+
+              <!-- Nome Completo -->
+              <div>
+                <label for="{{ form.nome_completo.id_for_label }}"
+                       class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {{ form.nome_completo.label }} <span class="text-red-500">*</span>
+                </label>
+                {{ form.nome_completo }}
+                {% if form.nome_completo.errors %}
+                  <p class="mt-1 text-xs text-red-500 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ form.nome_completo.errors|first }}
+                  </p>
+                {% endif %}
+              </div>
+
+              <!-- CPF -->
+              <div>
+                <label for="{{ form.cpf.id_for_label }}"
+                       class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {{ form.cpf.label }} <span class="text-red-500">*</span>
+                </label>
+                {{ form.cpf }}
+                {% if form.cpf.errors %}
+                  <p class="mt-1 text-xs text-red-500 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ form.cpf.errors|first }}
+                  </p>
+                {% endif %}
+              </div>
+
+              <!-- CEP -->
+              <div>
+                <label for="{{ form.cep.id_for_label }}"
+                       class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {{ form.cep.label }} <span class="text-red-500">*</span>
+                </label>
+                {{ form.cep }}
+                {% if form.cep.errors %}
+                  <p class="mt-1 text-xs text-red-500 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ form.cep.errors|first }}
+                  </p>
+                {% endif %}
+              </div>
+
+              <!-- Estado -->
+              <div>
+                <label for="id_estado_ibama"
+                       class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {{ form.estado.label }} <span class="text-red-500">*</span>
+                </label>
+                {{ form.estado }}
+                {% if form.estado.errors %}
+                  <p class="mt-1 text-xs text-red-500 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ form.estado.errors|first }}
+                  </p>
+                {% endif %}
+              </div>
+
+              <!-- Cidade (select dinâmico carregado via AJAX) -->
+              <div>
+                <label for="select-cidade-ibama"
+                       class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {{ form.cidade.label }} <span class="text-red-500">*</span>
+                </label>
+
+                <!-- Input hidden para submissão ao Django -->
+                <input type="hidden"
+                       name="cidade"
+                       id="{{ form.cidade.id_for_label }}"
+                       value="{{ form.cidade.value|default:'' }}">
+
+                <!-- Select visível, populado via JS -->
+                <div id="cidade-wrapper-ibama">
+                  <select id="select-cidade-ibama"
+                          class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 transition-all duration-200
+                                 {% if form.cidade.errors %}border-red-300{% endif %}"
+                          {% if not form.estado.value %}disabled{% endif %}>
+                    <option value="">
+                      {% if form.estado.value %}Selecione uma cidade{% else %}Selecione primeiro o estado{% endif %}
+                    </option>
+                    {% if form.cidade.value %}
+                      <option value="{{ form.cidade.value }}" selected>{{ form.cidade.value }}</option>
+                    {% endif %}
+                  </select>
+                </div>
+
+                {% if form.cidade.errors %}
+                  <p class="mt-1 text-xs text-red-500 flex items-center gap-1" id="cidade-ibama-error-server">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ form.cidade.errors|first }}
+                  </p>
+                {% else %}
+                  <p id="cidade-ibama-error" class="hidden mt-1 text-xs text-red-500">Selecione uma cidade.</p>
+                {% endif %}
+              </div>
+
+              <!-- Endereço -->
+              <div>
+                <label for="{{ form.endereco.id_for_label }}"
+                       class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {{ form.endereco.label }} <span class="text-red-500">*</span>
+                </label>
+                {{ form.endereco }}
+                {% if form.endereco.errors %}
+                  <p class="mt-1 text-xs text-red-500 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ form.endereco.errors|first }}
+                  </p>
+                {% endif %}
+              </div>
+
+            </div><!-- /space-y-5 -->
+
+            {% if form.non_field_errors %}
+              <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                {% for error in form.non_field_errors %}
+                  <p class="text-sm text-red-600">{{ error }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <button type="submit" id="btn-submit-ibama"
+                    class="mt-7 w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-sm flex items-center justify-center gap-2">
+              <span id="btn-ibama-text">Solicitar Certidão IBAMA &rarr;</span>
+              <svg id="btn-ibama-spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+
+      </div><!-- /col-esquerda -->
+
+      <!-- ── Coluna Direita: informações ── -->
+      <div class="space-y-6 lg:sticky lg:top-24">
+
+        <!-- Título e descrição -->
+        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <span class="inline-block bg-green-100 text-green-800 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3">
+            Federal · Ambiental
+          </span>
+          <h1 class="text-2xl font-extrabold text-gray-900 leading-tight mb-3">
+            Certidão IBAMA<br><span class="text-green-700">Certidão de Embargos</span>
+          </h1>
+          <p class="text-gray-600 text-sm leading-relaxed">
+            A <strong>Certidão de Embargos do IBAMA</strong> atesta que um imóvel ou pessoa física
+            não possui embargos ambientais registrados no sistema do Instituto Brasileiro do Meio
+            Ambiente e dos Recursos Naturais Renováveis. É exigida em financiamentos rurais,
+            transações imobiliárias, habilitações em licitações e procedimentos de
+            licenciamento ambiental.
+          </p>
+        </div>
+
+        <!-- Como funciona -->
+        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h2 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Como funciona
+          </h2>
+          <ol class="space-y-3">
+            {% for passo in passos %}
+            <li class="flex gap-3">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
+                {{ forloop.counter }}
+              </span>
+              <div>
+                <p class="text-sm font-semibold text-gray-800">{{ passo.titulo }}</p>
+                <p class="text-xs text-gray-500 mt-0.5">{{ passo.descricao }}</p>
+              </div>
+            </li>
+            {% endfor %}
+          </ol>
+        </div>
+
+        <!-- Preço fixo -->
+        <div class="animate-fade-in animate-delay-3">
+          <div class="badge-fixed-price">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+              <p class="text-xs font-semibold opacity-90">Tarifa única em todo o Brasil</p>
+              {% if price_display %}
+                <p class="text-2xl font-extrabold leading-tight">{{ price_display }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Quando é necessária -->
+        <div class="animate-fade-in animate-delay-3 bg-white rounded-2xl shadow-md p-6">
+          <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+            <svg class="w-4 h-4 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Quando é necessária
+          </h3>
+          <ul class="space-y-2">
+            <li class="flex items-start gap-2 text-sm text-gray-600">
+              <span class="text-green-600 mt-0.5">✓</span>
+              Financiamentos rurais (PRONAF, BNDES)
+            </li>
+            <li class="flex items-start gap-2 text-sm text-gray-600">
+              <span class="text-green-600 mt-0.5">✓</span>
+              Compra e venda de imóveis rurais
+            </li>
+            <li class="flex items-start gap-2 text-sm text-gray-600">
+              <span class="text-green-600 mt-0.5">✓</span>
+              Licenciamento ambiental
+            </li>
+            <li class="flex items-start gap-2 text-sm text-gray-600">
+              <span class="text-green-600 mt-0.5">✓</span>
+              Habilitação em licitações federais
+            </li>
+            <li class="flex items-start gap-2 text-sm text-gray-600">
+              <span class="text-green-600 mt-0.5">✓</span>
+              Regularização fundiária e ambiental
+            </li>
+          </ul>
+        </div>
+
+        <!-- Aviso -->
+        <div class="animate-fade-in animate-delay-4 bg-amber-50 border border-amber-200 rounded-2xl p-5">
+          <div class="flex gap-3">
+            <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+            <div>
+              <p class="text-sm font-semibold text-amber-800 mb-1">Informação importante</p>
+              <p class="text-xs text-amber-700 leading-relaxed">
+                A existência de embargos ambientais no CPF pode impedir a emissão de certidão negativa.
+                Em caso de embargo, será emitida certidão positiva, detalhando as ocorrências registradas.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /col-direita -->
+    </div>
+  </div>
+</main>
+
+<script>
+(function () {
+  var CIDADES_API = "{% url 'pages:cidades_por_estado' %}";
+
+  var estadoSelect  = document.getElementById('id_estado_ibama');
+  var cidadeSelect  = document.getElementById('select-cidade-ibama');
+  var cidadeHidden  = document.getElementById('{{ form.cidade.id_for_label }}');
+  var cidadeWrapper = document.getElementById('cidade-wrapper-ibama');
+  var cidadeError   = document.getElementById('cidade-ibama-error');
+
+  function setLoading(on) {
+    if (on) {
+      cidadeWrapper.innerHTML = '<div class="skeleton"></div>';
+    } else {
+      cidadeWrapper.innerHTML =
+        '<select id="select-cidade-ibama" class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700 transition-all duration-200"></select>';
+      cidadeSelect = document.getElementById('select-cidade-ibama');
+      cidadeSelect.addEventListener('change', onCidadeChange);
+    }
+  }
+
+  function onCidadeChange() {
+    var val = cidadeSelect.value;
+    cidadeHidden.value = val;
+    if (cidadeError) cidadeError.classList.add('hidden');
+  }
+
+  function loadCidades(uf, selected) {
+    setLoading(true);
+    fetch(CIDADES_API + '?uf=' + encodeURIComponent(uf))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        setLoading(false);
+        var cidades = data.cidades || [];
+        cidadeSelect = document.getElementById('select-cidade-ibama');
+        cidadeSelect.innerHTML = '<option value="">Selecione uma cidade</option>';
+        cidades.forEach(function (c) {
+          var opt = document.createElement('option');
+          opt.value = c;
+          opt.textContent = c;
+          if (c === selected) opt.selected = true;
+          cidadeSelect.appendChild(opt);
+        });
+        cidadeHidden.value = selected || '';
+        cidadeSelect.disabled = false;
+      })
+      .catch(function () {
+        setLoading(false);
+        cidadeSelect = document.getElementById('select-cidade-ibama');
+        cidadeSelect.innerHTML = '<option value="">Erro ao carregar cidades</option>';
+      });
+  }
+
+  if (estadoSelect) {
+    estadoSelect.addEventListener('change', function () {
+      var uf = this.value;
+      cidadeHidden.value = '';
+      if (!uf) {
+        cidadeWrapper.innerHTML =
+          '<select id="select-cidade-ibama" class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-700" disabled>' +
+          '<option value="">Selecione primeiro o estado</option></select>';
+        cidadeSelect = document.getElementById('select-cidade-ibama');
+        return;
+      }
+      loadCidades(uf, '');
+    });
+
+    // Se estado já selecionado no POST com erro, recarregar cidades
+    var initialUf = estadoSelect.value;
+    var initialCidade = cidadeHidden ? cidadeHidden.value : '';
+    if (initialUf) {
+      loadCidades(initialUf, initialCidade);
+    }
+  }
+
+  // Máscara CPF
+  var cpfInput = document.querySelector('[data-mask="cpf"]');
+  if (cpfInput) {
+    cpfInput.addEventListener('input', function () {
+      var v = this.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 9) v = v.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2})$/, '$1.$2.$3-$4');
+      else if (v.length > 6) v = v.replace(/^(\d{3})(\d{3})(\d{0,3})$/, '$1.$2.$3');
+      else if (v.length > 3) v = v.replace(/^(\d{3})(\d{0,3})$/, '$1.$2');
+      this.value = v;
+    });
+  }
+
+  // Máscara CEP
+  var cepInput = document.querySelector('[data-mask="cep"]');
+  if (cepInput) {
+    cepInput.addEventListener('input', function () {
+      var v = this.value.replace(/\D/g, '').slice(0, 8);
+      if (v.length > 5) v = v.replace(/^(\d{5})(\d{0,3})$/, '$1-$2');
+      this.value = v;
+    });
+  }
+
+  // Validação da cidade antes do submit
+  var form = document.getElementById('form-ibama');
+  var btn  = document.getElementById('btn-submit-ibama');
+  if (form && btn) {
+    form.addEventListener('submit', function (e) {
+      var cid = cidadeHidden ? cidadeHidden.value.trim() : '';
+      if (!cid) {
+        e.preventDefault();
+        if (cidadeError) {
+          cidadeError.classList.remove('hidden');
+          cidadeError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+      btn.disabled = true;
+      document.getElementById('btn-ibama-text').textContent = 'Processando…';
+      document.getElementById('btn-ibama-spinner').classList.remove('hidden');
+    });
+  }
+})();
+</script>
+{% endblock %}

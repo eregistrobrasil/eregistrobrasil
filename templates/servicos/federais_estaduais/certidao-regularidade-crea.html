@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Certidão de Regularidade no CREA — E-Registro Brasil{% endblock %}
+
+{% block extra_head %}
+<meta name="description" content="Solicite a Certidão de Regularidade no CREA online. Comprove a situação do profissional de engenharia, agronomia ou geociências junto ao Conselho Regional de Engenharia. R$ 49,90.">
+<style>
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in   { animation: fadeInUp .55s ease both; }
+  .animate-delay-1   { animation-delay: .10s; }
+  .animate-delay-2   { animation-delay: .20s; }
+  .animate-delay-3   { animation-delay: .30s; }
+  .animate-delay-4   { animation-delay: .40s; }
+  .field-input:focus {
+    outline: none;
+    border-color: #1B4F72;
+    box-shadow: 0 0 0 3px rgba(27,79,114,.15);
+  }
+  select.field-input { cursor: pointer; }
+  .badge-fixed-price {
+    background: linear-gradient(135deg, #1E8449, #27AE60);
+    color: #fff;
+    border-radius: .75rem;
+    padding: .75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .btn-submit { position: relative; overflow: hidden; }
+  .btn-submit .spinner {
+    display: none; width: 18px; height: 18px;
+    border: 2.5px solid rgba(255,255,255,.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn-submit.loading .btn-text { display: none; }
+  .btn-submit.loading .spinner  { display: inline-block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="bg-white border-b border-gray-100">
+  <div class="max-w-6xl mx-auto px-4 py-3">
+    <nav class="text-sm text-gray-500 flex items-center gap-1.5">
+      <a href="{% url 'products:home' %}" class="hover:text-primary transition-colors">Início</a>
+      <span class="text-gray-300">/</span>
+      <span class="text-gray-700 font-medium">Certidão de Regularidade no CREA</span>
+    </nav>
+  </div>
+</div>
+
+<!-- Main -->
+<main class="bg-gray-50 min-h-screen py-10">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="grid lg:grid-cols-2 gap-10 items-start">
+
+      <!-- ── Coluna Esquerda: ilustração + formulário ── -->
+      <div class="space-y-6">
+
+        <!-- Ilustração -->
+        <div class="animate-fade-in bg-white rounded-2xl shadow-md overflow-hidden">
+          <div class="bg-gradient-to-br from-primary to-primary-dark p-8 flex justify-center items-center" style="min-height:220px;">
+            <svg viewBox="0 0 210 175" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-60 h-auto">
+              <!-- Capacete de engenheiro -->
+              <path d="M48 90 Q48 60 83 55 Q118 50 128 60 Q148 65 148 90 Z"
+                    fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+              <rect x="42" y="88" width="112" height="16" rx="4"
+                    fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+              <!-- Logo / faixa do capacete -->
+              <rect x="72" y="60" width="52" height="30" rx="0" fill="none"/>
+              <line x1="88" y1="72" x2="108" y2="72" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round"/>
+              <line x1="88" y1="78" x2="104" y2="78" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round"/>
+
+              <!-- Régua / esquadro (símbolo de engenharia) -->
+              <path d="M35 125 L35 155 L110 155" stroke="rgba(255,255,255,0.5)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <!-- Marcações da régua -->
+              <line x1="47" y1="155" x2="47" y2="149" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+              <line x1="59" y1="155" x2="59" y2="149" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+              <line x1="71" y1="155" x2="71" y2="149" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+              <line x1="83" y1="155" x2="83" y2="149" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+              <line x1="95" y1="155" x2="95" y2="149" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+              <line x1="35" y1="130" x2="41" y2="130" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+              <line x1="35" y1="142" x2="41" y2="142" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+
+              <!-- Documento de regularidade (lado direito) -->
+              <rect x="130" y="48" width="66" height="88" rx="6"
+                    fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+              <!-- Canto dobrado -->
+              <path d="M182 48 L196 62 L182 62 Z" fill="rgba(255,255,255,0.2)"/>
+              <path d="M182 48 L196 62 L182 62" stroke="rgba(255,255,255,0.35)" stroke-width="1" fill="none"/>
+              <!-- Cabeçalho CREA -->
+              <rect x="138" y="66" width="46" height="5.5" rx="2.5" fill="rgba(255,255,255,0.5)"/>
+              <rect x="138" y="75" width="38" height="4" rx="2" fill="rgba(255,255,255,0.3)"/>
+              <!-- Linhas do documento -->
+              <rect x="138" y="83" width="42" height="3" rx="1.5" fill="rgba(255,255,255,0.25)"/>
+              <rect x="138" y="90" width="34" height="3" rx="1.5" fill="rgba(255,255,255,0.2)"/>
+              <rect x="138" y="97" width="40" height="3" rx="1.5" fill="rgba(255,255,255,0.2)"/>
+              <rect x="138" y="104" width="30" height="3" rx="1.5" fill="rgba(255,255,255,0.15)"/>
+              <rect x="138" y="111" width="36" height="3" rx="1.5" fill="rgba(255,255,255,0.15)"/>
+              <!-- Foto/avatarzinho do profissional -->
+              <rect x="138" y="119" width="16" height="18" rx="3" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+              <!-- Dados ao lado da foto -->
+              <rect x="158" y="121" width="26" height="3" rx="1.5" fill="rgba(255,255,255,0.25)"/>
+              <rect x="158" y="127" width="20" height="2.5" rx="1.25" fill="rgba(255,255,255,0.18)"/>
+              <rect x="158" y="132" width="22" height="2.5" rx="1.25" fill="rgba(255,255,255,0.15)"/>
+              <!-- Carimbo regularidade -->
+              <circle cx="163" cy="128" r="0" fill="none"/>
+              <!-- Selo de regularidade verde no canto inferior -->
+              <circle cx="186" cy="124" r="10" fill="rgba(39,174,96,0.85)"/>
+              <path d="M182.5 124 L185.5 127.5 L190.5 119.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="px-6 py-4 bg-primary/5 border-t border-primary/10">
+            <p class="text-xs text-primary font-semibold uppercase tracking-wider text-center">
+              CREA · Conselho Regional de Engenharia e Agronomia
+            </p>
+          </div>
+        </div>
+
+        <!-- Formulário -->
+        <div class="animate-fade-in animate-delay-1 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h2 class="text-lg font-bold text-gray-800 mb-1">Dados do Profissional</h2>
+          <p class="text-sm text-gray-500 mb-6">Informe os dados do profissional para consultar a regularidade no CREA.</p>
+
+          <form method="post" novalidate id="form-crea">
+            {% csrf_token %}
+            <div class="space-y-5">
+
+              <!-- Estado do CREA -->
+              <div>
+                <label for="id_estado_crea"
+                       class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {{ form.estado.label }} <span class="text-red-500">*</span>
+                </label>
+                {{ form.estado }}
+                {% if form.estado.errors %}
+                  <p class="mt-1 text-xs text-red-500">{{ form.estado.errors|first }}</p>
+                {% endif %}
+                <p class="mt-1.5 text-xs text-gray-400">Estado do CREA onde o profissional possui registro.</p>
+              </div>
+
+              <!-- CPF -->
+              <div>
+                <label for="{{ form.cpf.id_for_label }}"
+                       class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {{ form.cpf.label }} <span class="text-red-500">*</span>
+                </label>
+                {{ form.cpf }}
+                {% if form.cpf.errors %}
+                  <p class="mt-1 text-xs text-red-500">{{ form.cpf.errors|first }}</p>
+                {% endif %}
+                <p class="mt-1.5 text-xs text-gray-400">CPF do profissional registrado no CREA.</p>
+              </div>
+
+              <!-- Nome Completo -->
+              <div>
+                <label for="{{ form.nome_completo.id_for_label }}"
+                       class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {{ form.nome_completo.label }} <span class="text-red-500">*</span>
+                </label>
+                {{ form.nome_completo }}
+                {% if form.nome_completo.errors %}
+                  <p class="mt-1 text-xs text-red-500">{{ form.nome_completo.errors|first }}</p>
+                {% endif %}
+                <p class="mt-1.5 text-xs text-gray-400">Nome completo conforme cadastro no CREA.</p>
+              </div>
+
+            </div>
+
+            {% if form.non_field_errors %}
+              <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                {% for error in form.non_field_errors %}
+                  <p class="text-sm text-red-600">{{ error }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <button type="submit" id="btn-submit-crea"
+                    class="btn-submit mt-7 w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-sm flex items-center justify-center gap-2">
+              <span class="btn-text">Solicitar Certidão &rarr;</span>
+              <span class="spinner"></span>
+            </button>
+          </form>
+        </div>
+      </div><!-- /col-esquerda -->
+
+      <!-- ── Coluna Direita: informações ── -->
+      <div class="space-y-6 lg:sticky lg:top-24">
+
+        <!-- Título e descrição -->
+        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <span class="inline-block bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3">
+            CREA · Conselho Profissional
+          </span>
+          <h1 class="text-2xl font-extrabold text-gray-900 leading-tight mb-3">
+            Certidão de Regularidade<br>no CREA
+          </h1>
+          <p class="text-gray-600 text-sm leading-relaxed">
+            Documento emitido pelo <strong>Conselho Regional de Engenharia e Agronomia (CREA)</strong>
+            que comprova a <strong>regularidade</strong> do profissional ou empresa perante o conselho.
+            Obrigatória para participar de licitações, assinar laudos técnicos, contratos de
+            engenharia e projetos que exigem habilitação profissional.
+          </p>
+        </div>
+
+        <!-- Profissões atendidas -->
+        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h2 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            Profissões atendidas pelo CREA
+          </h2>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="flex items-center gap-2 p-2.5 bg-gray-50 rounded-lg">
+              <span class="w-2 h-2 rounded-full bg-primary flex-shrink-0"></span>
+              <span class="text-xs text-gray-700">Engenharia Civil</span>
+            </div>
+            <div class="flex items-center gap-2 p-2.5 bg-gray-50 rounded-lg">
+              <span class="w-2 h-2 rounded-full bg-primary flex-shrink-0"></span>
+              <span class="text-xs text-gray-700">Engenharia Elétrica</span>
+            </div>
+            <div class="flex items-center gap-2 p-2.5 bg-gray-50 rounded-lg">
+              <span class="w-2 h-2 rounded-full bg-primary flex-shrink-0"></span>
+              <span class="text-xs text-gray-700">Engenharia Mecânica</span>
+            </div>
+            <div class="flex items-center gap-2 p-2.5 bg-gray-50 rounded-lg">
+              <span class="w-2 h-2 rounded-full bg-primary flex-shrink-0"></span>
+              <span class="text-xs text-gray-700">Agronomia</span>
+            </div>
+            <div class="flex items-center gap-2 p-2.5 bg-gray-50 rounded-lg">
+              <span class="w-2 h-2 rounded-full bg-primary flex-shrink-0"></span>
+              <span class="text-xs text-gray-700">Geologia</span>
+            </div>
+            <div class="flex items-center gap-2 p-2.5 bg-gray-50 rounded-lg">
+              <span class="w-2 h-2 rounded-full bg-primary flex-shrink-0"></span>
+              <span class="text-xs text-gray-700">Geofísica</span>
+            </div>
+            <div class="flex items-center gap-2 p-2.5 bg-gray-50 rounded-lg">
+              <span class="w-2 h-2 rounded-full bg-primary flex-shrink-0"></span>
+              <span class="text-xs text-gray-700">Meteorologia</span>
+            </div>
+            <div class="flex items-center gap-2 p-2.5 bg-gray-50 rounded-lg">
+              <span class="w-2 h-2 rounded-full bg-primary flex-shrink-0"></span>
+              <span class="text-xs text-gray-700">Tecnologias habilitadas</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quando é necessária -->
+        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h2 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+            </svg>
+            Quando é exigida
+          </h2>
+          <ul class="space-y-2.5">
+            <li class="flex items-center gap-2.5 text-sm text-gray-700">
+              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Licitações e contratos de obras públicas
+            </li>
+            <li class="flex items-center gap-2.5 text-sm text-gray-700">
+              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Assinatura de laudos e projetos técnicos
+            </li>
+            <li class="flex items-center gap-2.5 text-sm text-gray-700">
+              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Registro de responsabilidade técnica (ART)
+            </li>
+            <li class="flex items-center gap-2.5 text-sm text-gray-700">
+              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Aprovação de projetos em prefeituras
+            </li>
+            <li class="flex items-center gap-2.5 text-sm text-gray-700">
+              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Financiamentos de obras (Caixa, bancos)
+            </li>
+          </ul>
+        </div>
+
+        <!-- Como funciona -->
+        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h2 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Como funciona
+          </h2>
+          <ol class="space-y-3">
+            {% for passo in passos %}
+            <li class="flex gap-3">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
+                {{ forloop.counter }}
+              </span>
+              <div>
+                <p class="text-sm font-semibold text-gray-800">{{ passo.titulo }}</p>
+                <p class="text-xs text-gray-500 mt-0.5">{{ passo.descricao }}</p>
+              </div>
+            </li>
+            {% endfor %}
+          </ol>
+        </div>
+
+        <!-- Badge preço -->
+        <div class="animate-fade-in animate-delay-3">
+          <div class="badge-fixed-price">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+              <p class="text-xs font-semibold opacity-90">Tarifa única em todo o Brasil</p>
+              <p class="text-2xl font-extrabold leading-tight">{{ price_display }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Aviso âmbar -->
+        <div class="animate-fade-in animate-delay-4 bg-amber-50 border border-amber-200 rounded-2xl p-5">
+          <div class="flex gap-3">
+            <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+            <div>
+              <p class="text-sm font-semibold text-amber-800 mb-1">Informação importante</p>
+              <p class="text-xs text-amber-700 leading-relaxed">
+                Os dados informados serão utilizados exclusivamente para a solicitação desta certidão.
+                Atuamos como correspondentes junto ao Conselho Regional de Engenharia e Agronomia (CREA).
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /col-direita -->
+    </div>
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Máscara CPF automática
+  const cpfInput = document.getElementById('{{ form.cpf.id_for_label }}');
+  if (cpfInput) {
+    cpfInput.addEventListener('input', function () {
+      let v = this.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 9)      v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+      else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+      else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+      this.value = v;
+    });
+  }
+
+  // Loading state ao submeter
+  const form = document.getElementById('form-crea');
+  const btn  = document.getElementById('btn-submit-crea');
+  if (form && btn) {
+    form.addEventListener('submit', function () {
+      btn.classList.add('loading');
+      btn.disabled = true;
+    });
+  }
+});
+</script>
+{% endblock %}

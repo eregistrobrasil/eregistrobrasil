@@ -1,0 +1,425 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Certidão Negativa de Débitos Municipais — E-Registro Brasil{% endblock %}
+
+{% block extra_head %}
+<meta name="description" content="Solicite sua Certidão Negativa de Débitos Municipais online. Regularidade fiscal junto à Prefeitura. Rápido e seguro. R$ 49,90.">
+<style>
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in        { animation: fadeInUp .55s ease both; }
+  .animate-delay-1        { animation-delay: .10s; }
+  .animate-delay-2        { animation-delay: .20s; }
+  .animate-delay-3        { animation-delay: .30s; }
+  .animate-delay-4        { animation-delay: .40s; }
+  .field-input:focus, select.field-input:focus {
+    outline: none;
+    border-color: #1B4F72;
+    box-shadow: 0 0 0 3px rgba(27,79,114,.15);
+  }
+  .badge-fixed-price {
+    background: linear-gradient(135deg, #1E8449, #27AE60);
+    color: #fff;
+    border-radius: .75rem;
+    padding: .75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .btn-submit { position: relative; overflow: hidden; }
+  .btn-submit .spinner {
+    display: none; width: 18px; height: 18px;
+    border: 2.5px solid rgba(255,255,255,.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn-submit.loading .btn-text { display: none; }
+  .btn-submit.loading .spinner  { display: inline-block; }
+
+  /* Skeleton para cidades */
+  .skeleton-line {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 4px;
+    height: 14px;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="bg-white border-b border-gray-100">
+  <div class="max-w-6xl mx-auto px-4 py-3">
+    <nav class="text-sm text-gray-500 flex items-center gap-1.5">
+      <a href="{% url 'products:home' %}" class="hover:text-primary transition-colors">Início</a>
+      <span class="text-gray-300">/</span>
+      <span class="text-gray-700 font-medium">Certidão Negativa de Débitos Municipais</span>
+    </nav>
+  </div>
+</div>
+
+<!-- Main -->
+<main class="bg-gray-50 min-h-screen py-10">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="grid lg:grid-cols-2 gap-10 items-start">
+
+      <!-- ── Coluna Esquerda: ilustração + formulário ── -->
+      <div class="space-y-6">
+
+        <!-- Ilustração -->
+        <div class="animate-fade-in bg-white rounded-2xl shadow-md overflow-hidden">
+          <div class="bg-gradient-to-br from-primary to-primary-dark p-8 flex justify-center items-center" style="min-height:220px;">
+            <svg viewBox="0 0 200 170" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-56 h-auto">
+              <!-- Prédio municipal central -->
+              <rect x="72" y="55" width="56" height="80" rx="3" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.45)" stroke-width="1.5"/>
+              <!-- Colunas/pilares -->
+              <rect x="80" y="65" width="8" height="65" rx="2" fill="rgba(255,255,255,0.12)"/>
+              <rect x="96" y="65" width="8" height="65" rx="2" fill="rgba(255,255,255,0.12)"/>
+              <rect x="112" y="65" width="8" height="65" rx="2" fill="rgba(255,255,255,0.12)"/>
+              <!-- Friso superior -->
+              <rect x="68" y="52" width="64" height="8" rx="2" fill="rgba(255,255,255,0.25)"/>
+              <!-- Telhado triangular -->
+              <polygon points="68,52 100,28 132,52" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+              <!-- Bandeira no topo -->
+              <line x1="100" y1="14" x2="100" y2="28" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+              <rect x="100" y="14" width="16" height="10" rx="1" fill="rgba(255,255,255,0.4)"/>
+              <!-- Porta entrada -->
+              <rect x="91" y="108" width="18" height="27" rx="3" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+              <!-- Janelas -->
+              <rect x="80" y="72" width="10" height="8" rx="1.5" fill="rgba(255,255,255,0.22)"/>
+              <rect x="95" y="72" width="10" height="8" rx="1.5" fill="rgba(255,255,255,0.22)"/>
+              <rect x="110" y="72" width="10" height="8" rx="1.5" fill="rgba(255,255,255,0.22)"/>
+              <rect x="80" y="85" width="10" height="8" rx="1.5" fill="rgba(255,255,255,0.22)"/>
+              <rect x="110" y="85" width="10" height="8" rx="1.5" fill="rgba(255,255,255,0.22)"/>
+              <!-- Prédios menores laterais -->
+              <rect x="30" y="80" width="36" height="55" rx="2" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+              <rect x="134" y="88" width="36" height="47" rx="2" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+              <!-- Chão -->
+              <line x1="20" y1="135" x2="180" y2="135" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+              <!-- Checkmark / certidão -->
+              <circle cx="155" cy="62" r="13" fill="rgba(39,174,96,0.85)"/>
+              <path d="M149 62 L153 66.5 L161 57" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="px-6 py-4 bg-primary/5 border-t border-primary/10">
+            <p class="text-xs text-primary font-semibold uppercase tracking-wider text-center">
+              Prefeituras · Regularidade Fiscal Municipal
+            </p>
+          </div>
+        </div>
+
+        <!-- Formulário -->
+        <div class="animate-fade-in animate-delay-1 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h2 class="text-lg font-bold text-gray-800 mb-1">Dados do Solicitante</h2>
+          <p class="text-sm text-gray-500 mb-6">Informe seu CPF, estado e município para a consulta.</p>
+
+          <form method="post" novalidate id="form-municipio">
+            {% csrf_token %}
+            <div class="space-y-5">
+
+              <!-- CPF -->
+              <div>
+                <label for="{{ form.cpf.id_for_label }}"
+                       class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {{ form.cpf.label }} <span class="text-red-500">*</span>
+                </label>
+                {{ form.cpf }}
+                {% if form.cpf.errors %}
+                  <p class="mt-1 text-xs text-red-500">{{ form.cpf.errors|first }}</p>
+                {% endif %}
+              </div>
+
+              <!-- Estado -->
+              <div>
+                <label for="{{ form.estado.id_for_label }}"
+                       class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {{ form.estado.label }} <span class="text-red-500">*</span>
+                </label>
+                {{ form.estado }}
+                {% if form.estado.errors %}
+                  <p class="mt-1 text-xs text-red-500">{{ form.estado.errors|first }}</p>
+                {% endif %}
+              </div>
+
+              <!-- Cidade (select dinâmico + hidden input para submit) -->
+              <div>
+                <label for="select_cidade_municipio"
+                       class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Cidade <span class="text-red-500">*</span>
+                </label>
+
+                <!-- Select visual (não enviado ao Django) -->
+                <div id="cidade-wrapper" class="relative">
+                  <select id="select_cidade_municipio"
+                          class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all duration-200 bg-white"
+                          style="appearance:none;-webkit-appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%236b7280\' stroke-width=\'2\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 0.75rem center;background-size:1rem;padding-right:2.5rem;cursor:pointer;"
+                          disabled>
+                    <option value="">Selecione o estado primeiro</option>
+                  </select>
+                  <!-- Skeleton loader -->
+                  <div id="cidade-skeleton" class="hidden absolute inset-0 flex items-center px-4 bg-white rounded-lg border border-gray-300 pointer-events-none">
+                    <div class="skeleton-line w-40"></div>
+                  </div>
+                </div>
+
+                <!-- Hidden input enviado ao backend -->
+                {{ form.cidade }}
+
+                {% if form.cidade.errors %}
+                  <p id="cidade-error" class="mt-1 text-xs text-red-500">{{ form.cidade.errors|first }}</p>
+                {% else %}
+                  <p id="cidade-error" class="mt-1 text-xs text-red-500 hidden"></p>
+                {% endif %}
+              </div>
+
+            </div>
+
+            {% if form.non_field_errors %}
+              <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                {% for error in form.non_field_errors %}
+                  <p class="text-sm text-red-600">{{ error }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <button type="submit" id="btn-submit-municipio"
+                    class="btn-submit mt-7 w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-sm flex items-center justify-center gap-2">
+              <span class="btn-text">Solicitar Certidão &rarr;</span>
+              <span class="spinner"></span>
+            </button>
+          </form>
+        </div>
+      </div><!-- /col-esquerda -->
+
+      <!-- ── Coluna Direita: info ── -->
+      <div class="space-y-6 lg:sticky lg:top-24">
+
+        <!-- Título e descrição -->
+        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <span class="inline-block bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3">
+            Municipal
+          </span>
+          <h1 class="text-2xl font-extrabold text-gray-900 leading-tight mb-3">
+            Certidão Negativa de<br>Débitos Municipais
+          </h1>
+          <p class="text-gray-600 text-sm leading-relaxed">
+            Documento emitido pela <strong>Prefeitura Municipal</strong> que atesta a regularidade
+            fiscal do contribuinte junto ao município. Necessário para participar de licitações,
+            formalizar contratos, obter alvarás e realizar transferências de imóveis.
+          </p>
+        </div>
+
+        <!-- Quando usar -->
+        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h2 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+            Situações de uso
+          </h2>
+          <ul class="space-y-2.5">
+            <li class="flex items-center gap-2.5 text-sm text-gray-700">
+              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Licitações e contratos municipais
+            </li>
+            <li class="flex items-center gap-2.5 text-sm text-gray-700">
+              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Alvará de funcionamento
+            </li>
+            <li class="flex items-center gap-2.5 text-sm text-gray-700">
+              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Transferência de imóveis urbanos
+            </li>
+            <li class="flex items-center gap-2.5 text-sm text-gray-700">
+              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Financiamentos e crédito bancário
+            </li>
+            <li class="flex items-center gap-2.5 text-sm text-gray-700">
+              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Participação em consórcios públicos
+            </li>
+          </ul>
+        </div>
+
+        <!-- Como funciona -->
+        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h2 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Como funciona
+          </h2>
+          <ol class="space-y-3">
+            {% for passo in passos %}
+            <li class="flex gap-3">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
+                {{ forloop.counter }}
+              </span>
+              <div>
+                <p class="text-sm font-semibold text-gray-800">{{ passo.titulo }}</p>
+                <p class="text-xs text-gray-500 mt-0.5">{{ passo.descricao }}</p>
+              </div>
+            </li>
+            {% endfor %}
+          </ol>
+        </div>
+
+        <!-- Preço fixo -->
+        <div class="animate-fade-in animate-delay-3">
+          <div class="badge-fixed-price">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+              <p class="text-xs font-semibold opacity-90">Tarifa única em todo o Brasil</p>
+              <p class="text-2xl font-extrabold leading-tight">{{ price_display }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Aviso -->
+        <div class="animate-fade-in animate-delay-4 bg-amber-50 border border-amber-200 rounded-2xl p-5">
+          <div class="flex gap-3">
+            <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+            <div>
+              <p class="text-sm font-semibold text-amber-800 mb-1">Informação importante</p>
+              <p class="text-xs text-amber-700 leading-relaxed">
+                Os dados informados serão utilizados exclusivamente para a solicitação desta certidão.
+                Atuamos como correspondentes junto à Prefeitura do município selecionado.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /col-direita -->
+    </div>
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+  const CIDADES_URL = "{% url 'pages:cidades_por_estado' %}";
+
+  // Referências aos elementos
+  const estadoSelect  = document.getElementById('id_estado_municipio');
+  const cidadeSelect  = document.getElementById('select_cidade_municipio');
+  const cidadeHidden  = document.getElementById('id_cidade_municipio_hidden');
+  const cidadeSkel    = document.getElementById('cidade-skeleton');
+  const cidadeError   = document.getElementById('cidade-error');
+  const form          = document.getElementById('form-municipio');
+  const btn           = document.getElementById('btn-submit-municipio');
+
+  // Máscara CPF
+  const cpfInput = document.getElementById('{{ form.cpf.id_for_label }}');
+  if (cpfInput) {
+    cpfInput.addEventListener('input', function () {
+      let v = this.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 9)      v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+      else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+      else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+      this.value = v;
+    });
+  }
+
+  // Carrega cidades via AJAX
+  function carregarCidades(uf, valorSelecionado) {
+    if (!uf) {
+      cidadeSelect.innerHTML = '<option value="">Selecione o estado primeiro</option>';
+      cidadeSelect.disabled = true;
+      cidadeHidden.value = '';
+      return;
+    }
+    // Mostra skeleton
+    cidadeSkel.classList.remove('hidden');
+    cidadeSelect.style.visibility = 'hidden';
+
+    fetch(CIDADES_URL + '?uf=' + encodeURIComponent(uf))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        cidadeSelect.innerHTML = '<option value="">Selecione a cidade</option>';
+        (data.cidades || []).forEach(function (c) {
+          const opt = document.createElement('option');
+          opt.value = c;
+          opt.textContent = c;
+          if (c === valorSelecionado) opt.selected = true;
+          cidadeSelect.appendChild(opt);
+        });
+        cidadeSelect.disabled = false;
+        // Sincroniza hidden
+        if (valorSelecionado) cidadeHidden.value = valorSelecionado;
+      })
+      .catch(function () {
+        cidadeSelect.innerHTML = '<option value="">Erro ao carregar cidades</option>';
+        cidadeSelect.disabled = false;
+      })
+      .finally(function () {
+        cidadeSkel.classList.add('hidden');
+        cidadeSelect.style.visibility = 'visible';
+      });
+  }
+
+  // Ao mudar estado
+  if (estadoSelect) {
+    estadoSelect.addEventListener('change', function () {
+      cidadeHidden.value = '';
+      carregarCidades(this.value, '');
+    });
+    // Re-carregar no POST com erros (re-render)
+    const ufAtual    = estadoSelect.value;
+    const cidadeAtual = cidadeHidden.value;
+    if (ufAtual) carregarCidades(ufAtual, cidadeAtual);
+  }
+
+  // Ao mudar cidade no select visual
+  if (cidadeSelect) {
+    cidadeSelect.addEventListener('change', function () {
+      cidadeHidden.value = this.value;
+      if (cidadeError) cidadeError.classList.add('hidden');
+    });
+  }
+
+  // Validação antes do submit
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      if (!cidadeHidden.value.trim()) {
+        e.preventDefault();
+        if (cidadeError) {
+          cidadeError.textContent = 'Selecione a cidade.';
+          cidadeError.classList.remove('hidden');
+        }
+        cidadeSelect.focus();
+        return;
+      }
+      // Loading state
+      btn.classList.add('loading');
+      btn.disabled = true;
+    });
+  }
+})();
+</script>
+{% endblock %}

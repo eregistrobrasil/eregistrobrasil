@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Certidão Negativa de Débitos Trabalhistas — E-Registro Brasil{% endblock %}
+
+{% block extra_head %}
+<meta name="description" content="Solicite sua Certidão Negativa de Débitos Trabalhistas (CNDT) online com rapidez e segurança. Emitida pela Justiça do Trabalho. R$ 49,90.">
+<style>
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in        { animation: fadeInUp .55s ease both; }
+  .animate-delay-1        { animation-delay: .10s; }
+  .animate-delay-2        { animation-delay: .20s; }
+  .animate-delay-3        { animation-delay: .30s; }
+  .animate-delay-4        { animation-delay: .40s; }
+  .field-input:focus {
+    outline: none;
+    border-color: #1B4F72;
+    box-shadow: 0 0 0 3px rgba(27,79,114,.15);
+  }
+  .badge-fixed-price {
+    background: linear-gradient(135deg, #1E8449, #27AE60);
+    color: #fff;
+    border-radius: .75rem;
+    padding: .75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .btn-submit { position: relative; overflow: hidden; }
+  .btn-submit .spinner {
+    display: none; width: 18px; height: 18px;
+    border: 2.5px solid rgba(255,255,255,.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn-submit.loading .btn-text { display: none; }
+  .btn-submit.loading .spinner  { display: inline-block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="bg-white border-b border-gray-100">
+  <div class="max-w-6xl mx-auto px-4 py-3">
+    <nav class="text-sm text-gray-500 flex items-center gap-1.5">
+      <a href="{% url 'products:home' %}" class="hover:text-primary transition-colors">Início</a>
+      <span class="text-gray-300">/</span>
+      <span class="text-gray-700 font-medium">Certidão Negativa de Débitos Trabalhistas</span>
+    </nav>
+  </div>
+</div>
+
+<!-- Main -->
+<main class="bg-gray-50 min-h-screen py-10">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="grid lg:grid-cols-2 gap-10 items-start">
+
+      <!-- ── Coluna Esquerda: ilustração + formulário ── -->
+      <div class="space-y-6">
+
+        <!-- Ilustração -->
+        <div class="animate-fade-in bg-white rounded-2xl shadow-md overflow-hidden">
+          <div class="bg-gradient-to-br from-primary to-primary-dark p-8 flex justify-center items-center" style="min-height:220px;">
+            <svg viewBox="0 0 200 170" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-56 h-auto">
+              <!-- Martelo da Justiça do Trabalho -->
+              <!-- Cabo -->
+              <rect x="93" y="90" width="14" height="55" rx="5" transform="rotate(-35 93 90)"
+                    fill="rgba(255,255,255,0.35)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+              <!-- Cabeça do martelo -->
+              <rect x="60" y="42" width="62" height="30" rx="8"
+                    fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.55)" stroke-width="2"/>
+              <rect x="64" y="48" width="54" height="18" rx="5"
+                    fill="rgba(255,255,255,0.15)"/>
+              <!-- Texto no martelo (linhas decorativas) -->
+              <line x1="72" y1="54" x2="110" y2="54" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="72" y1="60" x2="100" y2="60" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round"/>
+              <!-- Símbolo cifrão riscado (sem dívidas) -->
+              <circle cx="148" cy="58" r="22" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+              <text x="148" y="65" text-anchor="middle" font-size="20" fill="rgba(255,255,255,0.6)"
+                    font-family="monospace" font-weight="bold">$</text>
+              <!-- Linha riscando o cifrão -->
+              <line x1="132" y1="42" x2="164" y2="74" stroke="rgba(255,100,100,0.7)" stroke-width="3" stroke-linecap="round"/>
+              <!-- Documento CNDT embaixo -->
+              <rect x="28" y="100" width="56" height="58" rx="5"
+                    fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+              <rect x="36" y="112" width="40" height="4" rx="2" fill="rgba(255,255,255,0.4)"/>
+              <rect x="36" y="120" width="32" height="3" rx="1.5" fill="rgba(255,255,255,0.25)"/>
+              <rect x="36" y="127" width="36" height="3" rx="1.5" fill="rgba(255,255,255,0.25)"/>
+              <rect x="36" y="134" width="28" height="3" rx="1.5" fill="rgba(255,255,255,0.2)"/>
+              <!-- Checkmark sobre o doc -->
+              <circle cx="56" cy="148" r="10" fill="rgba(39,174,96,0.85)"/>
+              <path d="M51 148 L55 152.5 L62 143" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="px-6 py-4 bg-primary/5 border-t border-primary/10">
+            <p class="text-xs text-primary font-semibold uppercase tracking-wider text-center">
+              CNDT · Tribunal Superior do Trabalho
+            </p>
+          </div>
+        </div>
+
+        <!-- Formulário -->
+        <div class="animate-fade-in animate-delay-1 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h2 class="text-lg font-bold text-gray-800 mb-1">Dados do Solicitante</h2>
+          <p class="text-sm text-gray-500 mb-6">Informe seu CPF para verificar a regularidade trabalhista.</p>
+
+          <form method="post" novalidate id="form-trabalhistas">
+            {% csrf_token %}
+            <div class="space-y-5">
+
+              <!-- CPF -->
+              <div>
+                <label for="{{ form.cpf.id_for_label }}"
+                       class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {{ form.cpf.label }} <span class="text-red-500">*</span>
+                </label>
+                {{ form.cpf }}
+                {% if form.cpf.errors %}
+                  <p class="mt-1 text-xs text-red-500">{{ form.cpf.errors|first }}</p>
+                {% endif %}
+                <p class="mt-1.5 text-xs text-gray-400">A certidão é emitida por CPF (pessoa física).</p>
+              </div>
+
+            </div>
+
+            {% if form.non_field_errors %}
+              <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                {% for error in form.non_field_errors %}
+                  <p class="text-sm text-red-600">{{ error }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <button type="submit" id="btn-submit-trab"
+                    class="btn-submit mt-7 w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-sm flex items-center justify-center gap-2">
+              <span class="btn-text">Solicitar Certidão &rarr;</span>
+              <span class="spinner"></span>
+            </button>
+          </form>
+        </div>
+      </div><!-- /col-esquerda -->
+
+      <!-- ── Coluna Direita: info ── -->
+      <div class="space-y-6 lg:sticky lg:top-24">
+
+        <!-- Título e descrição -->
+        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <span class="inline-block bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3">
+            CNDT · Trabalhista
+          </span>
+          <h1 class="text-2xl font-extrabold text-gray-900 leading-tight mb-3">
+            Certidão Negativa de<br>Débitos Trabalhistas
+          </h1>
+          <p class="text-gray-600 text-sm leading-relaxed">
+            A <strong>CNDT (Certidão Negativa de Débitos Trabalhistas)</strong> é emitida pelo
+            <strong>Tribunal Superior do Trabalho (TST)</strong> e comprova a inexistência de
+            débitos trabalhistas em nome do solicitante. Exigida em licitações, contratos públicos
+            e operações de crédito desde a Lei 12.440/2011.
+          </p>
+        </div>
+
+        <!-- Quando é necessária -->
+        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h2 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            Situações de uso
+          </h2>
+          <ul class="space-y-2.5">
+            <li class="flex items-center gap-2.5 text-sm text-gray-700">
+              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Licitações e contratos com o governo
+            </li>
+            <li class="flex items-center gap-2.5 text-sm text-gray-700">
+              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Compra e venda de imóveis
+            </li>
+            <li class="flex items-center gap-2.5 text-sm text-gray-700">
+              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Financiamentos e crédito bancário
+            </li>
+            <li class="flex items-center gap-2.5 text-sm text-gray-700">
+              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Sócios e administradores de empresas
+            </li>
+            <li class="flex items-center gap-2.5 text-sm text-gray-700">
+              <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Aprovação de cadastros em órgãos públicos
+            </li>
+          </ul>
+        </div>
+
+        <!-- Como funciona -->
+        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h2 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Como funciona
+          </h2>
+          <ol class="space-y-3">
+            {% for passo in passos %}
+            <li class="flex gap-3">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
+                {{ forloop.counter }}
+              </span>
+              <div>
+                <p class="text-sm font-semibold text-gray-800">{{ passo.titulo }}</p>
+                <p class="text-xs text-gray-500 mt-0.5">{{ passo.descricao }}</p>
+              </div>
+            </li>
+            {% endfor %}
+          </ol>
+        </div>
+
+        <!-- Preço -->
+        <div class="animate-fade-in animate-delay-3">
+          <div class="badge-fixed-price">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+              <p class="text-xs font-semibold opacity-90">Tarifa única em todo o Brasil</p>
+              <p class="text-2xl font-extrabold leading-tight">{{ price_display }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Aviso -->
+        <div class="animate-fade-in animate-delay-4 bg-amber-50 border border-amber-200 rounded-2xl p-5">
+          <div class="flex gap-3">
+            <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+            <div>
+              <p class="text-sm font-semibold text-amber-800 mb-1">Informação importante</p>
+              <p class="text-xs text-amber-700 leading-relaxed">
+                Os dados informados serão utilizados exclusivamente para a solicitação desta certidão.
+                Atuamos como correspondentes junto ao Tribunal Superior do Trabalho.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /col-direita -->
+    </div>
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Máscara CPF
+  const cpfInput = document.getElementById('{{ form.cpf.id_for_label }}');
+  if (cpfInput) {
+    cpfInput.addEventListener('input', function () {
+      let v = this.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 9)      v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+      else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+      else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+      this.value = v;
+    });
+  }
+
+  // Loading state
+  const form = document.getElementById('form-trabalhistas');
+  const btn  = document.getElementById('btn-submit-trab');
+  if (form && btn) {
+    form.addEventListener('submit', function () {
+      btn.classList.add('loading');
+      btn.disabled = true;
+    });
+  }
+});
+</script>
+{% endblock %}

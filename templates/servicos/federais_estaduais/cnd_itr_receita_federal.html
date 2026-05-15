@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}CND ITR — Certidão Negativa de Débitos do Imposto Territorial Rural | E-Registro Brasil{% endblock %}
+
+{% block extra_head %}
+<meta name="description" content="Solicite online a Certidão Negativa de Débitos do ITR (Imposto Territorial Rural) junto à Receita Federal. Processo digital, rápido e seguro. A partir de R$ 49,90.">
+<style>
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in    { animation: fadeInUp .55s ease both; }
+  .animate-delay-1    { animation-delay: .10s; }
+  .animate-delay-2    { animation-delay: .20s; }
+  .animate-delay-3    { animation-delay: .30s; }
+  .animate-delay-4    { animation-delay: .40s; }
+
+  .field-input:focus {
+    outline: none;
+    border-color: #1B4F72;
+    box-shadow: 0 0 0 3px rgba(27,79,114,.15);
+  }
+  .badge-fixed-price {
+    background: linear-gradient(135deg, #1E8449, #27AE60);
+    color: #fff;
+    border-radius: .75rem;
+    padding: .75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .nirf-hint {
+    font-size: .75rem;
+    color: #6b7280;
+    margin-top: .35rem;
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="bg-white border-b border-gray-100">
+  <div class="max-w-6xl mx-auto px-4 py-3">
+    <nav class="text-sm text-gray-500 flex items-center gap-1.5" aria-label="Navegação">
+      <a href="{% url 'products:home' %}" class="hover:text-primary transition-colors">Início</a>
+      <span class="text-gray-300">/</span>
+      <span class="text-gray-400">Federais e Estaduais</span>
+      <span class="text-gray-300">/</span>
+      <span class="text-gray-700 font-medium">CND ITR — Receita Federal</span>
+    </nav>
+  </div>
+</div>
+
+<!-- Main -->
+<main class="bg-gray-50 min-h-screen py-10">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="grid lg:grid-cols-2 gap-10 items-start">
+
+      <!-- ── Coluna Esquerda: ilustração + formulário ─── -->
+      <div class="space-y-6">
+
+        <!-- Ilustração -->
+        <div class="animate-fade-in bg-white rounded-2xl shadow-md overflow-hidden">
+          <div class="bg-gradient-to-br from-primary to-primary-dark p-8 flex justify-center items-center" style="min-height:200px;">
+            <svg viewBox="0 0 180 150" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-52 h-auto" role="img" aria-label="Ilustração ITR — Imóvel Rural">
+              <!-- Terreno / campo -->
+              <ellipse cx="90" cy="118" rx="68" ry="16" fill="rgba(255,255,255,0.12)"/>
+              <!-- Celeiro / construção rural -->
+              <rect x="58" y="65" width="64" height="50" rx="4" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+              <!-- Telhado -->
+              <polygon points="52,68 90,30 128,68" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+              <!-- Porta -->
+              <rect x="79" y="88" width="22" height="27" rx="3" fill="rgba(255,255,255,0.3)"/>
+              <!-- Janelas -->
+              <rect x="63" y="72" width="16" height="12" rx="2" fill="rgba(255,255,255,0.4)"/>
+              <rect x="101" y="72" width="16" height="12" rx="2" fill="rgba(255,255,255,0.4)"/>
+              <!-- Árvores decorativas -->
+              <circle cx="32" cy="95" r="14" fill="rgba(255,255,255,0.15)"/>
+              <rect x="29" y="109" width="6" height="10" rx="2" fill="rgba(255,255,255,0.3)"/>
+              <circle cx="148" cy="95" r="14" fill="rgba(255,255,255,0.15)"/>
+              <rect x="145" y="109" width="6" height="10" rx="2" fill="rgba(255,255,255,0.3)"/>
+              <!-- Sol -->
+              <circle cx="144" cy="30" r="14" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+              <circle cx="144" cy="30" r="8" fill="rgba(255,255,255,0.4)"/>
+            </svg>
+          </div>
+          <div class="px-6 py-4 bg-primary/5 border-t border-primary/10">
+            <p class="text-xs text-primary font-semibold uppercase tracking-wider text-center">
+              Receita Federal do Brasil — Imposto Territorial Rural
+            </p>
+          </div>
+        </div>
+
+        <!-- Formulário -->
+        <div class="animate-fade-in animate-delay-1 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h2 class="text-lg font-bold text-gray-800 mb-1">Dados do Imóvel Rural</h2>
+          <p class="text-sm text-gray-500 mb-6">
+            Informe o NIRF do imóvel rural para emissão da certidão negativa de débitos do ITR.
+          </p>
+
+          <form method="post" novalidate id="form-cnd-itr">
+            {% csrf_token %}
+            <div class="space-y-5">
+
+              <!-- NIRF -->
+              <div>
+                <label for="{{ form.nirf.id_for_label }}"
+                       class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {{ form.nirf.label }}
+                  <span class="text-red-500">*</span>
+                  <span class="ml-1 inline-flex items-center group relative">
+                    <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="absolute bottom-6 left-0 z-10 hidden group-hover:flex bg-gray-800 text-white text-xs rounded-lg px-3 py-2 w-64 shadow-lg">
+                      Número do Imóvel na Receita Federal — encontrado no DARF de pagamento do ITR ou no sistema CAFIR.
+                    </span>
+                  </span>
+                </label>
+                {{ form.nirf }}
+                {% if form.nirf.errors %}
+                  <p class="mt-1 text-xs text-red-500 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ form.nirf.errors|first }}
+                  </p>
+                {% else %}
+                  <p class="nirf-hint">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Número do Imóvel na Receita Federal (ex: 1234567-8). Consta no CAFIR ou no DARF do ITR.
+                  </p>
+                {% endif %}
+              </div>
+
+            </div><!-- /space-y-5 -->
+
+            {% if form.non_field_errors %}
+              <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                {% for error in form.non_field_errors %}
+                  <p class="text-sm text-red-600">{{ error }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <button type="submit" id="btn-submit"
+                    class="mt-7 w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-sm flex items-center justify-center gap-2">
+              <span id="btn-text">Solicitar CND ITR &rarr;</span>
+              <svg id="btn-spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+
+      </div><!-- /col-esquerda -->
+
+      <!-- ── Coluna Direita: informações ─── -->
+      <div class="space-y-6 lg:sticky lg:top-24">
+
+        <!-- Título e descrição -->
+        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <span class="inline-block bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3">
+            Federal — Rural
+          </span>
+          <h1 class="text-2xl font-extrabold text-gray-900 leading-tight mb-3">
+            CND do ITR<br><span class="text-primary">Receita Federal</span>
+          </h1>
+          <p class="text-gray-600 text-sm leading-relaxed">
+            A <strong>Certidão Negativa de Débitos do ITR</strong> comprova a regularidade do imóvel rural
+            perante a Receita Federal quanto ao Imposto Territorial Rural. Exigida em transações imobiliárias rurais,
+            crédito rural, licitações e regularização fundiária.
+          </p>
+        </div>
+
+        <!-- O que é o NIRF -->
+        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h2 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            O que é o NIRF?
+          </h2>
+          <div class="space-y-3 text-sm text-gray-600">
+            <p>
+              O <strong>NIRF</strong> (Número do Imóvel na Receita Federal) é o código de cadastro do imóvel rural
+              no sistema CAFIR — Cadastro de Imóveis Rurais da Receita Federal.
+            </p>
+            <p class="font-medium text-gray-700">Onde encontrar o NIRF:</p>
+            <ul class="space-y-1.5">
+              <li class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                No DARF de pagamento do ITR
+              </li>
+              <li class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                Na Declaração do ITR (DITR) entregue à Receita Federal
+              </li>
+              <li class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                No sistema CAFIR no portal da Receita Federal
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Como funciona -->
+        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h2 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Como funciona
+          </h2>
+          <ol class="space-y-3">
+            {% for passo in passos %}
+            <li class="flex gap-3">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
+                {{ forloop.counter }}
+              </span>
+              <div>
+                <p class="text-sm font-semibold text-gray-800">{{ passo.titulo }}</p>
+                <p class="text-xs text-gray-500 mt-0.5">{{ passo.descricao }}</p>
+              </div>
+            </li>
+            {% endfor %}
+          </ol>
+        </div>
+
+        <!-- Preço fixo -->
+        <div class="animate-fade-in animate-delay-3">
+          <div class="badge-fixed-price">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+              <p class="text-xs font-semibold opacity-90">Tarifa única em todo o Brasil</p>
+              <p class="text-2xl font-extrabold leading-tight">{{ price_display }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Aviso -->
+        <div class="animate-fade-in animate-delay-4 bg-amber-50 border border-amber-200 rounded-2xl p-5">
+          <div class="flex gap-3">
+            <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+            <div>
+              <p class="text-sm font-semibold text-amber-800 mb-1">Informação importante</p>
+              <p class="text-xs text-amber-700 leading-relaxed">
+                O NIRF deve estar regularmente cadastrado no sistema CAFIR da Receita Federal.
+                Em caso de pendências de ITR, poderemos emitir a <em>Certidão Positiva com Efeitos de Negativa</em>
+                se o débito estiver suspenso ou parcelado.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /col-direita -->
+    </div>
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Máscara NIRF: formata como 1234567-8 (dígito verificador separado por hífen)
+    const nirfInput = document.getElementById('{{ form.nirf.id_for_label }}');
+    if (nirfInput) {
+      nirfInput.addEventListener('input', function () {
+        let v = this.value.replace(/[^\d]/g, '').slice(0, 8);
+        if (v.length > 7) {
+          v = v.replace(/(\d{7})(\d{1})/, '$1-$2');
+        }
+        this.value = v;
+      });
+      nirfInput.setAttribute('maxlength', '9');
+    }
+
+    // Loading state
+    const form = document.getElementById('form-cnd-itr');
+    const btn  = document.getElementById('btn-submit');
+    const txt  = document.getElementById('btn-text');
+    const spin = document.getElementById('btn-spinner');
+    if (form && btn) {
+      form.addEventListener('submit', function () {
+        btn.disabled = true;
+        txt.textContent = 'Processando…';
+        spin.classList.remove('hidden');
+      });
+    }
+  });
+</script>
+{% endblock %}

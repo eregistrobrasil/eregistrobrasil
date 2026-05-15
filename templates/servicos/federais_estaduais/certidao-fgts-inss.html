@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Certidão FGTS / INSS — Certidão de Regularidade do Empregador | E-Registro Brasil{% endblock %}
+
+{% block meta_description %}Solicite online a Certidão de Regularidade do FGTS e INSS para seu CNPJ. Processo 100% digital, rápido e seguro. Selecione o estado e informe o CNPJ.{% endblock %}
+
+{% block extra_head %}
+<style>
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in   { animation: fadeInUp .55s ease both; }
+  .animate-delay-1   { animation-delay: .10s; }
+  .animate-delay-2   { animation-delay: .20s; }
+  .animate-delay-3   { animation-delay: .30s; }
+  .animate-delay-4   { animation-delay: .40s; }
+
+  .field-input:focus {
+    outline: none;
+    border-color: #1B4F72;
+    box-shadow: 0 0 0 3px rgba(27,79,114,.15);
+  }
+  .badge-fixed-price {
+    background: linear-gradient(135deg, #1E8449, #27AE60);
+    color: #fff;
+    border-radius: .75rem;
+    padding: .75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="bg-white border-b border-gray-100">
+  <div class="max-w-6xl mx-auto px-4 py-3">
+    <nav class="text-sm text-gray-500 flex items-center gap-1.5" aria-label="Navegação">
+      <a href="{% url 'products:home' %}" class="hover:text-primary transition-colors">Início</a>
+      <span class="text-gray-300">/</span>
+      <span class="text-gray-400">Federais e Estaduais</span>
+      <span class="text-gray-300">/</span>
+      <span class="text-gray-700 font-medium">Certidão FGTS / INSS</span>
+    </nav>
+  </div>
+</div>
+
+<!-- Main -->
+<main class="bg-gray-50 min-h-screen py-10">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="grid lg:grid-cols-2 gap-10 items-start">
+
+      <!-- ── Coluna Esquerda: ilustração + formulário ── -->
+      <div class="space-y-6">
+
+        <!-- Ilustração -->
+        <div class="animate-fade-in bg-white rounded-2xl shadow-md overflow-hidden">
+          <div class="bg-gradient-to-br from-primary to-primary-dark p-8 flex justify-center items-center" style="min-height:200px;">
+            <svg viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-56 h-auto" role="img" aria-label="Ilustração Certidão FGTS e INSS">
+              <!-- Fundo -->
+              <rect x="0" y="0" width="200" height="160" rx="8" fill="rgba(255,255,255,0.04)"/>
+              <!-- Escudo central de proteção ao trabalhador -->
+              <path d="M100 18 L148 38 L148 90 C148 118 100 142 100 142 C100 142 52 118 52 90 L52 38 Z"
+                    fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.45)" stroke-width="2"/>
+              <!-- Silhueta trabalhador dentro do escudo -->
+              <circle cx="100" cy="64" r="12" fill="rgba(255,255,255,0.40)"/>
+              <path d="M78 105 Q78 84 100 84 Q122 84 122 105" fill="rgba(255,255,255,0.30)" stroke="rgba(255,255,255,0.50)" stroke-width="1.5"/>
+              <!-- Moeda FGTS à esquerda -->
+              <circle cx="38" cy="110" r="18" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.30)" stroke-width="1.5"/>
+              <text x="38" y="116" text-anchor="middle" font-size="10" fill="white" font-weight="bold" font-family="Arial,sans-serif">FGTS</text>
+              <!-- Símbolo INSS à direita -->
+              <rect x="144" y="96" width="36" height="28" rx="5" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.30)" stroke-width="1.5"/>
+              <text x="162" y="115" text-anchor="middle" font-size="9" fill="white" font-weight="bold" font-family="Arial,sans-serif">INSS</text>
+              <!-- Barras de documento na base -->
+              <rect x="20"  y="148" width="50" height="5" rx="2" fill="rgba(255,255,255,0.20)"/>
+              <rect x="78"  y="148" width="44" height="5" rx="2" fill="rgba(255,255,255,0.15)"/>
+              <rect x="130" y="148" width="50" height="5" rx="2" fill="rgba(255,255,255,0.10)"/>
+            </svg>
+          </div>
+          <div class="px-6 py-4 bg-primary/5 border-t border-primary/10">
+            <p class="text-xs text-primary font-semibold uppercase tracking-wider text-center">
+              Caixa Econômica Federal · Ministério da Previdência Social
+            </p>
+          </div>
+        </div>
+
+        <!-- Formulário -->
+        <div class="animate-fade-in animate-delay-1 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h2 class="text-lg font-bold text-gray-800 mb-1">Dados do Empregador</h2>
+          <p class="text-sm text-gray-500 mb-6">
+            Informe o CNPJ e o estado para solicitar a certidão de regularidade junto ao FGTS e INSS.
+          </p>
+
+          <form method="post" novalidate id="form-fgts-inss">
+            {% csrf_token %}
+            <div class="space-y-5">
+
+              <!-- CNPJ -->
+              <div>
+                <label for="{{ form.cnpj.id_for_label }}"
+                       class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {{ form.cnpj.label }} <span class="text-red-500">*</span>
+                </label>
+                {{ form.cnpj }}
+                {% if form.cnpj.errors %}
+                  <p class="mt-1 text-xs text-red-500 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ form.cnpj.errors|first }}
+                  </p>
+                {% endif %}
+              </div>
+
+              <!-- CEI (opcional) -->
+              <div>
+                <label for="{{ form.cei.id_for_label }}"
+                       class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {{ form.cei.label }}
+                  <span class="ml-1 text-xs font-normal text-gray-400">(opcional)</span>
+                </label>
+                {{ form.cei }}
+                {% if form.cei.errors %}
+                  <p class="mt-1 text-xs text-red-500 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ form.cei.errors|first }}
+                  </p>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-400">CEI: Cadastro Específico do INSS. Informe se disponível.</p>
+              </div>
+
+              <!-- Estado -->
+              <div>
+                <label for="{{ form.estado.id_for_label }}"
+                       class="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {{ form.estado.label }} <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                  {{ form.estado }}
+                </div>
+                {% if form.estado.errors %}
+                  <p class="mt-1 text-xs text-red-500 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ form.estado.errors|first }}
+                  </p>
+                {% endif %}
+              </div>
+
+            </div><!-- /space-y-5 -->
+
+            {% if form.non_field_errors %}
+              <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                {% for error in form.non_field_errors %}
+                  <p class="text-sm text-red-600">{{ error }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <button type="submit" id="btn-submit"
+                    class="mt-7 w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-sm flex items-center justify-center gap-2">
+              <span id="btn-text">Solicitar Certidão FGTS/INSS &rarr;</span>
+              <svg id="btn-spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+
+      </div><!-- /col-esquerda -->
+
+      <!-- ── Coluna Direita: informações ── -->
+      <div class="space-y-6 lg:sticky lg:top-24">
+
+        <!-- Título e descrição -->
+        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <span class="inline-block bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3">
+            Federal
+          </span>
+          <h1 class="text-2xl font-extrabold text-gray-900 leading-tight mb-3">
+            Certidão de Regularidade<br><span class="text-primary">FGTS / INSS</span>
+          </h1>
+          <p class="text-gray-600 text-sm leading-relaxed">
+            A <strong>Certidão de Regularidade do FGTS</strong> comprova que a empresa está em dia
+            com os recolhimentos do Fundo de Garantia por Tempo de Serviço. Já o
+            <strong>Certificado de Regularidade do INSS</strong> atesta o cumprimento das
+            obrigações previdenciárias. Ambos são exigidos em licitações, financiamentos,
+            abertura de crédito e processos trabalhistas.
+          </p>
+        </div>
+
+        <!-- Como funciona -->
+        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
+          <h2 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Como funciona
+          </h2>
+          <ol class="space-y-3">
+            {% for passo in passos %}
+            <li class="flex gap-3">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
+                {{ forloop.counter }}
+              </span>
+              <div>
+                <p class="text-sm font-semibold text-gray-800">{{ passo.titulo }}</p>
+                <p class="text-xs text-gray-500 mt-0.5">{{ passo.descricao }}</p>
+              </div>
+            </li>
+            {% endfor %}
+          </ol>
+        </div>
+
+        <!-- Preço fixo -->
+        <div class="animate-fade-in animate-delay-3">
+          <div class="badge-fixed-price">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+              <p class="text-xs font-semibold opacity-90">Tarifa única em todo o Brasil</p>
+              {% if price_display %}
+                <p class="text-2xl font-extrabold leading-tight">{{ price_display }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Documentos aceitos -->
+        <div class="animate-fade-in animate-delay-3 bg-white rounded-2xl shadow-md p-6">
+          <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+            <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Quem pode solicitar
+          </h3>
+          <ul class="space-y-2">
+            <li class="flex items-start gap-2 text-sm text-gray-600">
+              <span class="text-green-500 mt-0.5">✓</span>
+              Empresas com CNPJ ativo ou suspenso
+            </li>
+            <li class="flex items-start gap-2 text-sm text-gray-600">
+              <span class="text-green-500 mt-0.5">✓</span>
+              MEI e microempresas
+            </li>
+            <li class="flex items-start gap-2 text-sm text-gray-600">
+              <span class="text-green-500 mt-0.5">✓</span>
+              Empregadores domésticos com CAEPF
+            </li>
+            <li class="flex items-start gap-2 text-sm text-gray-600">
+              <span class="text-green-500 mt-0.5">✓</span>
+              Entidades sem fins lucrativos
+            </li>
+          </ul>
+        </div>
+
+        <!-- Aviso -->
+        <div class="animate-fade-in animate-delay-4 bg-amber-50 border border-amber-200 rounded-2xl p-5">
+          <div class="flex gap-3">
+            <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+            <div>
+              <p class="text-sm font-semibold text-amber-800 mb-1">Informação importante</p>
+              <p class="text-xs text-amber-700 leading-relaxed">
+                A emissão da certidão depende da situação cadastral junto à Caixa Econômica
+                Federal e ao INSS. Débitos em aberto podem impedir a emissão da certidão negativa.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /col-direita -->
+    </div>
+  </div>
+</main>
+
+<script>
+(function () {
+  // Máscara CNPJ
+  var cnpjInput = document.querySelector('[data-mask="cnpj"]');
+  if (cnpjInput) {
+    cnpjInput.addEventListener('input', function () {
+      var v = this.value.replace(/\D/g, '').slice(0, 14);
+      if (v.length > 12) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})$/, '$1.$2.$3/$4-$5');
+      else if (v.length > 8) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{0,4})$/, '$1.$2.$3/$4');
+      else if (v.length > 5) v = v.replace(/^(\d{2})(\d{3})(\d{0,3})$/, '$1.$2.$3');
+      else if (v.length > 2) v = v.replace(/^(\d{2})(\d{0,3})$/, '$1.$2');
+      this.value = v;
+    });
+  }
+
+  // Loading state
+  var btn = document.getElementById('btn-submit');
+  var form = document.getElementById('form-fgts-inss');
+  if (btn && form) {
+    form.addEventListener('submit', function () {
+      btn.disabled = true;
+      document.getElementById('btn-text').textContent = 'Processando…';
+      document.getElementById('btn-spinner').classList.remove('hidden');
+    });
+  }
+})();
+</script>
+{% endblock %}

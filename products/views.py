@@ -19,7 +19,7 @@ class HomeView(ListView):
         ctx['featured_products'] = Product.objects.filter(
             is_active=True, is_featured=True
         ).select_related('category')[:6]
-        ctx['categories'] = Category.objects.filter(is_active=True)
+        ctx['categories'] = Category.objects.filter(is_active=True, show_in_nav=True)
         ctx['title'] = 'Certidões Online — Rápido, Seguro e Fácil'
         return ctx
 

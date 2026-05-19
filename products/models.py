@@ -54,6 +54,7 @@ class Category(models.Model):
     icon_svg = models.TextField('Ícone SVG', blank=True)
     order = models.PositiveIntegerField('Ordem', default=0)
     is_active = models.BooleanField('Ativo', default=True)
+    show_in_nav = models.BooleanField('Exibir na Navegação', default=True)
 
     class Meta:
         verbose_name = 'Categoria'

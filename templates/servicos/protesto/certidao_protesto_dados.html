@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dados do Solicitante — Certidão de Protesto — E-Registro Brasil{% endblock %}
+{% block meta_description %}Informe seus dados pessoais para solicitar a Certidão de Protesto.{% endblock %}
+
+{% block extra_head %}
+  <style>
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);} }
+    .animate-fade-in { animation: fadeInUp 0.5s ease both; }
+    .animate-delay-1 { animation-delay: 0.05s; }
+    .animate-delay-2 { animation-delay: 0.12s; }
+    .animate-delay-3 { animation-delay: 0.20s; }
+    .animate-delay-4 { animation-delay: 0.28s; }
+    .field-input:focus { border-color: var(--color-primary,#1B4F72); box-shadow: 0 0 0 3px rgba(27,79,114,0.15); outline: none; }
+    .field-input.is-invalid { border-color: #ef4444; }
+    .field-input.is-invalid:focus { box-shadow: 0 0 0 3px rgba(239,68,68,0.15); }
+  </style>
+{% endblock %}
+
+{% block content %}
+<section class="py-10 px-4 max-w-6xl mx-auto">
+
+  {# Breadcrumb #}
+  <nav class="text-xs text-gray-400 mb-6 flex items-center gap-1.5 flex-wrap">
+    <a href="/" class="hover:text-primary transition-colors">Início</a>
+    <span>/</span>
+    <a href="{% url 'pages:certidao_protesto' %}" class="hover:text-primary transition-colors">Certidão de Protesto</a>
+    <span>/</span>
+    <span class="text-gray-600 font-medium">Dados do Solicitante</span>
+  </nav>
+
+  {# Indicador de etapas #}
+  <div class="flex items-center gap-0 text-xs font-medium mb-8">
+    <a href="{% url 'pages:certidao_protesto' %}" class="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-l-full hover:bg-green-600 transition-colors">
+      <span class="w-5 h-5 rounded-full bg-white text-green-600 flex items-center justify-center font-bold text-xs">✓</span>
+      Cartório
+    </a>
+    <div class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-r-full border-l border-white">
+      <span class="w-5 h-5 rounded-full bg-white text-primary flex items-center justify-center font-bold text-xs">2</span>
+      Seus Dados
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+    <!-- ===== Coluna Esquerda: Formulário (2/3) ===== -->
+    <div class="lg:col-span-2 space-y-6">
+
+      <div class="animate-fade-in animate-delay-1">
+        <h1 class="text-2xl font-bold text-primary leading-tight">Dados do Solicitante</h1>
+        <p class="text-sm text-gray-500 mt-1">{{ descricao_step2 }}</p>
+      </div>
+
+      <form method="post" novalidate class="space-y-6 animate-fade-in animate-delay-2" id="dados-form">
+        {% csrf_token %}
+
+        <!-- Dados Obrigatórios -->
+        <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-5">
+          <h2 class="text-base font-semibold text-gray-800 border-b border-gray-100 pb-3 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+            </svg>
+            Identificação Pessoal
+          </h2>
+
+          {# CPF #}
+          <div>
+            <label for="{{ form.cpf.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              {{ form.cpf.label }} <span class="text-red-500">*</span>
+            </label>
+            {{ form.cpf }}
+            {% if form.cpf.errors %}
+              <p class="text-xs text-red-500 mt-1">{{ form.cpf.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          {# Nome Completo #}
+          <div>
+            <label for="{{ form.nome_completo.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              {{ form.nome_completo.label }} <span class="text-red-500">*</span>
+            </label>
+            {{ form.nome_completo }}
+            {% if form.nome_completo.errors %}
+              <p class="text-xs text-red-500 mt-1">{{ form.nome_completo.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          {# RG #}
+          <div>
+            <label for="{{ form.rg.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              {{ form.rg.label }} <span class="text-red-500">*</span>
+            </label>
+            {{ form.rg }}
+            {% if form.rg.errors %}
+              <p class="text-xs text-red-500 mt-1">{{ form.rg.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          {# CEP #}
+          <div>
+            <label for="{{ form.cep.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              {{ form.cep.label }} <span class="text-red-500">*</span>
+            </label>
+            {{ form.cep }}
+            {% if form.cep.errors %}
+              <p class="text-xs text-red-500 mt-1">{{ form.cep.errors.0 }}</p>
+            {% endif %}
+            <p class="text-xs text-gray-400 mt-1">CEP do domicílio do solicitante</p>
+          </div>
+
+        </div>
+
+        <!-- Botão -->
+        <div class="animate-fade-in animate-delay-4">
+          <button type="submit" id="btn-continuar"
+            class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2">
+            Finalizar Solicitação
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+          </button>
+          <p class="text-xs text-center text-gray-400 mt-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 inline -mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+            </svg>
+            Seus dados são transmitidos com criptografia SSL
+          </p>
+        </div>
+      </form>
+    </div>
+
+    <!-- ===== Coluna Direita: Resumo ===== -->
+    <aside class="lg:col-span-1 animate-fade-in animate-delay-2">
+      <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-6 lg:sticky lg:top-6 space-y-4">
+
+        <div class="flex items-center gap-3 border-b border-gray-100 pb-4">
+          <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-gray-800">Resumo do Pedido</h3>
+            <p class="text-xs text-gray-400">Certidão de Protesto</p>
+          </div>
+        </div>
+
+        <div class="space-y-3 text-sm">
+          <p class="text-xs text-gray-400 uppercase tracking-wide font-medium">Localização</p>
+          <div class="space-y-1.5">
+            <div class="flex items-start gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+              </svg>
+              <span class="text-gray-700">{{ cartorio_data.cidade }}{% if cartorio_data.estado_uf %} — {{ cartorio_data.estado_uf }}{% endif %}</span>
+            </div>
+            {% if cartorio_data.cartorio %}
+            <div class="flex items-start gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+              </svg>
+              <span class="text-gray-700 text-xs">{{ cartorio_data.cartorio }}</span>
+            </div>
+            {% endif %}
+            {% if cartorio_data.todos_cartorios %}
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center gap-1 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+                </svg>
+                Busca em todos os cartórios
+              </span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <a href="{% url 'pages:certidao_protesto' %}"
+          class="block text-xs text-center text-primary hover:text-primary-dark underline underline-offset-2 transition-colors pt-1">
+          ← Alterar dados do cartório
+        </a>
+      </div>
+    </aside>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+  // Máscara CPF: 000.000.000-00
+  const cpfInput = document.getElementById('{{ form.cpf.id_for_label }}');
+  if (cpfInput) {
+    cpfInput.addEventListener('input', function () {
+      let v = this.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4');
+      else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{0,3})/, '$1.$2.$3');
+      else if (v.length > 3) v = v.replace(/(\d{3})(\d{0,3})/, '$1.$2');
+      this.value = v;
+    });
+  }
+
+  // Máscara CEP: 00000-000
+  const cepInput = document.getElementById('id_cep_protesto');
+  if (cepInput) {
+    cepInput.addEventListener('input', function () {
+      let v = this.value.replace(/\D/g, '').slice(0, 8);
+      if (v.length > 5) v = v.replace(/(\d{5})(\d{0,3})/, '$1-$2');
+      this.value = v;
+    });
+  }
+
+  // Desabilita duplo clique
+  document.getElementById('dados-form').addEventListener('submit', function () {
+    const btn = document.getElementById('btn-continuar');
+    if (btn) { btn.disabled = true; btn.textContent = 'Aguarde...'; }
+  });
+})();
+</script>
+{% endblock %}

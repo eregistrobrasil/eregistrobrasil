@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 
 from products.models import Product
-from .models import Cart, CartItem, Order, OrderItem
+from .models import Cart, CartItem, Order, OrderItem, TIPO_CERTIDAO_PARA_CATEGORIA, PRODUTO_SLUG_PARA_TIPO
 from .forms import CheckoutForm
 
 
@@ -111,13 +111,49 @@ class CheckoutView(View):
             order.subtotal = cart.get_total()
             order.total = cart.get_total()
             order.save()
+
+            # Recupera dados do formulário de certidão salvos na sessão
+            certidao_dados = request.session.pop('certidao_dados', {})
+            _LABEL_MAP = {
+                'conjuge_1': 'Cônjuge 1',
+                'conjuge_2': 'Cônjuge 2',
+                'data_casamento': 'Data do Casamento',
+                'nome_completo': 'Nome Completo',
+                'nome_mae': 'Nome da Mãe',
+                'nome_pai': 'Nome do Pai',
+                'data_nascimento': 'Data de Nascimento',
+                'data_obito': 'Data de Óbito',
+                'numero_livro': 'Nº Livro',
+                'numero_folha': 'Nº Folha',
+                'numero_termo': 'Nº Termo',
+                'cpf': 'CPF',
+                'estado_nascimento': 'Estado de Nascimento',
+                'cidade_nascimento': 'Cidade de Nascimento',
+                'descricao': 'Descrição',
+                'matricula': 'Matrícula',
+                'numero_registro': 'Nº Registro',
+                'logradouro': 'Logradouro',
+                'complemento': 'Complemento',
+                'bairro': 'Bairro',
+                'cidade_imovel': 'Cidade do Imóvel',
+            }
+
             cart_items = list(cart.items.select_related('product', 'state').all())
-            for cart_item in cart_items:
+            for i, cart_item in enumerate(cart_items):
                 effective_price = (
                     cart_item.unit_price
                     if cart_item.unit_price is not None
                     else cart_item.product.price
                 )
+                # Apenas o primeiro item recebe os dados da certidão da sessão
+                additional_info = ''
+                if i == 0 and certidao_dados:
+                    lines = []
+                    for key, val in certidao_dados.items():
+                        if val:
+                            label = _LABEL_MAP.get(key, key.replace('_', ' ').title())
+                            lines.append(f'{label}: {val}')
+                    additional_info = '\n'.join(lines)
                 OrderItem.objects.create(
                     order=order,
                     product=cart_item.product,
@@ -126,26 +162,43 @@ class CheckoutView(View):
                     quantity=cart_item.quantity,
                     requester_name=cart_item.requester_name,
                     requester_document=cart_item.requester_document,
+                    additional_info=additional_info,
                 )
-            # Propaga estado a partir do item do carrinho
+
+            # ── Derivar tipo_certidao e categoria_painel ─────────────────────
+            # Prioridade 1: CartItem.tipo_certidao (definido pelo fluxo de serviço)
+            # Prioridade 2: sessão (compatibilidade com fluxo atual)
+            # Prioridade 3: mapeamento pelo slug do produto (fallback seguro)
             update_fields = []
-            if not order.estado and cart_items:
-                first_state = next(
-                    (i.state.code for i in cart_items if i.state), None
+
+            tipo_certidao = (
+                next((ci.tipo_certidao for ci in cart_items if ci.tipo_certidao), '')
+                or request.session.pop('ordem_tipo_certidao', '')
+                or PRODUTO_SLUG_PARA_TIPO.get(
+                    cart_items[0].product.slug if cart_items else '', ''
                 )
+            )
+            # Garante remoção da chave mesmo que não usada acima
+            request.session.pop('ordem_tipo_certidao', None)
+
+            if tipo_certidao and not order.tipo_certidao:
+                order.tipo_certidao = tipo_certidao
+                # categoria_painel é derivada em Order.save()
+                update_fields.extend(['tipo_certidao', 'categoria_painel'])
+
+            # ── Estado, cidade e cartório ─────────────────────────────────────
+            if not order.estado and cart_items:
+                first_state = next((ci.state.code for ci in cart_items if ci.state), None)
                 if first_state:
                     order.estado = first_state
                     update_fields.append('estado')
-            # Propaga tipo_certidao, cidade e cartório salvos pelo fluxo de serviço
-            tipo_certidao = request.session.pop('ordem_tipo_certidao', '')
+
             cidade = request.session.pop('ordem_cidade', '')
-            cartorio_id = request.session.pop('ordem_cartorio_id', None)
-            if tipo_certidao and not order.tipo_certidao:
-                order.tipo_certidao = tipo_certidao
-                update_fields.append('tipo_certidao')
             if cidade and not order.cidade:
                 order.cidade = cidade
                 update_fields.append('cidade')
+
+            cartorio_id = request.session.pop('ordem_cartorio_id', None)
             if cartorio_id and not order.cartorio_id:
                 from registry.models import Registry
                 cartorio_obj = Registry.objects.filter(pk=cartorio_id, ativo=True).first()

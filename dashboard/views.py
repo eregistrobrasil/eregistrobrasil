@@ -123,6 +123,7 @@ class OrderOpsListView(View):
     def get(self, request):
         # ── Parâmetros da requisição ──────────────────────────────────────
         categoria   = request.GET.get('categoria', '')
+        tipo        = request.GET.get('tipo', '')          # subtipo dentro da categoria
         status      = request.GET.get('status', '')
         estado      = request.GET.get('estado', '')
         responsavel_id = request.GET.get('responsavel', '')
@@ -167,6 +168,8 @@ class OrderOpsListView(View):
         qs = qs_base
         if categoria:
             qs = qs.filter(categoria_painel=categoria)
+        if tipo:
+            qs = qs.filter(tipo_certidao=tipo)
         if status:
             qs = qs.filter(status=status)
         if estado:
@@ -199,6 +202,33 @@ class OrderOpsListView(View):
         ).select_related('profile')
 
         from products.models import ESTADOS_BR
+
+        # ── Subcategorias de Registro Civil ──────────────────────────────
+        SUBCATEGORIAS_RC = [
+            ('nascimento', 'Certidão de Nascimento', '🟦'),
+            ('casamento',  'Certidão de Casamento',  '🟩'),
+            ('obito',      'Certidão de Óbito',      '🟥'),
+            ('interdicao', 'Certidão de Interdição', '🟨'),
+        ]
+        subcategorias_rc = []
+        total_registro_civil = 0
+        if categoria == 'registro_civil':
+            rc_counts_raw = (
+                Order.objects.filter(categoria_painel='registro_civil')
+                .values('tipo_certidao')
+                .annotate(total=Count('id'))
+            )
+            rc_counts = {row['tipo_certidao']: row['total'] for row in rc_counts_raw}
+            for slug_tipo, label_tipo, _ in SUBCATEGORIAS_RC:
+                cnt = rc_counts.get(slug_tipo, 0)
+                total_registro_civil += cnt
+                subcategorias_rc.append({
+                    'slug': slug_tipo,
+                    'label': label_tipo,
+                    'count': cnt,
+                    'ativa': (tipo == slug_tipo),
+                })
+
         ctx = {
             'title': 'Pedidos',
             'pedidos': pedidos,
@@ -206,6 +236,9 @@ class OrderOpsListView(View):
             'total_geral': total_geral,
             'abas': abas,
             'categoria_ativa': categoria,
+            'tipo_ativo': tipo,
+            'subcategorias_rc': subcategorias_rc,
+            'total_registro_civil': total_registro_civil,
             'operadores': operadores,
             'status_choices': Order.STATUS_CHOICES,
             'prioridade_choices': Order.PRIORIDADE_CHOICES,
@@ -225,6 +258,7 @@ class OrderOpsListView(View):
             # Filtros ativos (para persistência no form e links de paginação)
             'filtros': {
                 'categoria': categoria,
+                'tipo': tipo,
                 'status': status,
                 'estado': estado,
                 'responsavel': responsavel_id,

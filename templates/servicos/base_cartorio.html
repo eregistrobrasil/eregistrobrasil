@@ -66,6 +66,7 @@
 
           {% include 'servicos/includes/_campo_estado.html' %}
           {% include 'servicos/includes/_campo_cidade.html' %}
+          {% block form_campos_extra %}{% endblock %}
           {% include 'servicos/includes/_campo_cartorio.html' %}
 
           <button type="submit"

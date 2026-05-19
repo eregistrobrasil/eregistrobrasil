@@ -38,8 +38,29 @@ TIPO_CERTIDAO_PARA_CATEGORIA = {
     'escritura_permuta':        'notas',
     'escritura_testamento':     'notas',
     'imovel':                   'imoveis',
+    'certidao_protesto':        'protestos',
+    'busca_protesto':           'protestos',
     'cnd_federal':              'federais_estaduais',
+    'busca_testamento':          'busca',
     'outros':                   'outros',
+}
+
+# Mapa canônico: slug do produto → tipo_certidao
+# Fonte de verdade quando a sessão não transporta o tipo
+PRODUTO_SLUG_PARA_TIPO = {
+    'certidao-de-nascimento-2a-via':    'nascimento',
+    'certidao-de-casamento-2a-via':     'casamento',
+    'certidao-de-obito-2a-via':         'obito',
+    'certidao-de-interdicao':           'interdicao',
+    'certidao-de-procuracao':           'procuracao',
+    'certidao-de-escritura':            'escritura',
+    'certidao-de-uniao-estavel':        'uniao_estavel',
+    'certidao-de-imovel':               'imovel',
+    'certidao-de-protesto':             'certidao_protesto',
+    'busca-de-protesto':                'busca_protesto',
+    'certidao-negativa-federal':                'cnd_federal',
+    'certidao-negativa-estadual':               'cnd_federal',
+    'certidao-negativa-de-testamento':          'busca_testamento',
 }
 
 
@@ -72,6 +93,7 @@ class CartItem(models.Model):
     )
     requester_name = models.CharField('Nome do Requerente', max_length=200, blank=True)
     requester_document = models.CharField('Documento', max_length=30, blank=True)
+    tipo_certidao = models.CharField('Tipo de Certidão', max_length=40, blank=True)
 
     class Meta:
         unique_together = ['cart', 'product']
@@ -108,6 +130,9 @@ class Order(models.Model):
         ('escritura_permuta', 'Certidão de Escritura de Permuta'),
         ('escritura_testamento', 'Certidão de Escritura de Testamento'),
         ('cnd_federal', 'CND Federal'),
+        ('certidao_protesto', 'Certidão de Protesto'),
+        ('busca_protesto', 'Busca de Protesto'),
+        ('busca_testamento', 'Certidão Negativa de Testamento'),
         ('outros', 'Outros'),
     ]
 

@@ -118,6 +118,8 @@ class BaseCertidaoDadosView(View):
     # nomes de campos de data para serializar (date → str)
     date_fields = []
     descricao_step2 = 'Informe os dados constantes na certidão.'
+    # Tipo de certidão propagado à sessão para categorização automática do pedido
+    tipo_certidao = ''
 
     def _get_cartorio(self, request):
         return request.session.get('certidao_cartorio')
@@ -158,6 +160,12 @@ class BaseCertidaoDadosView(View):
             cartorio_id = cartorio_data.get('cartorio_id')
             if cartorio_id:
                 request.session['ordem_cartorio_id'] = cartorio_id
+            # Propaga tipo_certidao (quando definido na subclasse) e cidade
+            if self.tipo_certidao:
+                request.session['ordem_tipo_certidao'] = self.tipo_certidao
+            cidade = cartorio_data.get('cidade', '')
+            if cidade:
+                request.session['ordem_cidade'] = cidade
             return redirect('orders:checkout')
         return render(request, self.template_name, self._ctx(form, cartorio_data))
 
@@ -176,6 +184,10 @@ class BaseCertidaoDadosView(View):
         item.quantity = 1
         item.requester_name = str(dados.get('nome_completo', ''))[:200]
         item.requester_document = str(dados.get('cpf', ''))[:30]
+        # Armazena o tipo no CartItem para que o checkout derive a categoria
+        # mesmo que a sessão expire antes do envio do formulário
+        if self.tipo_certidao:
+            item.tipo_certidao = self.tipo_certidao
 
         # Define preço e estado a partir da sessão (anti-fraude: sempre do banco)
         estado_uf = cartorio_data.get('estado_uf', '')
@@ -227,6 +239,7 @@ class CertidaoDadosView(BaseCertidaoDadosView):
     date_fields = ['data_nascimento']
     date_field_ids = ['id_data_nascimento']
     descricao_step2 = 'Informe os dados da pessoa constante na certidão de nascimento.'
+    tipo_certidao = 'nascimento'
 
 
 # ─────────────────────────────────────────────
@@ -266,6 +279,7 @@ class CertidaoObitoDadosView(BaseCertidaoDadosView):
     date_fields = ['data_obito']
     date_field_ids = ['id_data_obito']
     descricao_step2 = 'Informe os dados da pessoa constante na certidão de óbito.'
+    tipo_certidao = 'obito'
 
     def _add_to_cart(self, request, cartorio_data, dados):
         from products.services import obter_preco_por_estado
@@ -332,6 +346,7 @@ class CertidaoCasamentoDadosView(BaseCertidaoDadosView):
     date_fields = ['data_casamento']
     date_field_ids = ['id_data_casamento']
     descricao_step2 = 'Informe os dados constantes na certidão de casamento.'
+    tipo_certidao = 'casamento'
 
     def _add_to_cart(self, request, cartorio_data, dados):
         from products.services import obter_preco_por_estado
@@ -348,6 +363,7 @@ class CertidaoCasamentoDadosView(BaseCertidaoDadosView):
         item.quantity = 1
         item.requester_name = str(dados.get('conjuge_1', ''))[:200]
         item.requester_document = str(dados.get('cpf', ''))[:30]
+        item.tipo_certidao = self.tipo_certidao  # 'casamento'
 
         estado_uf = cartorio_data.get('estado_uf', '')
         if estado_uf:
@@ -398,6 +414,7 @@ class CertidaoInterdicaoDadosView(BaseCertidaoDadosView):
     date_fields = ['data_nascimento']
     date_field_ids = ['id_data_nascimento']
     descricao_step2 = 'Informe os dados do requerente da certidão de interdição.'
+    tipo_certidao = 'interdicao'
 
     def _ctx(self, form, cartorio_data):
         ctx = super()._ctx(form, cartorio_data)
@@ -1574,8 +1591,8 @@ class LegalView(TemplateView):
 # ===========================================================================
 
 from .forms import (
-    CertidaoProtestoForm,
-    PesquisaProtestoNacionalForm,
+    ProtestoCartorioForm,
+    ProtestoDadosForm,
     ServicoFederalEstatualForm,
     BuscaCartorioForm,
     ApostilaHaiaForm,
@@ -1591,6 +1608,7 @@ from .forms import (
     PropriedadeAeronaveForm,
     JuntaComercialCertidaoEmpresaForm,
     CertidaoRegularidadeCreacForm,
+    CertidaoNegativaTestamentoForm,
 )
 from products.services import PRECO_FIXO_FEDERAL_ESTADUAL
 
@@ -1665,19 +1683,137 @@ class BaseServicoSimplesDadosView(View):
         request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
 
 
-# Protestos
-class CertidaoProtestoView(BaseServicoSimplesDadosView):
-    title = "Certidao de Protesto - E-Registro Brasil"
-    form_class = CertidaoProtestoForm
-    template_name = "servicos/certidao_protesto.html"
-    product_slug = "certidao-de-protesto"
+# ─────────────────────────────────────────────────────────────────────────────
+# Protestos — fluxo multi-etapa (etapa 1: cartório / etapa 2: dados)
+# ─────────────────────────────────────────────────────────────────────────────
+
+class _BaseProtestoCartorioView(View):
+    """Etapa 1 genérica para serviços de protesto — seleção de cartório."""
+    title = ''
+    template_name = ''
+    dados_step_url = ''
+    product_slug = ''
+
+    def _get_product(self):
+        from products.models import Product
+        try:
+            return Product.objects.get(slug=self.product_slug, is_active=True)
+        except Product.DoesNotExist:
+            return None
+
+    def _ctx(self, dados_ec, form, product=None):
+        ctx = {
+            'title': self.title,
+            'estados': _estados_list(dados_ec),
+            'passos': _PASSOS,
+            'form': form,
+            'tipo_cartorio': 'protesto',
+            'imagem_static': 'img/certidao-de-nascimento.png',
+        }
+        if product:
+            from products.services import get_state_prices_dict
+            ctx['product'] = product
+            ctx['state_prices_json'] = json.dumps(get_state_prices_dict(product))
+            ctx['product_base_price'] = str(product.price)
+        else:
+            ctx['state_prices_json'] = '{}'
+            ctx['product_base_price'] = '0'
+        return ctx
+
+    def get(self, request):
+        dados_ec = _load_estados_cidades()
+        product = self._get_product()
+        return render(request, self.template_name, self._ctx(dados_ec, ProtestoCartorioForm(), product))
+
+    def post(self, request):
+        dados_ec = _load_estados_cidades()
+        product = self._get_product()
+        form = ProtestoCartorioForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            estado_uf = cd['estado'].upper()
+            estado_nome = dados_ec.get(estado_uf, {}).get('nome', estado_uf)
+            todos = bool(cd.get('todos_cartorios', False))
+            request.session['certidao_cartorio'] = {
+                'estado_uf': estado_uf,
+                'estado_nome': estado_nome,
+                'cidade': cd['cidade'],
+                'cartorio': cd.get('cartorio', ''),
+                'cartorio_id': cd.get('cartorio_id'),
+                'todos_cartorios': todos,
+            }
+            return redirect(self.dados_step_url)
+        return render(request, self.template_name, self._ctx(dados_ec, form, product))
 
 
-class PesquisaProtestoNacionalView(BaseServicoSimplesDadosView):
-    title = "Pesquisa de Protesto Nacional - E-Registro Brasil"
-    form_class = PesquisaProtestoNacionalForm
-    template_name = "servicos/pesquisa_protesto_nacional.html"
-    product_slug = "pesquisa-de-protesto-nacional"
+class _BaseProtestoDadosView(BaseCertidaoDadosView):
+    """Etapa 2 genérica para serviços de protesto — dados do solicitante."""
+    form_class = ProtestoDadosForm
+    date_field_ids = []
+    date_fields = []
+    tipo_certidao_sessao = 'certidao_protesto'
+    descricao_step2 = 'Informe seus dados pessoais para a solicitação.'
+
+    def _add_to_cart(self, request, cartorio_data, dados):
+        from products.models import Product, State
+        from products.services import obter_preco_por_estado
+        from orders.models import Cart, CartItem
+        try:
+            product = Product.objects.get(slug=self.product_slug, is_active=True)
+        except Product.DoesNotExist:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = str(dados.get('nome_completo', ''))[:200]
+        item.requester_document = str(dados.get('cpf', ''))[:30]
+        estado_uf = cartorio_data.get('estado_uf', '')
+        if estado_uf:
+            unit_price = obter_preco_por_estado(product, estado_uf)
+            if unit_price is not None:
+                item.unit_price = unit_price
+            state_obj = State.objects.filter(code=estado_uf).first()
+            if state_obj:
+                item.state = state_obj
+        item.save()
+        request.session['ordem_tipo_certidao'] = self.tipo_certidao_sessao
+        cartorio_id = cartorio_data.get('cartorio_id')
+        if cartorio_id and not cartorio_data.get('todos_cartorios'):
+            request.session['ordem_cartorio_id'] = cartorio_id
+
+
+class CertidaoProtestoCartorioView(_BaseProtestoCartorioView):
+    title = 'Certidão de Protesto — E-Registro Brasil'
+    template_name = 'servicos/protesto/certidao_protesto_cartorio.html'
+    dados_step_url = 'pages:certidao_protesto_dados'
+    product_slug = 'certidao-de-protesto'
+
+
+class CertidaoProtestoDadosView(_BaseProtestoDadosView):
+    title = 'Dados do Solicitante — Certidão de Protesto'
+    template_name = 'servicos/protesto/certidao_protesto_dados.html'
+    product_slug = 'certidao-de-protesto'
+    step1_url = 'pages:certidao_protesto'
+    descricao_step2 = 'Informe seus dados pessoais para solicitar a certidão de protesto.'
+    tipo_certidao_sessao = 'certidao_protesto'
+
+
+class BuscaProtestoCartorioView(_BaseProtestoCartorioView):
+    title = 'Busca de Protesto — E-Registro Brasil'
+    template_name = 'servicos/protesto/busca_protesto_cartorio.html'
+    dados_step_url = 'pages:busca_protesto_dados'
+    product_slug = 'busca-de-protesto'
+
+
+class BuscaProtestoDadosView(_BaseProtestoDadosView):
+    title = 'Dados do Solicitante — Busca de Protesto'
+    template_name = 'servicos/protesto/busca_protesto_dados.html'
+    product_slug = 'busca-de-protesto'
+    step1_url = 'pages:busca_protesto'
+    descricao_step2 = 'Informe seus dados pessoais para realizar a busca de protesto.'
+    tipo_certidao_sessao = 'busca_protesto'
 
 
 # Federais e Estaduais
@@ -2076,6 +2212,51 @@ class BuscaTabelionatoNotasView(BaseServicoSimplesDadosView):
     form_class = BuscaCartorioForm
     template_name = "servicos/busca_cartorio.html"
     product_slug = "busca-em-tabelionatos-notas"
+
+
+# ─────────────────────────────────────────────
+#  Certidão Negativa de Testamento
+# ─────────────────────────────────────────────
+
+class CertidaoNegativaTestamentoView(BaseServicoSimplesDadosView):
+    title = "Certidão Negativa de Testamento — E-Registro Brasil"
+    form_class = CertidaoNegativaTestamentoForm
+    template_name = "servicos/certidao_negativa_testamento.html"
+    product_slug = "certidao-negativa-de-testamento"
+    tipo_certidao_sessao = "busca_testamento"
+    fixed_price = True
+
+    def _ctx(self, form, product=None):
+        ctx = {
+            "title": self.title,
+            "form": form,
+            "passos": _PASSOS,
+            "fixed_price": True,
+            "state_prices_json": "{}",
+        }
+        if product:
+            ctx["product"] = product
+            preco = float(product.price)
+            ctx["price_display"] = "R$ {:,.2f}".format(preco).replace(",", "X").replace(".", ",").replace("X", ".")
+        else:
+            ctx["price_display"] = "R$ 239,90"
+        return ctx
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = str(dados.get("nome_falecido", ""))[:200]
+        item.requester_document = str(dados.get("cpf", ""))[:30]
+        item.unit_price = product.price
+        item.tipo_certidao = self.tipo_certidao_sessao
+        item.save()
+        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
 
 
 # Apostilamento

@@ -21,6 +21,16 @@
                       rows="{{ field.field.widget.attrs.rows|default:3 }}"
                       placeholder="{{ field.field.widget.attrs.placeholder|default:'' }}"
                       class="w-full border {% if field.errors %}border-red-400{% else %}border-gray-300{% endif %} rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none">{{ field.value|default:'' }}</textarea>
+            {% elif field.html_name == 'customer_phone' %}
+            <input type="tel"
+                   name="{{ field.html_name }}"
+                   id="id_customer_phone"
+                   value="{{ field.value|default:'' }}"
+                   placeholder="(11) 90000-0000"
+                   inputmode="tel"
+                   maxlength="15"
+                   class="w-full border {% if field.errors %}border-red-400{% else %}border-gray-300{% endif %} rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                   required>
             {% else %}
             <input type="{{ field.field.widget.input_type }}"
                    name="{{ field.html_name }}"
@@ -69,4 +79,37 @@
     </div>
   </div>
 </div>
+
+<script>
+(function () {
+  var input = document.getElementById('id_customer_phone');
+  if (!input) return;
+
+  function maskPhone(value) {
+    var digits = value.replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 10) {
+      // Fixo: (XX) XXXX-XXXX
+      return digits
+        .replace(/^(\d{2})(\d)/, '($1) $2')
+        .replace(/(\d{4})(\d)/, '$1-$2');
+    }
+    // Celular: (XX) 9XXXX-XXXX
+    return digits
+      .replace(/^(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{5})(\d)/, '$1-$2');
+  }
+
+  input.addEventListener('input', function () {
+    var pos = this.selectionStart;
+    var prev = this.value;
+    this.value = maskPhone(this.value);
+    // Reposiciona cursor de forma aproximada
+    if (this.value.length < prev.length) pos = Math.max(0, pos - 1);
+    try { this.setSelectionRange(pos, pos); } catch (e) {}
+  });
+
+  // Aplica máscara no valor inicial (se houver, ex: edição de pedido)
+  if (input.value) input.value = maskPhone(input.value);
+})();
+</script>
 {% endblock %}

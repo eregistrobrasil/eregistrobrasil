@@ -1555,3 +1555,147 @@ class CertidaoRegularidadeCreacForm(forms.Form):
         if len(valor) < 3:
             raise forms.ValidationError('Nome muito curto. Informe o nome completo.')
         return valor
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Protesto — Formulário Etapa 1 (Cartório)
+# ─────────────────────────────────────────────────────────────────────────────
+
+class ProtestoCartorioForm(forms.Form):
+    estado = forms.CharField(
+        max_length=2,
+        error_messages={'required': 'Selecione um estado.'},
+    )
+    cidade = forms.CharField(
+        max_length=100,
+        error_messages={'required': 'Selecione uma cidade.'},
+    )
+    todos_cartorios = forms.BooleanField(required=False)
+    cartorio_id = forms.IntegerField(required=False, widget=forms.HiddenInput())
+    cartorio = forms.CharField(max_length=200, required=False, widget=forms.HiddenInput())
+
+    def clean_estado(self):
+        valor = self.cleaned_data.get('estado', '').strip().upper()
+        if not valor:
+            raise forms.ValidationError('Selecione um estado.')
+        valid_ufs = {c[0] for c in _ESTADOS_UF_CHOICES if c[0]}
+        if valor not in valid_ufs:
+            raise forms.ValidationError('Estado inválido.')
+        return valor
+
+    def clean_cidade(self):
+        valor = self.cleaned_data.get('cidade', '').strip()
+        if not valor:
+            raise forms.ValidationError('Selecione uma cidade.')
+        return valor
+
+    def clean(self):
+        cleaned = super().clean()
+        todos = bool(cleaned.get('todos_cartorios', False))
+        cidade = cleaned.get('cidade', '')
+        if todos:
+            cleaned['cartorio_id'] = None
+            cleaned['cartorio'] = f'Todos os cartórios de {cidade}'
+        elif not cleaned.get('cartorio', '').strip():
+            cleaned['cartorio'] = 'Cartório a definir'
+        return cleaned
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Protesto — Formulário Etapa 2 (Dados do Solicitante)
+# ─────────────────────────────────────────────────────────────────────────────
+
+class ProtestoDadosForm(forms.Form):
+    cpf = _cpf_field()
+    nome_completo = _char_field('Nome Completo', 'Nome completo do solicitante')
+    rg = forms.CharField(
+        label='RG',
+        max_length=20,
+        error_messages={'required': 'Informe o RG.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Ex: 12.345.678-9',
+            'maxlength': '20',
+            'autocomplete': 'off',
+            'id': 'id_rg_protesto',
+        }),
+    )
+    cep = forms.CharField(
+        label='CEP',
+        max_length=9,
+        error_messages={'required': 'Informe o CEP.'},
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': '00000-000',
+            'inputmode': 'numeric',
+            'maxlength': '9',
+            'id': 'id_cep_protesto',
+            'autocomplete': 'postal-code',
+        }),
+    )
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf
+
+    def clean_rg(self):
+        rg = self.cleaned_data.get('rg', '').strip()
+        if not rg:
+            raise forms.ValidationError('Informe o RG.')
+        rg_clean = re.sub(r'[\s.\-\/]', '', rg)
+        if len(rg_clean) < 5:
+            raise forms.ValidationError('RG inválido. Informe pelo menos 5 dígitos.')
+        return rg
+
+    def clean_cep(self):
+        cep = re.sub(r'\D', '', self.cleaned_data.get('cep', ''))
+        if len(cep) != 8:
+            raise forms.ValidationError('CEP inválido. Informe os 8 dígitos.')
+        return cep
+
+
+# ─────────────────────────────────────────────
+#  Certidão Negativa de Testamento
+# ─────────────────────────────────────────────
+
+class CertidaoNegativaTestamentoForm(forms.Form):
+    nome_falecido = _char_field('Nome do Falecido', 'Nome completo do falecido', msg_label='o nome do falecido')
+    data_nascimento = _date_field('Data de Nascimento', msg_label='a data de nascimento')
+    data_obito = _date_field('Data do Óbito', msg_label='a data do óbito')
+    nome_mae = _char_field('Nome da Mãe do Falecido', 'Nome completo da mãe', msg_label='o nome da mãe do falecido')
+    orgao_emissor = _char_field('Órgão Emissor do Documento', 'Ex: SSP/SP, Cartório, DETRAN...', msg_label='o órgão emissor')
+    cpf = _cpf_field()
+    estado_obito = forms.ChoiceField(
+        label='Estado onde ocorreu o Óbito',
+        choices=_ESTADOS_UF_CHOICES,
+        error_messages={'required': 'Selecione o estado onde ocorreu o óbito.'},
+        widget=forms.Select(attrs={'class': _INPUT_CLASS}),
+    )
+    nome_pai = _char_field('Nome do Pai do Falecido', 'Nome completo do pai (opcional)', required=False)
+    rg = forms.CharField(
+        label='RG do Falecido',
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'RG (opcional)',
+            'autocomplete': 'off',
+        }),
+    )
+
+    def clean_estado_obito(self):
+        valor = self.cleaned_data.get('estado_obito', '').strip()
+        if not valor:
+            raise forms.ValidationError('Selecione o estado onde ocorreu o óbito.')
+        valid_ufs = {c[0] for c in _ESTADOS_UF_CHOICES if c[0]}
+        if valor not in valid_ufs:
+            raise forms.ValidationError('Estado inválido.')
+        return valor
+
+    def clean_cpf(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+        if len(cpf) != 11:
+            raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
+        return cpf

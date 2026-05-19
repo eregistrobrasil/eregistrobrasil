@@ -12,9 +12,9 @@ class TipoServicoAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'order', 'is_active', 'active_products_count')
-    list_editable = ('order', 'is_active')
-    list_filter = ('is_active',)
+    list_display = ('name', 'slug', 'order', 'is_active', 'show_in_nav', 'active_products_count')
+    list_editable = ('order', 'is_active', 'show_in_nav')
+    list_filter = ('is_active', 'show_in_nav')
     search_fields = ('name',)
     prepopulated_fields = {'slug': ('name',)}
 

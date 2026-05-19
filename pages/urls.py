@@ -90,8 +90,12 @@ urlpatterns = [
     path('servico/pesquisa-de-bens/', views.PesquisaBensView.as_view(), name='pesquisa_bens'),
     path('servico/pesquisa-de-bens/dados/', views.PesquisaBensDadosView.as_view(), name='pesquisa_bens_dados'),
     # Protestos
-    path('servico/certidao-de-protesto/', views.CertidaoProtestoView.as_view(), name='certidao_protesto'),
-    path('servico/pesquisa-de-protesto-nacional/', views.PesquisaProtestoNacionalView.as_view(), name='pesquisa_protesto_nacional'),
+    path('servico/certidao-de-protesto/', views.CertidaoProtestoCartorioView.as_view(), name='certidao_protesto'),
+    path('servico/certidao-de-protesto/dados/', views.CertidaoProtestoDadosView.as_view(), name='certidao_protesto_dados'),
+    path('servico/busca-de-protesto/', views.BuscaProtestoCartorioView.as_view(), name='busca_protesto'),
+    path('servico/busca-de-protesto/dados/', views.BuscaProtestoDadosView.as_view(), name='busca_protesto_dados'),
+    # 301: pesquisa-de-protesto-nacional → busca-de-protesto
+    path('servico/pesquisa-de-protesto-nacional/', RedirectView.as_view(pattern_name='pages:busca_protesto', permanent=True), name='pesquisa_protesto_nacional'),
     # Federais e Estaduais
     path('servico/cnd-federal-receita-federal/', views.CndFederalView.as_view(), name='cnd_federal'),
     path('servico/certidao-fgts-inss/', views.CertidaoFgtsInssView.as_view(), name='certidao_fgts_inss'),
@@ -113,6 +117,8 @@ urlpatterns = [
     # Busca em Cartorios
     path('servico/busca-em-cartorios-registro-civil/', views.BuscaCartorioRegistroCivilView.as_view(), name='busca_cartorios_civil'),
     path('servico/busca-em-tabelionatos-notas/', views.BuscaTabelionatoNotasView.as_view(), name='busca_tabelionatos_notas'),
+    # Certidão Negativa de Testamento
+    path('servico/certidao-negativa-de-testamento/', views.CertidaoNegativaTestamentoView.as_view(), name='certidao_negativa_testamento'),
     # Apostilamento
     path('servico/apostila-de-haia/', views.ApostilaHaiaView.as_view(), name='apostila_haia'),
     path('servico/traducao-juramentada/', views.TraducaoJuramentadaView.as_view(), name='traducao_juramentada'),

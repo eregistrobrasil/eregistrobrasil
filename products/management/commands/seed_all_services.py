@@ -503,6 +503,22 @@ CATEGORIES = [
                 "meta_desc": "Solicite certidão de protesto de títulos em tabelionatos de todo o Brasil.",
             },
             {
+                "name": "Busca de Protesto",
+                "slug": "busca-de-protesto",
+                "short": "Busca de protesto em cartório de protestos em todo o Brasil.",
+                "description": (
+                    "Busca de protesto de títulos em tabelionatos de protestos. "
+                    "Verifica a existência de protestos em nome de pessoa física ou jurídica "
+                    "em um cartório específico ou em toda a cidade informada."
+                ),
+                "price": "79.90",
+                "original_price": "99.90",
+                "days": 3,
+                "featured": False,
+                "meta_title": "Busca de Protesto Online — E-Registro Brasil",
+                "meta_desc": "Solicite busca de protesto em tabelionatos de todo o Brasil com agilidade.",
+            },
+            {
                 "name": "Pesquisa de Protesto Nacional",
                 "slug": "pesquisa-de-protesto-nacional",
                 "short": "Pesquisa nacional de protestos via sistema CRA para pessoa física ou jurídica.",

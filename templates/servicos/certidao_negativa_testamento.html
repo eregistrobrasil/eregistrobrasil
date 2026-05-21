@@ -1,366 +1,334 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}Solicite a Certidão Negativa de Testamento online. Pesquisa nacional em tabelionatos de notas para verificar a existência de testamento em nome do falecido. Rápido e seguro.{% endblock %}
 
 {% block extra_head %}
 <style>
   @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(24px); }
+    from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  .animate-fade-in          { animation: fadeInUp .55s ease both; }
-  .animate-delay-1          { animation-delay: .10s; }
-  .animate-delay-2          { animation-delay: .20s; }
-  .animate-delay-3          { animation-delay: .30s; }
-  .animate-delay-4          { animation-delay: .40s; }
-
-  .field-input:focus {
-    outline: none;
-    border-color: #1B4F72;
-    box-shadow: 0 0 0 3px rgba(27,79,114,.15);
-  }
-  .badge-fixed-price {
-    background: linear-gradient(135deg, #1E8449, #27AE60);
-    color: #fff;
-    border-radius: .75rem;
-    padding: .75rem 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: .6rem;
-  }
+  .animate-fade-in  { animation: fadeInUp 0.5s ease both; }
+  .animate-delay-1  { animation-delay: 0.1s; }
+  .animate-delay-2  { animation-delay: 0.2s; }
+  .animate-delay-3  { animation-delay: 0.3s; }
+  .field-input:focus { border-color: #1B4F72; box-shadow: 0 0 0 3px rgba(27,79,114,0.15); outline: none; }
+  .field-input.is-invalid { border-color: #ef4444; }
+  .field-input.is-invalid:focus { box-shadow: 0 0 0 3px rgba(239,68,68,0.12); }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Breadcrumb -->
-<div class="bg-white border-b border-gray-100">
-  <div class="max-w-6xl mx-auto px-4 py-3">
-    <nav class="text-sm text-gray-500 flex items-center gap-1.5">
-      <a href="{% url 'products:home' %}" class="hover:text-primary transition-colors">Início</a>
-      <span class="text-gray-300">/</span>
-      <span class="text-gray-700 font-medium">Certidão Negativa de Testamento</span>
-    </nav>
-  </div>
-</div>
+<section class="py-10 px-4 max-w-6xl mx-auto">
 
-<!-- Main -->
-<main class="bg-gray-50 min-h-screen py-10">
-  <div class="max-w-6xl mx-auto px-4">
-    <div class="grid lg:grid-cols-2 gap-10 items-start">
+  <!-- Breadcrumb -->
+  <nav class="text-sm text-gray-500 mb-6 animate-fade-in" aria-label="Breadcrumb">
+    <ol class="flex items-center gap-2 flex-wrap">
+      <li><a href="/" class="hover:text-primary transition-colors">Início</a></li>
+      <li class="text-gray-400">/</li>
+      <li><a href="/servicos/" class="hover:text-primary transition-colors">Serviços</a></li>
+      <li class="text-gray-400">/</li>
+      <li class="text-primary font-medium">Certidão Negativa de Testamento</li>
+    </ol>
+  </nav>
 
-      <!-- ── Coluna Esquerda: ilustração + formulário ─── -->
-      <div class="space-y-6">
+  <!-- Main Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
 
-        <!-- Ilustração -->
-        <div class="animate-fade-in bg-white rounded-2xl shadow-md overflow-hidden">
-          <div class="bg-gradient-to-br from-primary to-primary-dark p-8 flex justify-center items-center" style="min-height:200px;">
-            <svg viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-48 h-auto">
-              <!-- Documento base -->
-              <rect x="30" y="10" width="100" height="120" rx="6" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
-              <!-- Linhas de texto simuladas -->
-              <rect x="44" y="32" width="72" height="7" rx="3" fill="rgba(255,255,255,0.45)"/>
-              <rect x="44" y="47" width="55" height="5" rx="2" fill="rgba(255,255,255,0.25)"/>
-              <rect x="44" y="59" width="65" height="5" rx="2" fill="rgba(255,255,255,0.25)"/>
-              <rect x="44" y="71" width="48" height="5" rx="2" fill="rgba(255,255,255,0.25)"/>
-              <rect x="44" y="83" width="60" height="5" rx="2" fill="rgba(255,255,255,0.25)"/>
-              <!-- Ícone testamento (livro) -->
-              <circle cx="80" cy="108" r="14" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
-              <text x="80" y="113" text-anchor="middle" font-size="12" fill="white" font-weight="bold" font-family="Arial">T</text>
-            </svg>
-          </div>
-          <div class="px-6 py-4 bg-primary/5 border-t border-primary/10">
-            <p class="text-xs text-primary font-semibold uppercase tracking-wider text-center">
-              Central Notarial de Serviços Eletrônicos — CENSEC
-            </p>
-          </div>
-        </div>
+    <!-- ===== Coluna Esquerda: Imagem + Formulário ===== -->
+    <div class="space-y-6 animate-fade-in animate-delay-1">
 
-        <!-- Formulário -->
-        <div class="animate-fade-in animate-delay-1 bg-white rounded-2xl shadow-md p-6 md:p-8">
-          <h2 class="text-lg font-bold text-gray-800 mb-1">Dados do Falecido</h2>
-          <p class="text-sm text-gray-500 mb-6">Informe os dados abaixo para solicitar a pesquisa de testamento.</p>
+      <!-- Imagem -->
+      <div class="rounded-2xl overflow-hidden shadow-md border border-gray-200 bg-white">
+        <img
+          src="{% static 'img/certidao-de-nascimento.png' %}"
+          alt="Certidão Negativa de Testamento"
+          class="w-full object-cover max-h-72"
+        />
+      </div>
 
-          <form method="post" novalidate>
-            {% csrf_token %}
-            <div class="space-y-5">
+      <!-- Formulário Unificado -->
+      <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-5">
+        <h2 class="text-lg font-semibold text-primary border-b border-gray-100 pb-3">
+          Dados do Falecido
+        </h2>
 
-              <!-- Nome do Falecido -->
-              <div>
-                <label for="{{ form.nome_falecido.id_for_label }}"
-                       class="block text-sm font-semibold text-gray-700 mb-1.5">
-                  {{ form.nome_falecido.label }} <span class="text-red-500">*</span>
-                </label>
-                {{ form.nome_falecido }}
-                {% if form.nome_falecido.errors %}
-                  <p class="mt-1 text-xs text-red-500">{{ form.nome_falecido.errors|first }}</p>
-                {% endif %}
-              </div>
-
-              <!-- CPF -->
-              <div>
-                <label for="{{ form.cpf.id_for_label }}"
-                       class="block text-sm font-semibold text-gray-700 mb-1.5">
-                  {{ form.cpf.label }} <span class="text-red-500">*</span>
-                </label>
-                {{ form.cpf }}
-                {% if form.cpf.errors %}
-                  <p class="mt-1 text-xs text-red-500">{{ form.cpf.errors|first }}</p>
-                {% endif %}
-              </div>
-
-              <!-- Data de Nascimento -->
-              <div>
-                <label for="{{ form.data_nascimento.id_for_label }}"
-                       class="block text-sm font-semibold text-gray-700 mb-1.5">
-                  {{ form.data_nascimento.label }} <span class="text-red-500">*</span>
-                </label>
-                {{ form.data_nascimento }}
-                {% if form.data_nascimento.errors %}
-                  <p class="mt-1 text-xs text-red-500">{{ form.data_nascimento.errors|first }}</p>
-                {% endif %}
-              </div>
-
-              <!-- Data do Óbito -->
-              <div>
-                <label for="{{ form.data_obito.id_for_label }}"
-                       class="block text-sm font-semibold text-gray-700 mb-1.5">
-                  {{ form.data_obito.label }} <span class="text-red-500">*</span>
-                </label>
-                {{ form.data_obito }}
-                {% if form.data_obito.errors %}
-                  <p class="mt-1 text-xs text-red-500">{{ form.data_obito.errors|first }}</p>
-                {% endif %}
-              </div>
-
-              <!-- Nome da Mãe -->
-              <div>
-                <label for="{{ form.nome_mae.id_for_label }}"
-                       class="block text-sm font-semibold text-gray-700 mb-1.5">
-                  {{ form.nome_mae.label }} <span class="text-red-500">*</span>
-                </label>
-                {{ form.nome_mae }}
-                {% if form.nome_mae.errors %}
-                  <p class="mt-1 text-xs text-red-500">{{ form.nome_mae.errors|first }}</p>
-                {% endif %}
-              </div>
-
-              <!-- Estado onde ocorreu o Óbito -->
-              <div>
-                <label for="{{ form.estado_obito.id_for_label }}"
-                       class="block text-sm font-semibold text-gray-700 mb-1.5">
-                  {{ form.estado_obito.label }} <span class="text-red-500">*</span>
-                </label>
-                {{ form.estado_obito }}
-                {% if form.estado_obito.errors %}
-                  <p class="mt-1 text-xs text-red-500">{{ form.estado_obito.errors|first }}</p>
-                {% endif %}
-              </div>
-
-              <!-- Órgão Emissor -->
-              <div>
-                <label for="{{ form.orgao_emissor.id_for_label }}"
-                       class="block text-sm font-semibold text-gray-700 mb-1.5">
-                  {{ form.orgao_emissor.label }} <span class="text-red-500">*</span>
-                </label>
-                {{ form.orgao_emissor }}
-                {% if form.orgao_emissor.errors %}
-                  <p class="mt-1 text-xs text-red-500">{{ form.orgao_emissor.errors|first }}</p>
-                {% endif %}
-              </div>
-
-              <!-- Campos opcionais -->
-              <div class="border-t border-gray-100 pt-5">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Dados Opcionais</p>
-
-                <!-- Nome do Pai -->
-                <div class="mb-4">
-                  <label for="{{ form.nome_pai.id_for_label }}"
-                         class="block text-sm font-semibold text-gray-700 mb-1.5">
-                    {{ form.nome_pai.label }}
-                  </label>
-                  {{ form.nome_pai }}
-                  {% if form.nome_pai.errors %}
-                    <p class="mt-1 text-xs text-red-500">{{ form.nome_pai.errors|first }}</p>
-                  {% endif %}
-                </div>
-
-                <!-- RG -->
-                <div>
-                  <label for="{{ form.rg.id_for_label }}"
-                         class="block text-sm font-semibold text-gray-700 mb-1.5">
-                    {{ form.rg.label }}
-                  </label>
-                  {{ form.rg }}
-                  {% if form.rg.errors %}
-                    <p class="mt-1 text-xs text-red-500">{{ form.rg.errors|first }}</p>
-                  {% endif %}
-                </div>
-              </div>
-
+        {% if messages %}
+          {% for m in messages %}
+            <div class="rounded-lg px-4 py-3 text-sm border
+              {% if m.tags == 'error' %}bg-red-50 text-red-700 border-red-200
+              {% elif m.tags == 'success' %}bg-green-50 text-green-700 border-green-200
+              {% else %}bg-yellow-50 text-yellow-700 border-yellow-200{% endif %}">
+              {{ m }}
             </div>
+          {% endfor %}
+        {% endif %}
 
-            {% if form.non_field_errors %}
-              <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                {% for error in form.non_field_errors %}
-                  <p class="text-sm text-red-600">{{ error }}</p>
-                {% endfor %}
-              </div>
+        <form id="testamento-form" method="post" novalidate class="space-y-5">
+          {% csrf_token %}
+
+          <!-- Nome do Falecido -->
+          <div>
+            <label for="{{ form.nome_falecido.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Nome do Falecido <span class="text-red-500">*</span>
+            </label>
+            <input type="text"
+                   name="{{ form.nome_falecido.html_name }}"
+                   id="{{ form.nome_falecido.id_for_label }}"
+                   value="{{ form.nome_falecido.value|default:'' }}"
+                   required
+                   placeholder="Nome completo do falecido"
+                   autocomplete="off"
+                   class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all {% if form.nome_falecido.errors %}is-invalid border-red-300{% endif %}">
+            {% if form.nome_falecido.errors %}
+              <p class="text-xs text-red-500 mt-1">{{ form.nome_falecido.errors.0 }}</p>
             {% endif %}
+          </div>
 
-            <button type="submit"
-                    class="mt-7 w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg text-sm">
-              Solicitar Certidão Negativa de Testamento &rarr;
-            </button>
-          </form>
-        </div>
-      </div><!-- /col-esquerda -->
+          <!-- CPF -->
+          <div>
+            <label for="{{ form.cpf_falecido.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              CPF do Falecido <span class="text-red-500">*</span>
+            </label>
+            <input type="text"
+                   name="{{ form.cpf_falecido.html_name }}"
+                   id="{{ form.cpf_falecido.id_for_label }}"
+                   value="{{ form.cpf_falecido.value|default:'' }}"
+                   required
+                   placeholder="000.000.000-00"
+                   inputmode="numeric"
+                   maxlength="14"
+                   data-mask="cpf"
+                   class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all {% if form.cpf_falecido.errors %}is-invalid border-red-300{% endif %}">
+            {% if form.cpf_falecido.errors %}
+              <p class="text-xs text-red-500 mt-1">{{ form.cpf_falecido.errors.0 }}</p>
+            {% endif %}
+          </div>
 
-      <!-- ── Coluna Direita: info ─── -->
-      <div class="space-y-6 lg:sticky lg:top-24">
-
-        <!-- Título e descrição -->
-        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
-          <span class="inline-block bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3">
-            Pesquisa Nacional
-          </span>
-          <h1 class="text-2xl font-extrabold text-gray-900 leading-tight mb-3">
-            Certidão Negativa<br><span class="text-primary">de Testamento</span>
-          </h1>
-          <p class="text-gray-600 text-sm leading-relaxed">
-            A <strong>Certidão Negativa de Testamento</strong> comprova a inexistência de testamento registrado
-            em nome do falecido no sistema <strong>CENSEC</strong> (Central Notarial de Serviços Eletrônicos Compartilhados).
-            Essencial para inventários, partilhas e processos judiciais e extrajudiciais de herança.
-          </p>
-        </div>
-
-        <!-- Como funciona -->
-        <div class="animate-fade-in animate-delay-2 bg-white rounded-2xl shadow-md p-6 md:p-8">
-          <h2 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-            </svg>
-            Como funciona
-          </h2>
-          <ol class="space-y-3">
-            {% for passo in passos %}
-            <li class="flex gap-3">
-              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
-                {{ forloop.counter }}
-              </span>
-              <div>
-                <p class="text-sm font-semibold text-gray-800">{{ passo.titulo }}</p>
-                <p class="text-xs text-gray-500 mt-0.5">{{ passo.descricao }}</p>
-              </div>
-            </li>
-            {% endfor %}
-          </ol>
-        </div>
-
-        <!-- Preço fixo -->
-        <div class="animate-fade-in animate-delay-3">
-          <div class="badge-fixed-price">
-            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
+          <!-- Datas: nascimento e óbito em grade -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <p class="text-xs font-semibold opacity-90">Tarifa única em todo o Brasil</p>
-              <p class="text-2xl font-extrabold leading-tight">{{ price_display }}</p>
+              <label for="{{ form.data_nascimento.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Data de Nascimento <span class="text-red-500">*</span>
+              </label>
+              <input type="text"
+                     name="{{ form.data_nascimento.html_name }}"
+                     id="{{ form.data_nascimento.id_for_label }}"
+                     value="{{ form.data_nascimento.value|default:'' }}"
+                     required
+                     placeholder="DD/MM/AAAA"
+                     inputmode="numeric"
+                     maxlength="10"
+                     class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all {% if form.data_nascimento.errors %}is-invalid border-red-300{% endif %}">
+              {% if form.data_nascimento.errors %}
+                <p class="text-xs text-red-500 mt-1">{{ form.data_nascimento.errors.0 }}</p>
+              {% endif %}
+            </div>
+            <div>
+              <label for="{{ form.data_obito.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Data do Óbito <span class="text-red-500">*</span>
+              </label>
+              <input type="text"
+                     name="{{ form.data_obito.html_name }}"
+                     id="{{ form.data_obito.id_for_label }}"
+                     value="{{ form.data_obito.value|default:'' }}"
+                     required
+                     placeholder="DD/MM/AAAA"
+                     inputmode="numeric"
+                     maxlength="10"
+                     class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all {% if form.data_obito.errors %}is-invalid border-red-300{% endif %}">
+              {% if form.data_obito.errors %}
+                <p class="text-xs text-red-500 mt-1">{{ form.data_obito.errors.0 }}</p>
+              {% endif %}
             </div>
           </div>
-        </div>
 
-        <!-- O que está incluso -->
-        <div class="animate-fade-in animate-delay-3 bg-white rounded-2xl shadow-md p-6 md:p-8">
-          <h2 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M5 13l4 4L19 7"/>
-            </svg>
-            O que está incluso
-          </h2>
-          <ul class="space-y-2 text-sm text-gray-600">
-            <li class="flex items-start gap-2">
-              <svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-              </svg>
-              Pesquisa nacional no sistema CENSEC
-            </li>
-            <li class="flex items-start gap-2">
-              <svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-              </svg>
-              Cobertura em todos os estados do Brasil
-            </li>
-            <li class="flex items-start gap-2">
-              <svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-              </svg>
-              Certidão em PDF com validade jurídica
-            </li>
-            <li class="flex items-start gap-2">
-              <svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-              </svg>
-              Acompanhamento por e-mail até a entrega
-            </li>
-          </ul>
-        </div>
-
-        <!-- Aviso -->
-        <div class="animate-fade-in animate-delay-4 bg-amber-50 border border-amber-200 rounded-2xl p-5">
-          <div class="flex gap-3">
-            <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-            </svg>
-            <div>
-              <p class="text-sm font-semibold text-amber-800 mb-1">Informação importante</p>
-              <p class="text-xs text-amber-700 leading-relaxed">
-                Testamentos registrados antes de 2007 podem não constar no CENSEC. Nestes casos, pode ser
-                necessária pesquisa direta nos cartórios de notas do local de domicílio do falecido.
-              </p>
-            </div>
+          <!-- Nome da Mãe -->
+          <div>
+            <label for="{{ form.nome_mae.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Nome da Mãe do Falecido <span class="text-red-500">*</span>
+            </label>
+            <input type="text"
+                   name="{{ form.nome_mae.html_name }}"
+                   id="{{ form.nome_mae.id_for_label }}"
+                   value="{{ form.nome_mae.value|default:'' }}"
+                   required
+                   placeholder="Nome completo da mãe do falecido"
+                   class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all {% if form.nome_mae.errors %}is-invalid border-red-300{% endif %}">
+            {% if form.nome_mae.errors %}
+              <p class="text-xs text-red-500 mt-1">{{ form.nome_mae.errors.0 }}</p>
+            {% endif %}
           </div>
-        </div>
 
-      </div><!-- /col-direita -->
+          <!-- Estado do Óbito -->
+          <div>
+            <label for="{{ form.estado_obito.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Estado onde foi registrado o óbito <span class="text-red-500">*</span>
+            </label>
+            <select name="{{ form.estado_obito.html_name }}"
+                    id="{{ form.estado_obito.id_for_label }}"
+                    required
+                    class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all bg-white {% if form.estado_obito.errors %}is-invalid border-red-300{% endif %}">
+              {% for val, label in form.estado_obito.field.choices %}
+                <option value="{{ val }}" {% if form.estado_obito.value == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+            {% if form.estado_obito.errors %}
+              <p class="text-xs text-red-500 mt-1">{{ form.estado_obito.errors.0 }}</p>
+            {% endif %}
+            <p id="estado-obito-error" class="hidden text-xs text-red-500 mt-1">Selecione o estado do registro do óbito.</p>
+          </div>
+
+          <!-- Órgão Emissor -->
+          <div>
+            <label for="{{ form.orgao_emissor.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Órgão Emissor do RG <span class="text-red-500">*</span>
+            </label>
+            <input type="text"
+                   name="{{ form.orgao_emissor.html_name }}"
+                   id="{{ form.orgao_emissor.id_for_label }}"
+                   value="{{ form.orgao_emissor.value|default:'' }}"
+                   required
+                   placeholder="Ex: SSP/SP, DETRAN/MG, SESP/BA"
+                   class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all {% if form.orgao_emissor.errors %}is-invalid border-red-300{% endif %}">
+            {% if form.orgao_emissor.errors %}
+              <p class="text-xs text-red-500 mt-1">{{ form.orgao_emissor.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Botão -->
+          <button
+            type="submit"
+            class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
+            </svg>
+            Solicitar Pesquisa
+          </button>
+        </form>
+      </div>
     </div>
+
+    <!-- ===== Coluna Direita: Informações ===== -->
+    <div class="space-y-6 animate-fade-in animate-delay-2">
+
+      <!-- Título + Descrição -->
+      <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-8">
+        <div class="flex items-start gap-4 mb-5">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-primary leading-tight">Certidão Negativa de Testamento</h1>
+            <p class="text-sm text-gray-400 mt-0.5 font-medium uppercase tracking-wide">Pesquisa Nacional — CNB</p>
+          </div>
+        </div>
+        <p class="text-gray-600 leading-relaxed text-base">
+          A <strong class="text-gray-800">Certidão Negativa de Testamento</strong> atesta se uma pessoa falecida
+          deixou ou não testamento registrado em qualquer Tabelionato de Notas do Brasil.
+          Indispensável em processos de <strong class="text-gray-800">inventário, arrolamento e partilha de herança</strong>.
+        </p>
+      </div>
+
+      <!-- Como funciona -->
+      <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-8">
+        <h3 class="text-lg font-semibold text-primary mb-5">Como funciona?</h3>
+        <ol class="space-y-4">
+          {% for passo in passos %}
+          <li class="flex items-start gap-3">
+            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center mt-0.5">{{ forloop.counter }}</span>
+            <div>
+              <p class="font-medium text-gray-800 text-sm">{{ passo.titulo }}</p>
+              <p class="text-gray-500 text-xs mt-0.5">{{ passo.descricao }}</p>
+            </div>
+          </li>
+          {% endfor %}
+        </ol>
+      </div>
+
+      <!-- Preço fixo -->
+      <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-6 animate-fade-in animate-delay-3">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-base font-semibold text-primary">Valor do Serviço</h3>
+          <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">preço fixo nacional</span>
+        </div>
+        {% if show_fixed_price and price_display %}
+        <div>
+          <p class="text-3xl font-bold text-accent">{{ price_display }}</p>
+          <p class="text-xs text-gray-500 mt-1">Até 15 dias úteis após confirmação do pagamento</p>
+        </div>
+        {% else %}
+        <p class="text-sm text-gray-400">Preço nacional único</p>
+        {% endif %}
+      </div>
+
+      <!-- Informação adicional -->
+      <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 flex gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+        </svg>
+        <p class="text-sm text-blue-700">
+          O prazo para emissão é de até 15 dias úteis. Nossa equipe acompanha todo o processo e mantém você informado por e-mail.
+        </p>
+      </div>
+
+    </div>
+
   </div>
-</main>
+</section>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
+(function () {
+  function maskCPF(input) {
+    input.addEventListener('input', function () {
+      var v = this.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+      else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+      else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+      this.value = v;
+    });
+  }
 
-    // Máscara CPF
-    const cpfInput = document.getElementById('{{ form.cpf.id_for_label }}');
-    if (cpfInput) {
-      cpfInput.addEventListener('input', function () {
-        let v = this.value.replace(/\D/g, '').slice(0, 11);
-        if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
-        else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
-        else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
-        this.value = v;
-      });
-    }
+  function maskDate(input) {
+    input.addEventListener('input', function () {
+      var v = this.value.replace(/\D/g, '').slice(0, 8);
+      if (v.length > 4) v = v.replace(/(\d{2})(\d{2})(\d{1,4})/, '$1/$2/$3');
+      else if (v.length > 2) v = v.replace(/(\d{2})(\d{1,2})/, '$1/$2');
+      this.value = v;
+    });
+  }
 
-    // Máscara datas
-    ['{{ form.data_nascimento.id_for_label }}', '{{ form.data_obito.id_for_label }}'].forEach(function(id) {
-      const el = document.getElementById(id);
-      if (el) {
-        el.addEventListener('input', function () {
-          let v = this.value.replace(/\D/g, '').slice(0, 8);
-          if (v.length > 4) v = v.replace(/(\d{2})(\d{2})(\d{1,4})/, '$1/$2/$3');
-          else if (v.length > 2) v = v.replace(/(\d{2})(\d{1,2})/, '$1/$2');
-          this.value = v;
-        });
+  var cpfEl = document.getElementById('{{ form.cpf_falecido.id_for_label }}');
+  if (cpfEl) maskCPF(cpfEl);
+
+  ['{{ form.data_nascimento.id_for_label }}', '{{ form.data_obito.id_for_label }}'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) maskDate(el);
+  });
+
+  var testamentoForm = document.getElementById('testamento-form');
+  if (testamentoForm) {
+    testamentoForm.addEventListener('submit', function (e) {
+      var estadoEl = document.getElementById('{{ form.estado_obito.id_for_label }}');
+      var errEl    = document.getElementById('estado-obito-error');
+      if (estadoEl && !estadoEl.value) {
+        e.preventDefault();
+        estadoEl.classList.add('is-invalid', 'border-red-300');
+        if (errEl) errEl.classList.remove('hidden');
+        estadoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else if (estadoEl) {
+        estadoEl.classList.remove('is-invalid', 'border-red-300');
+        if (errEl) errEl.classList.add('hidden');
       }
     });
-
-  });
+  }
+})();
 </script>
 {% endblock %}
+

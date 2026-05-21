@@ -205,10 +205,10 @@ class OrderOpsListView(View):
 
         # ── Subcategorias de Registro Civil ──────────────────────────────
         SUBCATEGORIAS_RC = [
-            ('nascimento', 'Certidão de Nascimento', '🟦'),
-            ('casamento',  'Certidão de Casamento',  '🟩'),
-            ('obito',      'Certidão de Óbito',      '🟥'),
-            ('interdicao', 'Certidão de Interdição', '🟨'),
+            ('nascimento', 'Certidão de Nascimento'),
+            ('casamento',  'Certidão de Casamento'),
+            ('obito',      'Certidão de Óbito'),
+            ('interdicao', 'Certidão de Interdição'),
         ]
         subcategorias_rc = []
         total_registro_civil = 0
@@ -219,10 +219,138 @@ class OrderOpsListView(View):
                 .annotate(total=Count('id'))
             )
             rc_counts = {row['tipo_certidao']: row['total'] for row in rc_counts_raw}
-            for slug_tipo, label_tipo, _ in SUBCATEGORIAS_RC:
+            for slug_tipo, label_tipo in SUBCATEGORIAS_RC:
                 cnt = rc_counts.get(slug_tipo, 0)
                 total_registro_civil += cnt
                 subcategorias_rc.append({
+                    'slug': slug_tipo,
+                    'label': label_tipo,
+                    'count': cnt,
+                    'ativa': (tipo == slug_tipo),
+                })
+
+        # ── Subcategorias de Tabelionato de Notas ────────────────────────
+        SUBCATEGORIAS_NOTAS = [
+            ('procuracao',                 'Procuração'),
+            ('escritura',                  'Escritura'),
+            ('escritura_ata_notarial',     'Ata Notarial'),
+            ('escritura_compra_venda',     'Compra e Venda'),
+            ('escritura_divorcio',         'Divórcio'),
+            ('escritura_doacao',           'Doação'),
+            ('escritura_emancipacao',      'Emancipação'),
+            ('escritura_hipoteca',         'Hipoteca'),
+            ('escritura_inventario',       'Inventário'),
+            ('escritura_pacto_antenupcial','Pacto Antenupcial'),
+            ('escritura_permuta',          'Permuta'),
+            ('escritura_testamento',       'Testamento'),
+            ('uniao_estavel',              'União Estável'),
+        ]
+        subcategorias_notas = []
+        total_notas = 0
+        if categoria == 'notas':
+            notas_counts_raw = (
+                Order.objects.filter(categoria_painel='notas')
+                .values('tipo_certidao')
+                .annotate(total=Count('id'))
+            )
+            notas_counts = {row['tipo_certidao']: row['total'] for row in notas_counts_raw}
+            for slug_tipo, label_tipo in SUBCATEGORIAS_NOTAS:
+                cnt = notas_counts.get(slug_tipo, 0)
+                total_notas += cnt
+                subcategorias_notas.append({
+                    'slug': slug_tipo,
+                    'label': label_tipo,
+                    'count': cnt,
+                    'ativa': (tipo == slug_tipo),
+                })
+
+        # ── Subcategorias de Registro de Imóveis ─────────────────────────
+        SUBCATEGORIAS_IMOVEIS = [
+            ('imovel',                    'Certidão de Imóvel'),
+            ('imovel_matricula_atualizada','Matrícula Atualizada'),
+            ('imovel_alienacao_fiduciaria','Alienação Fiduciária'),
+            ('imovel_onus_reais',          'Ônus Reais'),
+            ('imovel_pesquisa_bens',       'Pesquisa de Bens'),
+            ('imovel_penhor_safra',        'Penhor de Safra'),
+            ('imovel_pacote_compra_venda', 'Pacote Compra e Venda'),
+        ]
+        subcategorias_imoveis = []
+        total_imoveis = 0
+        if categoria == 'imoveis':
+            imoveis_counts_raw = (
+                Order.objects.filter(categoria_painel='imoveis')
+                .values('tipo_certidao')
+                .annotate(total=Count('id'))
+            )
+            imoveis_counts = {row['tipo_certidao']: row['total'] for row in imoveis_counts_raw}
+            for slug_tipo, label_tipo in SUBCATEGORIAS_IMOVEIS:
+                cnt = imoveis_counts.get(slug_tipo, 0)
+                total_imoveis += cnt
+                subcategorias_imoveis.append({
+                    'slug': slug_tipo,
+                    'label': label_tipo,
+                    'count': cnt,
+                    'ativa': (tipo == slug_tipo),
+                })
+
+        # ── Subcategorias de Federais e Estaduais ────────────────────────
+        SUBCATEGORIAS_FEDERAIS_ESTADUAIS = [
+            ('cnd_federal',                         'CND Federal'),
+            ('cnd_estadual',                        'CND Estadual'),
+            ('fgts_inss',                           'FGTS / INSS'),
+            ('antecedentes_criminais',              'Antecedentes Criminais'),
+            ('debitos_trabalhistas',                'Débitos Trabalhistas'),
+            ('certidao_negativa_acoes_criminais',   'Ações Criminais'),
+            ('cnj_improbidade',                     'CNJ Improbidade'),
+            ('tse_quitacao_eleitoral',              'Quitação Eleitoral'),
+            ('junta_comercial',                     'Junta Comercial'),
+            ('cnd_itr',                             'CND ITR'),
+            ('cafir',                               'CAFIR'),
+            ('ibama_embargos',                      'IBAMA Embargos'),
+            ('certidao_negativa_debitos_ambientais','Déb. Ambientais'),
+            ('certidao_negativa_municipio',         'Déb. Municipais'),
+            ('cota_legal_pcds',                     'Cota PCDs'),
+            ('propriedade_aeronave',                'Aeronave'),
+            ('regularidade_crea',                   'CREA'),
+            ('fed_estadual_outros',                 'Outros'),
+        ]
+        subcategorias_federais = []
+        total_federais = 0
+        if categoria == 'federais_estaduais':
+            fe_counts_raw = (
+                Order.objects.filter(categoria_painel='federais_estaduais')
+                .values('tipo_certidao')
+                .annotate(total=Count('id'))
+            )
+            fe_counts = {row['tipo_certidao']: row['total'] for row in fe_counts_raw}
+            for slug_tipo, label_tipo in SUBCATEGORIAS_FEDERAIS_ESTADUAIS:
+                cnt = fe_counts.get(slug_tipo, 0)
+                total_federais += cnt
+                subcategorias_federais.append({
+                    'slug': slug_tipo,
+                    'label': label_tipo,
+                    'count': cnt,
+                    'ativa': (tipo == slug_tipo),
+                })
+
+        # ── Subcategorias de Apostilamento ───────────────────────────────
+        SUBCATEGORIAS_APOSTILAMENTO = [
+            ('apostila_haia',        'Apostila de Haia'),
+            ('traducao_juramentada', 'Tradução Juramentada'),
+        ]
+        subcategorias_apostilamento = []
+        total_apostilamento = 0
+        if categoria == 'apostilamento':
+            apost_counts_raw = (
+                Order.objects.filter(categoria_painel='apostilamento')
+                .values('tipo_certidao')
+                .annotate(total=Count('id'))
+            )
+            apost_counts = {row['tipo_certidao']: row['total'] for row in apost_counts_raw}
+            for slug_tipo, label_tipo in SUBCATEGORIAS_APOSTILAMENTO:
+                cnt = apost_counts.get(slug_tipo, 0)
+                total_apostilamento += cnt
+                subcategorias_apostilamento.append({
                     'slug': slug_tipo,
                     'label': label_tipo,
                     'count': cnt,
@@ -239,6 +367,14 @@ class OrderOpsListView(View):
             'tipo_ativo': tipo,
             'subcategorias_rc': subcategorias_rc,
             'total_registro_civil': total_registro_civil,
+            'subcategorias_notas': subcategorias_notas,
+            'total_notas': total_notas,
+            'subcategorias_imoveis': subcategorias_imoveis,
+            'total_imoveis': total_imoveis,
+            'subcategorias_federais': subcategorias_federais,
+            'total_federais': total_federais,
+            'subcategorias_apostilamento': subcategorias_apostilamento,
+            'total_apostilamento': total_apostilamento,
             'operadores': operadores,
             'status_choices': Order.STATUS_CHOICES,
             'prioridade_choices': Order.PRIORIDADE_CHOICES,

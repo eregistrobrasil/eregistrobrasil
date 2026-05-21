@@ -1660,42 +1660,67 @@ class ProtestoDadosForm(forms.Form):
 #  Certidão Negativa de Testamento
 # ─────────────────────────────────────────────
 
+_ESTADOS_CHOICES = [
+    ('', 'Selecione o estado'),
+    ('AC', 'Acre'), ('AL', 'Alagoas'), ('AP', 'Amapá'), ('AM', 'Amazonas'),
+    ('BA', 'Bahia'), ('CE', 'Ceará'), ('DF', 'Distrito Federal'), ('ES', 'Espírito Santo'),
+    ('GO', 'Goiás'), ('MA', 'Maranhão'), ('MT', 'Mato Grosso'), ('MS', 'Mato Grosso do Sul'),
+    ('MG', 'Minas Gerais'), ('PA', 'Pará'), ('PB', 'Paraíba'), ('PR', 'Paraná'),
+    ('PE', 'Pernambuco'), ('PI', 'Piauí'), ('RJ', 'Rio de Janeiro'), ('RN', 'Rio Grande do Norte'),
+    ('RS', 'Rio Grande do Sul'), ('RO', 'Rondônia'), ('RR', 'Roraima'), ('SC', 'Santa Catarina'),
+    ('SP', 'São Paulo'), ('SE', 'Sergipe'), ('TO', 'Tocantins'),
+]
+
+
 class CertidaoNegativaTestamentoForm(forms.Form):
-    nome_falecido = _char_field('Nome do Falecido', 'Nome completo do falecido', msg_label='o nome do falecido')
+    nome_falecido = _char_field(
+        'Nome do Falecido', 'Nome completo do falecido', msg_label='o nome do falecido',
+    )
     data_nascimento = _date_field('Data de Nascimento', msg_label='a data de nascimento')
     data_obito = _date_field('Data do Óbito', msg_label='a data do óbito')
-    nome_mae = _char_field('Nome da Mãe do Falecido', 'Nome completo da mãe', msg_label='o nome da mãe do falecido')
-    orgao_emissor = _char_field('Órgão Emissor do Documento', 'Ex: SSP/SP, Cartório, DETRAN...', msg_label='o órgão emissor')
-    cpf = _cpf_field()
-    estado_obito = forms.ChoiceField(
-        label='Estado onde ocorreu o Óbito',
-        choices=_ESTADOS_UF_CHOICES,
-        error_messages={'required': 'Selecione o estado onde ocorreu o óbito.'},
-        widget=forms.Select(attrs={'class': _INPUT_CLASS}),
+    nome_mae = _char_field(
+        'Nome da Mãe do Falecido', 'Nome completo da mãe do falecido',
+        msg_label='o nome da mãe do falecido',
     )
-    nome_pai = _char_field('Nome do Pai do Falecido', 'Nome completo do pai (opcional)', required=False)
-    rg = forms.CharField(
-        label='RG do Falecido',
-        max_length=20,
-        required=False,
+    orgao_emissor = _char_field(
+        'Órgão Emissor', 'Ex: SSP/SP, DETRAN/MG, SESP/BA',
+        msg_label='o órgão emissor',
+    )
+    cpf_falecido = forms.CharField(
+        label='CPF do Falecido',
+        max_length=14,
+        error_messages={'required': 'Informe o CPF do falecido.'},
         widget=forms.TextInput(attrs={
             'class': _INPUT_CLASS,
-            'placeholder': 'RG (opcional)',
-            'autocomplete': 'off',
+            'placeholder': '000.000.000-00',
+            'inputmode': 'numeric',
+            'maxlength': '14',
+            'data-mask': 'cpf',
         }),
     )
+    estado_obito = forms.ChoiceField(
+        label='Estado onde foi registrado o óbito',
+        choices=_ESTADOS_CHOICES,
+        error_messages={'required': 'Selecione o estado do registro do óbito.'},
+        widget=forms.Select(attrs={'class': _INPUT_CLASS}),
+    )
+    nome_pai = _char_field(
+        'Nome do Pai do Falecido', 'Nome completo do pai (opcional)',
+        required=False, msg_label='o nome do pai do falecido',
+    )
+    rg = _char_field(
+        'Número da Identidade (RG)', 'Número do RG (opcional)',
+        required=False, msg_label='o RG',
+    )
 
-    def clean_estado_obito(self):
-        valor = self.cleaned_data.get('estado_obito', '').strip()
-        if not valor:
-            raise forms.ValidationError('Selecione o estado onde ocorreu o óbito.')
-        valid_ufs = {c[0] for c in _ESTADOS_UF_CHOICES if c[0]}
-        if valor not in valid_ufs:
-            raise forms.ValidationError('Estado inválido.')
-        return valor
-
-    def clean_cpf(self):
-        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf', ''))
+    def clean_cpf_falecido(self):
+        cpf = re.sub(r'\D', '', self.cleaned_data.get('cpf_falecido', ''))
         if len(cpf) != 11:
             raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
         return cpf
+
+    def clean_estado_obito(self):
+        val = self.cleaned_data.get('estado_obito', '').strip()
+        if not val:
+            raise forms.ValidationError('Selecione o estado do registro do óbito.')
+        return val

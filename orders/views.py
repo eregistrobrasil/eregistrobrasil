@@ -136,6 +136,12 @@ class CheckoutView(View):
                 'complemento': 'Complemento',
                 'bairro': 'Bairro',
                 'cidade_imovel': 'Cidade do Imóvel',
+                # Certidão Negativa de Testamento
+                'nome_falecido': 'Nome do Falecido',
+                'orgao_emissor': 'Órgão Emissor',
+                'cpf_falecido': 'CPF do Falecido',
+                'estado_obito': 'Estado do Óbito',
+                'rg': 'RG',
             }
 
             cart_items = list(cart.items.select_related('product', 'state').all())

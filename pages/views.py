@@ -28,6 +28,7 @@ from .forms import (
     CndEstadualSefazForm,
     CndItrReceitaFederalForm,
     CnjImprobidadeAdministrativaForm,
+    CertidaoNegativaTestamentoForm,
 )
 
 
@@ -753,6 +754,7 @@ class CertidaoImovelDadosView(View):
 
         estado_uf = cartorio_data.get('estado_uf', '')
         tipo_certidao = dados.get('tipo_certidao', '')
+        item.tipo_certidao = 'imovel'
         if estado_uf:
             unit_price = obter_preco_imovel(tipo_certidao, estado_uf)
             if unit_price is None:
@@ -1274,6 +1276,7 @@ class CertidaoPenhorSafraDadosView(BaseCertidaoDadosView):
         item.requester_document = str(dados.get('cpf', ''))[:30]
 
         estado_uf = cartorio_data.get('estado_uf', '')
+        item.tipo_certidao = 'imovel_penhor_safra'
         if estado_uf:
             unit_price = obter_preco_imovel('penhor_safra', estado_uf)
             if unit_price is None:
@@ -1608,7 +1611,6 @@ from .forms import (
     PropriedadeAeronaveForm,
     JuntaComercialCertidaoEmpresaForm,
     CertidaoRegularidadeCreacForm,
-    CertidaoNegativaTestamentoForm,
 )
 from products.services import PRECO_FIXO_FEDERAL_ESTADUAL
 
@@ -1679,6 +1681,7 @@ class BaseServicoSimplesDadosView(View):
         item.requester_document = str(dados.get("cpf_cnpj", "") or dados.get("cpf", ""))[:30]
         if self.fixed_price:
             item.unit_price = PRECO_FIXO_FEDERAL_ESTADUAL
+        item.tipo_certidao = self.tipo_certidao_sessao
         item.save()
         request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
 
@@ -2214,57 +2217,13 @@ class BuscaTabelionatoNotasView(BaseServicoSimplesDadosView):
     product_slug = "busca-em-tabelionatos-notas"
 
 
-# ─────────────────────────────────────────────
-#  Certidão Negativa de Testamento
-# ─────────────────────────────────────────────
-
-class CertidaoNegativaTestamentoView(BaseServicoSimplesDadosView):
-    title = "Certidão Negativa de Testamento — E-Registro Brasil"
-    form_class = CertidaoNegativaTestamentoForm
-    template_name = "servicos/certidao_negativa_testamento.html"
-    product_slug = "certidao-negativa-de-testamento"
-    tipo_certidao_sessao = "busca_testamento"
-    fixed_price = True
-
-    def _ctx(self, form, product=None):
-        ctx = {
-            "title": self.title,
-            "form": form,
-            "passos": _PASSOS,
-            "fixed_price": True,
-            "state_prices_json": "{}",
-        }
-        if product:
-            ctx["product"] = product
-            preco = float(product.price)
-            ctx["price_display"] = "R$ {:,.2f}".format(preco).replace(",", "X").replace(".", ",").replace("X", ".")
-        else:
-            ctx["price_display"] = "R$ 239,90"
-        return ctx
-
-    def _add_to_cart(self, request, dados, product):
-        from orders.models import Cart, CartItem
-        if product is None:
-            return
-        if not request.session.session_key:
-            request.session.create()
-        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
-        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
-        item.quantity = 1
-        item.requester_name = str(dados.get("nome_falecido", ""))[:200]
-        item.requester_document = str(dados.get("cpf", ""))[:30]
-        item.unit_price = product.price
-        item.tipo_certidao = self.tipo_certidao_sessao
-        item.save()
-        request.session["ordem_tipo_certidao"] = self.tipo_certidao_sessao
-
-
 # Apostilamento
 class ApostilaHaiaView(BaseServicoSimplesDadosView):
     title = "Apostila de Haia - E-Registro Brasil"
     form_class = ApostilaHaiaForm
     template_name = "servicos/apostila_haia.html"
     product_slug = "apostila-de-haia"
+    tipo_certidao_sessao = "apostila_haia"
 
 
 class TraducaoJuramentadaView(BaseServicoSimplesDadosView):
@@ -2272,6 +2231,7 @@ class TraducaoJuramentadaView(BaseServicoSimplesDadosView):
     form_class = TraducaoJuramentadaForm
     template_name = "servicos/traducao_juramentada.html"
     product_slug = "traducao-juramentada"
+    tipo_certidao_sessao = "traducao_juramentada"
 
 
 # ===========================================================================
@@ -2321,6 +2281,7 @@ class BaseImovelVarianteDadosView(View):
     product_slug = ""
     step1_url = ""
     tipo_preco = ""          # identificador do tipo de certidão (ex: 'matricula')
+    tipo_certidao_valor = "imovel"  # valor gravado em CartItem.tipo_certidao
     descricao_step2 = "Informe os dados do imóvel."
     date_fields = []
     date_field_ids = []
@@ -2407,6 +2368,7 @@ class BaseImovelVarianteDadosView(View):
 
         # Preço sempre recalculado do banco — nunca confia no frontend
         estado_uf = cartorio_data.get("estado_uf", "")
+        item.tipo_certidao = self.tipo_certidao_valor
         if estado_uf:
             unit_price = obter_preco_por_estado(product, estado_uf)
             if unit_price is None:
@@ -2442,6 +2404,7 @@ class CertidaoAlienacaoFiduciariaDadosView(BaseImovelVarianteDadosView):
     product_slug = "certidao-negativa-de-alienacao-fiduciaria"
     step1_url = "pages:certidao_alienacao_fiduciaria"
     tipo_preco = "alienacao_fiduciaria"
+    tipo_certidao_valor = "imovel_alienacao_fiduciaria"
     descricao_step2 = "Informe o nome e CPF do titular para pesquisa de alienação fiduciária."
 
 
@@ -2466,6 +2429,7 @@ class CertidaoMatriculaAtualizadaDadosView(BaseImovelVarianteDadosView):
     product_slug = "certidao-de-matricula-atualizada"
     step1_url = "pages:certidao_matricula_atualizada"
     tipo_preco = "matricula"
+    tipo_certidao_valor = "imovel_matricula_atualizada"
     descricao_step2 = "Informe o número da matrícula do imóvel."
 
 
@@ -2490,6 +2454,7 @@ class CertidaoOnusReaisDadosView(BaseImovelVarianteDadosView):
     product_slug = "certidao-de-onus-reais"
     step1_url = "pages:certidao_onus_reais"
     tipo_preco = "inteiro_teor"
+    tipo_certidao_valor = "imovel_onus_reais"
     descricao_step2 = "Informe o número da matrícula para a certidão de ônus reais."
 
 
@@ -2514,4 +2479,43 @@ class PesquisaBensDadosView(BaseImovelVarianteDadosView):
     product_slug = "pesquisa-de-bens"
     step1_url = "pages:pesquisa_bens"
     tipo_preco = "pesquisa_bens"
+    tipo_certidao_valor = "imovel_pesquisa_bens"
     descricao_step2 = "Informe o nome e CPF do titular para pesquisa de bens imóveis registrados."
+
+
+# ===========================================================================
+#  Certidão Negativa de Testamento
+#  Pesquisa nacional de testamentos — preço fixo nacional (editável no painel)
+# ===========================================================================
+
+class CertidaoNegativaTestamentoView(BaseServicoSimplesDadosView):
+    title = "Certidão Negativa de Testamento — E-Registro Brasil"
+    form_class = CertidaoNegativaTestamentoForm
+    template_name = "servicos/certidao_negativa_testamento.html"
+    product_slug = "certidao-negativa-de-testamento"
+    tipo_certidao_sessao = "busca_testamento"
+    fixed_price = False
+
+    def _ctx(self, form, product=None):
+        ctx = super()._ctx(form, product)
+        if product:
+            price = product.price
+            ctx['price_display'] = 'R$ {:,.2f}'.format(price).replace(',', 'X').replace('.', ',').replace('X', '.')
+            ctx['show_fixed_price'] = True
+        return ctx
+
+    def _add_to_cart(self, request, dados, product):
+        from orders.models import Cart, CartItem
+        if product is None:
+            return
+        if not request.session.session_key:
+            request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key)
+        item, _ = CartItem.objects.get_or_create(cart=cart, product=product)
+        item.quantity = 1
+        item.requester_name = str(dados.get('nome_falecido', ''))[:200]
+        item.requester_document = str(dados.get('cpf_falecido', ''))[:30]
+        item.unit_price = product.price
+        item.tipo_certidao = self.tipo_certidao_sessao
+        item.save()
+        request.session['ordem_tipo_certidao'] = self.tipo_certidao_sessao

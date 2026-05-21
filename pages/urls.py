@@ -117,7 +117,7 @@ urlpatterns = [
     # Busca em Cartorios
     path('servico/busca-em-cartorios-registro-civil/', views.BuscaCartorioRegistroCivilView.as_view(), name='busca_cartorios_civil'),
     path('servico/busca-em-tabelionatos-notas/', views.BuscaTabelionatoNotasView.as_view(), name='busca_tabelionatos_notas'),
-    # Certidão Negativa de Testamento
+    # Certidão Negativa de Testamento — pesquisa nacional de testamentos
     path('servico/certidao-negativa-de-testamento/', views.CertidaoNegativaTestamentoView.as_view(), name='certidao_negativa_testamento'),
     # Apostilamento
     path('servico/apostila-de-haia/', views.ApostilaHaiaView.as_view(), name='apostila_haia'),

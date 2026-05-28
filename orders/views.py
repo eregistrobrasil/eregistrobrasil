@@ -106,10 +106,29 @@ class CheckoutView(View):
         form = CheckoutForm(request.POST)
         if form.is_valid():
             order = form.save(commit=False)
-            if request.user.is_authenticated:
-                order.user = request.user
             order.subtotal = cart.get_total()
             order.total = cart.get_total()
+
+            # ── Criação / associação automática de conta ─────────────────────
+            if request.user.is_authenticated:
+                order.user = request.user
+            else:
+                from accounts.services import criar_ou_obter_usuario
+                user, created, plain_password = criar_ou_obter_usuario(
+                    email=form.cleaned_data['customer_email'],
+                    name=form.cleaned_data['customer_name'],
+                    cpf=form.cleaned_data.get('customer_cpf', ''),
+                    phone=form.cleaned_data.get('customer_phone', ''),
+                )
+                order.user = user
+                if created and plain_password:
+                    # Armazena na sessão para exibição única após pagamento aprovado
+                    request.session['auto_account_data'] = {
+                        'user_id': user.pk,
+                        'email': user.email,
+                        'password': plain_password,
+                    }
+
             order.save()
 
             # Recupera dados do formulário de certidão salvos na sessão

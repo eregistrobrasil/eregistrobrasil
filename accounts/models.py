@@ -20,6 +20,12 @@ class UserProfile(models.Model):
     phone = models.CharField('Telefone', max_length=20, blank=True)
     birth_date = models.DateField('Data de Nascimento', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    senha_gerada_automaticamente = models.BooleanField(
+        'Senha gerada automaticamente', default=False
+    )
+    senha_alterada_pelo_usuario = models.BooleanField(
+        'Senha alterada pelo usuário', default=False
+    )
 
     class Meta:
         verbose_name = 'Perfil do Usuário'

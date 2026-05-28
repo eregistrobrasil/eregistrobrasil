@@ -8,6 +8,8 @@ from django.views.generic import TemplateView
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.contrib.auth import login as auth_login
+from django.contrib.auth.models import User
 
 import mercadopago
 
@@ -40,21 +42,40 @@ class CreatePaymentView(View):
         })
 
 
-class PaymentSuccessView(TemplateView):
+class PaymentSuccessView(View):
     template_name = 'payments/success.html'
 
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['order'] = get_object_or_404(Order, id=self.kwargs['order_id'])
-        ctx['title'] = 'Pagamento Aprovado!'
-        payment_id = self.request.GET.get('payment_id')
-        if payment_id and hasattr(ctx['order'], 'payment'):
-            ctx['order'].payment.mercadopago_id = payment_id
-            ctx['order'].payment.status = 'approved'
-            ctx['order'].payment.save()
-            ctx['order'].status = 'paid'
-            ctx['order'].save()
-        return ctx
+    def get(self, request, order_id):
+        order = get_object_or_404(Order, id=order_id)
+
+        payment_id = request.GET.get('payment_id')
+        if payment_id and hasattr(order, 'payment'):
+            order.payment.mercadopago_id = payment_id
+            order.payment.status = 'approved'
+            order.payment.save()
+            order.status = 'paid'
+            order.save()
+
+        # Recupera e limpa dados da conta criada automaticamente
+        auto_account = request.session.pop('auto_account_data', None)
+
+        # Login automático para usuários recém-criados
+        if auto_account and not request.user.is_authenticated:
+            try:
+                user = User.objects.get(pk=auto_account['user_id'])
+                auth_login(
+                    request,
+                    user,
+                    backend='django.contrib.auth.backends.ModelBackend',
+                )
+            except User.DoesNotExist:
+                auto_account = None
+
+        return render(request, self.template_name, {
+            'order': order,
+            'auto_account': auto_account,
+            'title': 'Pagamento Aprovado!',
+        })
 
 
 class PaymentFailureView(TemplateView):

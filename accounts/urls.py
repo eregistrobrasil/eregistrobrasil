@@ -13,6 +13,7 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
     path('perfil/', views.ProfileUpdateView.as_view(), name='profile'),
+    path('alterar-senha/', views.ChangePasswordView.as_view(), name='change_password'),
 
     # Password reset
     path('senha/recuperar/', PasswordResetView.as_view(

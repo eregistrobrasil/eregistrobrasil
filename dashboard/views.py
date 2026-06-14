@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.utils import timezone
 from django.db.models import Count, Sum, Q
 from django.contrib import messages
@@ -12,17 +12,7 @@ from orders.models import Order, OrderStatusLog, CATEGORIA_PAINEL_CHOICES, TIPO_
 from notifications.models import Notification
 from registry.models import Registry
 from registry.forms import CartorioForm
-
-
-def staff_required(view_func):
-    def wrapper(request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return redirect(f'/conta/login/?next={request.path}')
-        if not (request.user.is_staff or hasattr(request.user, 'profile') and
-                request.user.profile.tipo in ('admin', 'operador', 'financeiro')):
-            return HttpResponse('Acesso negado.', status=403)
-        return view_func(request, *args, **kwargs)
-    return wrapper
+from accounts.permissions import staff_required
 
 
 @method_decorator(staff_required, name='dispatch')

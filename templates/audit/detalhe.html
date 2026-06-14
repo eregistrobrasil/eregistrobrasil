@@ -1,0 +1,107 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{{ title }} — E-Registro Brasil{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-5">
+  <div class="flex items-center gap-3">
+    <a href="{% url 'audit:historico' %}" class="text-gray-400 hover:text-gray-600 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+    <h2 class="text-xl font-bold text-gray-800">{{ title }}</h2>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm divide-y divide-gray-100">
+
+    {% with a=atividade %}
+    <!-- Cabeçalho -->
+    <div class="px-6 py-4 flex items-center gap-4">
+      <span class="text-xs px-2.5 py-1 rounded-full font-semibold
+        {% if a.status == 'sucesso' %}bg-green-100 text-green-700
+        {% elif a.status == 'erro' %}bg-red-100 text-red-700
+        {% elif a.status == 'negado' %}bg-orange-100 text-orange-700
+        {% else %}bg-blue-100 text-blue-700{% endif %}">
+        {{ a.get_status_display }}
+      </span>
+      <span class="text-sm font-semibold text-gray-700">{{ a.get_acao_display }}</span>
+      <span class="text-xs text-gray-400">{{ a.data_hora|date:"d/m/Y H:i:s" }}</span>
+    </div>
+
+    <!-- Campos -->
+    {% for label, value in forloop.parentloop.0|default:"" %}{% endfor %}
+    <dl class="divide-y divide-gray-50">
+      {% with rows=a %}
+      <div class="grid grid-cols-3 px-6 py-3 text-sm">
+        <dt class="font-medium text-gray-500">Usuário</dt>
+        <dd class="col-span-2 text-gray-800">
+          {% if a.usuario %}{{ a.usuario.get_full_name|default:a.usuario.username }} ({{ a.usuario.email }})
+          {% else %}<span class="text-gray-400">Anônimo</span>{% endif %}
+        </dd>
+      </div>
+      <div class="grid grid-cols-3 px-6 py-3 text-sm">
+        <dt class="font-medium text-gray-500">Módulo</dt>
+        <dd class="col-span-2 text-gray-800">{{ a.get_modulo_display }}</dd>
+      </div>
+      <div class="grid grid-cols-3 px-6 py-3 text-sm">
+        <dt class="font-medium text-gray-500">URL</dt>
+        <dd class="col-span-2 text-gray-800 font-mono text-xs">{{ a.url|default:"—" }}</dd>
+      </div>
+      <div class="grid grid-cols-3 px-6 py-3 text-sm">
+        <dt class="font-medium text-gray-500">Método HTTP</dt>
+        <dd class="col-span-2 text-gray-800 font-mono">{{ a.metodo_http|default:"—" }}</dd>
+      </div>
+      <div class="grid grid-cols-3 px-6 py-3 text-sm">
+        <dt class="font-medium text-gray-500">IP</dt>
+        <dd class="col-span-2 text-gray-800 font-mono">{{ a.ip|default:"—" }}</dd>
+      </div>
+      <div class="grid grid-cols-3 px-6 py-3 text-sm">
+        <dt class="font-medium text-gray-500">Navegador</dt>
+        <dd class="col-span-2 text-gray-500 text-xs break-all">{{ a.navegador|default:"—" }}</dd>
+      </div>
+      <div class="grid grid-cols-3 px-6 py-3 text-sm">
+        <dt class="font-medium text-gray-500">Tempo de Execução</dt>
+        <dd class="col-span-2 text-gray-800">
+          {% if a.tempo_execucao %}{{ a.tempo_execucao|floatformat:2 }} ms{% else %}—{% endif %}
+        </dd>
+      </div>
+      {% if a.objeto_afetado %}
+      <div class="grid grid-cols-3 px-6 py-3 text-sm">
+        <dt class="font-medium text-gray-500">Objeto Afetado</dt>
+        <dd class="col-span-2 text-gray-800">{{ a.objeto_afetado }} #{{ a.id_objeto }}</dd>
+      </div>
+      {% endif %}
+      {% if a.descricao %}
+      <div class="grid grid-cols-3 px-6 py-3 text-sm">
+        <dt class="font-medium text-gray-500">Descrição</dt>
+        <dd class="col-span-2 text-gray-800">{{ a.descricao }}</dd>
+      </div>
+      {% endif %}
+      {% if a.observacoes %}
+      <div class="grid grid-cols-3 px-6 py-3 text-sm">
+        <dt class="font-medium text-gray-500">Observações</dt>
+        <dd class="col-span-2 text-gray-800">{{ a.observacoes }}</dd>
+      </div>
+      {% endif %}
+      {% endwith %}
+    </dl>
+
+    <!-- JSON diff -->
+    {% if a.dados_anteriores or a.dados_novos %}
+    <div class="px-6 py-4 grid grid-cols-2 gap-4">
+      <div>
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Dados Anteriores</p>
+        <pre class="text-xs bg-red-50 text-red-800 p-3 rounded-lg overflow-x-auto">{{ a.dados_anteriores|default:"{}" }}</pre>
+      </div>
+      <div>
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Dados Novos</p>
+        <pre class="text-xs bg-green-50 text-green-800 p-3 rounded-lg overflow-x-auto">{{ a.dados_novos|default:"{}" }}</pre>
+      </div>
+    </div>
+    {% endif %}
+    {% endwith %}
+
+  </div>
+</div>
+{% endblock %}

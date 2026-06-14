@@ -1,0 +1,107 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{{ title }} — E-Registro Brasil{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+  <div class="flex items-center gap-3">
+    <a href="{% url 'accounts:permissions_list' %}"
+       class="text-gray-400 hover:text-gray-600 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+    <div>
+      <h2 class="text-xl font-bold text-gray-800">{{ title }}</h2>
+      <p class="text-sm text-gray-400">{{ usuario.email }}</p>
+    </div>
+  </div>
+
+  <form method="post" class="space-y-5">
+    {% csrf_token %}
+
+    <!-- Papéis -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <h3 class="font-semibold text-gray-700 mb-4">Papéis (Roles)</h3>
+      <p class="text-sm text-gray-500 mb-3">Atribuir um papel concede todas as suas permissões.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {% for role in roles %}
+        <label class="flex items-start gap-3 p-3 border border-gray-100 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+          <input type="checkbox" name="roles" value="{{ role.id }}"
+                 {% if role.id in roles_selecionados %}checked{% endif %}
+                 class="mt-0.5 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary/30">
+          <div>
+            <p class="text-sm font-medium text-gray-800">{{ role.nome }}</p>
+            {% if role.descricao %}
+            <p class="text-xs text-gray-500">{{ role.descricao }}</p>
+            {% endif %}
+            <p class="text-xs text-gray-400 mt-1">{{ role.permissoes.count }} permissão{{ role.permissoes.count|pluralize:"ão,ões" }}</p>
+          </div>
+        </label>
+        {% empty %}
+        <p class="text-sm text-gray-400 col-span-2">Nenhum papel criado ainda.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Permissões extras -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <h3 class="font-semibold text-gray-700 mb-4">Permissões Extras (individuais)</h3>
+      <p class="text-sm text-gray-500 mb-3">Permissões adicionais além dos papéis atribuídos.</p>
+      {% for modulo, label in modulos %}
+      <div class="mb-4">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{{ label }}</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {% for p in permissoes %}
+          {% if p.modulo == modulo %}
+          <label class="flex items-center gap-2 cursor-pointer group">
+            <input type="checkbox" name="permissoes_extras" value="{{ p.id }}"
+                   {% if p.id in extras_selecionadas %}checked{% endif %}
+                   class="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500/30">
+            <span class="text-sm text-gray-700 group-hover:text-gray-900">{{ p.nome }}</span>
+          </label>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Permissões negadas -->
+    <div class="bg-white rounded-xl border border-red-100 shadow-sm p-6">
+      <h3 class="font-semibold text-red-700 mb-4">Permissões Negadas (bloqueio explícito)</h3>
+      <p class="text-sm text-gray-500 mb-3">
+        Sobrepõe qualquer permissão concedida via papel ou extra.
+      </p>
+      {% for modulo, label in modulos %}
+      <div class="mb-4">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{{ label }}</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {% for p in permissoes %}
+          {% if p.modulo == modulo %}
+          <label class="flex items-center gap-2 cursor-pointer group">
+            <input type="checkbox" name="permissoes_negadas" value="{{ p.id }}"
+                   {% if p.id in negadas_selecionadas %}checked{% endif %}
+                   class="w-4 h-4 rounded border-gray-300 text-red-600 focus:ring-red-500/30">
+            <span class="text-sm text-gray-700 group-hover:text-gray-900">{{ p.nome }}</span>
+          </label>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="flex gap-3">
+      <button type="submit"
+              class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors text-sm font-medium">
+        Salvar Permissões
+      </button>
+      <a href="{% url 'accounts:permissions_list' %}"
+         class="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
+        Cancelar
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

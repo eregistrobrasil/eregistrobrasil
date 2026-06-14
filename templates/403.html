@@ -1,0 +1,35 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Acesso Negado — E-Registro Brasil{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-96 text-center">
+  <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6">
+    <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M12 15v2m0 0v2m0-2h2m-2 0H10m2-11a4 4 0 00-4 4v1H6a2 2 0 00-2 2v7a2 2 0 002 2h12a2 2 0 002-2v-7a2 2 0 00-2-2h-2v-1a4 4 0 00-4-4z"/>
+    </svg>
+  </div>
+
+  <h1 class="text-3xl font-bold text-gray-800 mb-2">Acesso Negado</h1>
+  <p class="text-gray-500 mb-2 max-w-md">
+    Você não possui permissão para acessar esta página.
+  </p>
+  {% if codename %}
+  <p class="text-xs text-gray-400 mb-6 font-mono bg-gray-100 px-3 py-1 rounded">
+    Permissão requerida: {{ codename }}
+  </p>
+  {% endif %}
+
+  <div class="flex gap-3 mt-4">
+    <a href="javascript:history.back()"
+       class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
+      Voltar
+    </a>
+    <a href="{% url 'dashboard:index' %}"
+       class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors text-sm font-medium">
+      Ir ao Dashboard
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -4,6 +4,7 @@ Django settings for e-Registro Brasil.
 
 from pathlib import Path
 import os
+from celery.schedules import crontab as celery_crontab
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,6 +38,8 @@ LOCAL_APPS = [
     'notifications',
     'dashboard',
     'financeiro',
+    'audit',
+    'ai_reports',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -60,6 +63,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'audit.middleware.ActivityMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -155,7 +159,24 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'orders.calcular_prioridade_automatica',
         'schedule': 1800,
     },
+    # Relatórios diários com IA às 01:00
+    'relatorio-diario-ia': {
+        'task': 'ai_reports.gerar_relatorio_diario',
+        'schedule': celery_crontab(hour=1, minute=0),
+    },
+    # Limpeza de logs antigos às 03:00 de domingo
+    'limpar-logs-antigos': {
+        'task': 'audit.limpar_logs_antigos',
+        'schedule': celery_crontab(hour=3, minute=0, day_of_week=0),
+    },
 }
+
+# ── Auditoria ────────────────────────────────────────────────────────────────
+AUDIT_LOG_RETENTION_DAYS = int(os.environ.get('AUDIT_LOG_RETENTION_DAYS', 90))
+
+# ── IA / Anthropic ───────────────────────────────────────────────────────────
+ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
+AI_MODEL = os.environ.get('AI_MODEL', 'claude-haiku-4-5-20251001')
 
 # Email
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')

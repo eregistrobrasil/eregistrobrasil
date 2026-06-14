@@ -1,0 +1,141 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Controle de Permissões — E-Registro Brasil{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="text-xl font-bold text-gray-800">Controle de Permissões</h2>
+      <p class="text-sm text-gray-500 mt-1">Gerencie papéis (roles) e permissões dos usuários</p>
+    </div>
+    <div class="flex gap-2">
+      <a href="{% url 'accounts:users_list' %}"
+         class="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium flex items-center gap-2 shadow-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+        Usuários
+      </a>
+      <a href="{% url 'accounts:role_create' %}"
+         class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark text-sm font-medium flex items-center gap-2 shadow-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Novo Papel
+      </a>
+    </div>
+  </div>
+
+  <!-- Papéis (Roles) -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+    <div class="px-6 py-4 border-b border-gray-100">
+      <h3 class="font-semibold text-gray-700">Papéis (Roles)</h3>
+    </div>
+    {% if roles %}
+    <div class="divide-y divide-gray-50">
+      {% for role in roles %}
+      <div class="px-6 py-4 flex items-start gap-4 hover:bg-gray-50 transition-colors">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-gray-800">{{ role.nome }}</span>
+            <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+              {{ role.permissoes.count }} permissão{{ role.permissoes.count|pluralize:"ão,ões" }}
+            </span>
+          </div>
+          {% if role.descricao %}
+          <p class="text-sm text-gray-500 mt-0.5">{{ role.descricao }}</p>
+          {% endif %}
+          <div class="flex flex-wrap gap-1 mt-2">
+            {% for p in role.permissoes.all %}
+            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-mono">{{ p.codename }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="flex gap-2 flex-shrink-0">
+          <a href="{% url 'accounts:role_edit' role.pk %}"
+             class="text-xs px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-medium">
+            Editar
+          </a>
+          <form method="post" action="{% url 'accounts:role_delete' role.pk %}"
+                onsubmit="return confirm('Excluir o papel \'{{ role.nome }}\'?')">
+            {% csrf_token %}
+            <button type="submit"
+                    class="text-xs px-3 py-1.5 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors font-medium">
+              Excluir
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="px-6 py-10 text-center text-gray-400 text-sm">
+      Nenhum papel criado ainda.
+      <a href="{% url 'accounts:role_create' %}" class="text-primary hover:underline ml-1">Criar o primeiro</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Permissões disponíveis -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+    <div class="px-6 py-4 border-b border-gray-100">
+      <h3 class="font-semibold text-gray-700">Permissões Disponíveis</h3>
+    </div>
+    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {% for modulo, permissoes in permissoes_por_modulo.items %}
+      <div class="border border-gray-100 rounded-lg p-4">
+        <h4 class="font-semibold text-sm text-gray-700 mb-3 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-primary inline-block"></span>
+          {{ modulo }}
+        </h4>
+        <ul class="space-y-1">
+          {% for p in permissoes %}
+          <li class="text-xs text-gray-600 flex items-center gap-2">
+            <svg class="w-3 h-3 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+            <span class="font-mono bg-gray-50 px-1 rounded">{{ p.codename }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Usuários com permissões customizadas -->
+  {% if usuarios_com_permissoes %}
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+    <div class="px-6 py-4 border-b border-gray-100">
+      <h3 class="font-semibold text-gray-700">Usuários com Permissões Customizadas</h3>
+    </div>
+    <div class="divide-y divide-gray-50">
+      {% for up in usuarios_com_permissoes %}
+      <div class="px-6 py-4 flex items-center gap-4">
+        <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-sm">
+          {{ up.user.first_name|first|upper }}{{ up.user.last_name|first|upper }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-medium text-gray-800 text-sm">{{ up.user.get_full_name|default:up.user.username }}</p>
+          <p class="text-xs text-gray-400">{{ up.user.email }}</p>
+          <div class="flex flex-wrap gap-1 mt-1">
+            {% for r in up.roles.all %}
+            <span class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{{ r.nome }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        <a href="{% url 'accounts:user_permissions' up.user.pk %}"
+           class="text-xs px-3 py-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors font-medium">
+          Gerenciar
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

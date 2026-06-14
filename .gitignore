@@ -3,7 +3,7 @@
 # ─────────────────────────────────────────────
 
 # Ambiente
-.env
+*.env
 .venv/
 venv/
 env/
@@ -41,3 +41,7 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Codigos
+comandos.txt
+Para_implementar.md

@@ -27,3 +27,6 @@ django-redis==5.4.0
 
 # REST (futuras integrações)
 djangorestframework==3.15.2
+
+# IA — Relatórios automáticos
+anthropic>=0.40.0

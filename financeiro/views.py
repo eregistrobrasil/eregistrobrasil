@@ -9,7 +9,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views import View
 
-from dashboard.views import staff_required
+from accounts.permissions import staff_required, permission_required
 from financeiro import selectors
 from financeiro.forms import (
     ProductForm, PriceUpdateForm, RelatorioFilterForm, ServicoFilterForm,
@@ -19,7 +19,7 @@ from financeiro.models import PriceHistory, StatePriceHistory
 from products.models import Product, Category, State, ServiceStatePrice, ESTADOS_BR
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class FinanceiroDashboardView(View):
     template_name = 'financeiro/dashboard.html'
 
@@ -41,7 +41,7 @@ class FinanceiroDashboardView(View):
         return render(request, self.template_name, ctx)
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class ServicoListView(View):
     template_name = 'financeiro/servicos.html'
 
@@ -102,7 +102,7 @@ class ServicoListView(View):
         return render(request, self.template_name, ctx)
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class ServicoCreateView(View):
     """Criação manual de serviços foi desativada — serviços são gerenciados pelo sistema."""
 
@@ -115,7 +115,7 @@ class ServicoCreateView(View):
         return redirect('financeiro:servicos')
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class ServicoEditView(View):
     template_name = 'financeiro/servico_form.html'
 
@@ -156,7 +156,7 @@ class ServicoEditView(View):
         return render(request, self.template_name, ctx)
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class ServicoDeleteView(View):
     def post(self, request, pk):
         servico = get_object_or_404(Product, pk=pk)
@@ -169,7 +169,7 @@ class ServicoDeleteView(View):
         return redirect('financeiro:servicos')
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class StatePriceInlineUpdateView(View):
     """Atualização de preço por estado via AJAX."""
 
@@ -198,7 +198,7 @@ class StatePriceInlineUpdateView(View):
         return JsonResponse({'ok': False, 'errors': form.errors}, status=400)
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class StatePriceToggleView(View):
     def post(self, request, pk):
         ssp = get_object_or_404(ServiceStatePrice, pk=pk)
@@ -207,7 +207,7 @@ class StatePriceToggleView(View):
         return JsonResponse({'ok': True, 'is_active': ssp.is_active})
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class BulkPriceUpdateView(View):
     """Copia preço de um serviço para todos os estados selecionados."""
 
@@ -237,7 +237,7 @@ class BulkPriceUpdateView(View):
         return redirect(f'{request.META.get("HTTP_REFERER", "/financeiro/servicos/")}')
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class PriceInlineUpdateView(View):
     """Atualização de preço via AJAX na listagem."""
 
@@ -266,7 +266,7 @@ class PriceInlineUpdateView(View):
         return JsonResponse({'ok': False, 'errors': form.errors}, status=400)
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class ServicoToggleAtivoView(View):
     def post(self, request, pk):
         servico = get_object_or_404(Product, pk=pk)
@@ -275,7 +275,7 @@ class ServicoToggleAtivoView(View):
         return JsonResponse({'ok': True, 'is_active': servico.is_active})
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class RelatorioView(View):
     template_name = 'financeiro/relatorios.html'
 
@@ -339,7 +339,7 @@ def _registrar_historico_estado(ssp, preco_anterior, novo_preco, user, observaca
     )
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class PrecosListView(View):
     """Lista paginada de todos os ServiceStatePrice com filtros avançados."""
     template_name = 'financeiro/precos.html'
@@ -422,7 +422,7 @@ class PrecosListView(View):
         return response
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class PrecoCreateView(View):
     """Cria um novo registro de ServiceStatePrice."""
     template_name = 'financeiro/preco_form.html'
@@ -460,7 +460,7 @@ class PrecoCreateView(View):
         return render(request, self.template_name, ctx)
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class PrecoEditView(View):
     """Edita um registro existente de ServiceStatePrice."""
     template_name = 'financeiro/preco_form.html'
@@ -516,7 +516,7 @@ class PrecoEditView(View):
         return render(request, self.template_name, ctx)
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class PrecoDeleteView(View):
     """Remove um registro de ServiceStatePrice."""
 
@@ -528,7 +528,7 @@ class PrecoDeleteView(View):
         return redirect('financeiro:precos')
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class PrecoToggleView(View):
     """Ativa/desativa um ServiceStatePrice via AJAX — com auditoria."""
 
@@ -543,7 +543,7 @@ class PrecoToggleView(View):
         })
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class PrecoInlineUpdateView(View):
     """Atualização inline de preço por estado via AJAX — com auditoria completa."""
 
@@ -576,7 +576,7 @@ class PrecoInlineUpdateView(View):
         })
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class PrecosMassUpdateView(View):
     """
     Reajuste em massa: percentual, valor fixo ou definir valor exato.
@@ -660,7 +660,7 @@ class PrecosMassUpdateView(View):
         return redirect('financeiro:precos')
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class PrecosReplicarView(View):
     """
     Replica o preço de um par (serviço, estado) para outros estados do mesmo serviço,
@@ -759,7 +759,7 @@ class PrecosReplicarView(View):
         return redirect('financeiro:precos')
 
 
-@method_decorator(staff_required, name='dispatch')
+@method_decorator(permission_required('visualizar_financeiro'), name='dispatch')
 class PrecosServicoView(View):
     """
     Exibe todos os preços por estado de um serviço específico —

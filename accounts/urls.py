@@ -4,6 +4,7 @@ from django.contrib.auth.views import (
     PasswordResetConfirmView, PasswordResetCompleteView,
 )
 from . import views
+from . import views_permissions
 
 app_name = 'accounts'
 
@@ -14,6 +15,15 @@ urlpatterns = [
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
     path('perfil/', views.ProfileUpdateView.as_view(), name='profile'),
     path('alterar-senha/', views.ChangePasswordView.as_view(), name='change_password'),
+
+    # Gestão de permissões
+    path('permissoes/', views_permissions.PermissaoListView.as_view(), name='permissions_list'),
+    path('permissoes/usuarios/', views_permissions.UsersListView.as_view(), name='users_list'),
+    path('permissoes/roles/criar/', views_permissions.RoleCreateView.as_view(), name='role_create'),
+    path('permissoes/roles/<int:pk>/editar/', views_permissions.RoleEditView.as_view(), name='role_edit'),
+    path('permissoes/roles/<int:pk>/excluir/', views_permissions.RoleDeleteView.as_view(), name='role_delete'),
+    path('permissoes/usuario/<int:user_id>/', views_permissions.UserPermissionView.as_view(), name='user_permissions'),
+    path('permissoes/usuarios/criar/', views_permissions.UserCreateView.as_view(), name='user_create'),
 
     # Password reset
     path('senha/recuperar/', PasswordResetView.as_view(

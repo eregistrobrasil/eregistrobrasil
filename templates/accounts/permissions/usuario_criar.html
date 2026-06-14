@@ -1,0 +1,110 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Criar Usuário — E-Registro Brasil{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+  <div class="flex items-center gap-3">
+    <a href="{% url 'accounts:users_list' %}"
+       class="text-gray-400 hover:text-gray-600 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+    <h2 class="text-xl font-bold text-gray-800">Criar Usuário</h2>
+  </div>
+
+  <form method="post" class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-5">
+    {% csrf_token %}
+
+    <!-- Nome -->
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+        <input type="text" name="first_name" required
+               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+               placeholder="Nome">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Sobrenome</label>
+        <input type="text" name="last_name"
+               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+               placeholder="Sobrenome">
+      </div>
+    </div>
+
+    <!-- E-mail -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">E-mail <span class="text-red-500">*</span></label>
+      <input type="email" name="email" required
+             class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+             placeholder="usuario@exemplo.com.br">
+      <p class="text-xs text-gray-400 mt-1">Será usado como login.</p>
+    </div>
+
+    <!-- Tipo + CPF + Telefone -->
+    <div class="grid grid-cols-3 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+        <select name="tipo"
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+          {% for cod, label in tipo_choices %}
+          <option value="{{ cod }}" {% if cod == 'operador' %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">CPF</label>
+        <input type="text" name="cpf" maxlength="14"
+               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+               placeholder="000.000.000-00">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+        <input type="text" name="phone" maxlength="20"
+               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+               placeholder="(11) 99999-0000">
+      </div>
+    </div>
+
+    <!-- Acesso ao Django Admin -->
+    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+      <input type="checkbox" name="is_staff" value="1" id="is_staff"
+             class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary/30">
+      <label for="is_staff" class="text-sm text-gray-700 cursor-pointer">
+        Acesso ao painel Django Admin (is_staff)
+      </label>
+    </div>
+
+    <!-- Senha -->
+    <div class="border border-gray-100 rounded-lg p-4 space-y-3">
+      <div class="flex items-center gap-3">
+        <input type="checkbox" name="definir_senha" value="1" id="definir_senha"
+               class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary/30"
+               onchange="document.getElementById('campo_senha').classList.toggle('hidden', !this.checked)">
+        <label for="definir_senha" class="text-sm font-medium text-gray-700 cursor-pointer">
+          Definir senha manualmente
+        </label>
+      </div>
+      <p class="text-xs text-gray-400">Se desmarcado, uma senha segura será gerada automaticamente e exibida após a criação.</p>
+      <div id="campo_senha" class="hidden">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+        <input type="text" name="senha" minlength="8"
+               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 font-mono"
+               placeholder="Mínimo 8 caracteres">
+      </div>
+    </div>
+
+    <div class="flex gap-3 pt-2">
+      <button type="submit"
+              class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors text-sm font-medium">
+        Criar Usuário
+      </button>
+      <a href="{% url 'accounts:users_list' %}"
+         class="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
+        Cancelar
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" fill="none">
+  <rect width="480" height="320" fill="#f8fafc"/>
+  <!-- Documento principal -->
+  <rect x="160" y="50" width="160" height="200" rx="10" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="2"/>
+  <!-- Linhas de texto simuladas -->
+  <rect x="182" y="84" width="116" height="10" rx="5" fill="#94a3b8"/>
+  <rect x="182" y="108" width="116" height="8" rx="4" fill="#cbd5e1"/>
+  <rect x="182" y="126" width="90" height="8" rx="4" fill="#cbd5e1"/>
+  <rect x="182" y="148" width="116" height="8" rx="4" fill="#cbd5e1"/>
+  <rect x="182" y="166" width="76" height="8" rx="4" fill="#cbd5e1"/>
+  <rect x="182" y="188" width="116" height="8" rx="4" fill="#cbd5e1"/>
+  <!-- Selo -->
+  <circle cx="280" cy="218" r="24" fill="#dbeafe" stroke="#93c5fd" stroke-width="2"/>
+  <path d="M270 218l6 6 14-12" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

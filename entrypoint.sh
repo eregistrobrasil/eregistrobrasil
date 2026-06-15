@@ -51,6 +51,12 @@ python manage.py seed_states
 echo "==> Sincronizando todos os serviços do sistema (idempotente)..."
 python manage.py seed_all_services
 
+# Se foram passados argumentos extras (ex: python manage.py migrate),
+# executa o comando em vez do Gunicorn.
+if [ $# -gt 0 ]; then
+  exec gosu appuser "$@"
+fi
+
 echo "==> Iniciando servidor Gunicorn..."
 exec gosu appuser gunicorn core.wsgi:application \
     --bind 0.0.0.0:8000 \

@@ -1,6 +1,12 @@
 {% extends 'servicos/base_cartorio.html' %}
 {% load static %}
 
+{% block imagem %}
+<div class="overflow-hidden">
+  <img src="{% static 'img/busca-protesto.png' %}" alt="Busca de Protesto" class="w-full max-h-[500px] h-auto object-contain" />
+</div>
+{% endblock %}
+
 {% block title %}Busca de Protesto — E-Registro Brasil{% endblock %}
 {% block meta_description %}Realize a busca de protestos em tabelionatos de todo o Brasil. Selecione o estado, cidade e cartório de protesto.{% endblock %}
 

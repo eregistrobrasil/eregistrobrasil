@@ -1,6 +1,12 @@
 {% extends 'servicos/base_cartorio.html' %}
 {% load static %}
 
+{% block imagem %}
+<div class="overflow-hidden">
+  <img src="{% static 'img/certidao-casamento.png' %}" alt="Certidão de Casamento" class="w-full max-h-[500px] h-auto object-contain" />
+</div>
+{% endblock %}
+
 {% block info_coluna %}
 <!-- Título + Descrição -->
 <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-8">

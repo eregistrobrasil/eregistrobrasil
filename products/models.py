@@ -114,6 +114,12 @@ class Product(models.Model):
     meta_title = models.CharField('Meta Título', max_length=200, blank=True)
     meta_description = models.CharField('Meta Descrição', max_length=300, blank=True)
     # ── Campos de controle do sistema ────────────────────────────────────────
+    imagem_static = models.CharField(
+        'Imagem do Serviço',
+        max_length=200,
+        blank=True,
+        help_text='Caminho relativo ao diretório static/. Ex: img/servicos/certidao-nascimento.webp',
+    )
     is_system_service = models.BooleanField(
         'Serviço do Sistema', default=False,
         help_text='Serviços marcados pelo seed. Não pode ser criado/excluído manualmente.',

@@ -1,0 +1,29 @@
+{% load static %}
+{#
+  Componente: imagem de cabeçalho do serviço.
+  Uso: {% include 'components/service_image.html' with product=product %}
+
+  Comportamento:
+  - Se product.imagem_static estiver definido → exibe a imagem configurada.
+  - Se o arquivo não existir no servidor → onerror troca pelo default.svg.
+  - Se o campo estiver vazio → exibe o default.svg diretamente.
+#}
+<div class="w-full overflow-hidden bg-gray-50" style="height:220px;">
+  {% if product.imagem_static %}
+  <img
+    src="{% static product.imagem_static %}"
+    alt="{{ product.name }}"
+    loading="lazy"
+    onerror="this.onerror=null;this.src='{% static 'img/servicos/default.svg' %}'"
+    class="w-full h-full object-cover"
+  >
+  {% else %}
+  <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
+    <img
+      src="{% static 'img/servicos/default.svg' %}"
+      alt="{{ product.name }}"
+      class="h-36 w-auto opacity-60"
+    >
+  </div>
+  {% endif %}
+</div>

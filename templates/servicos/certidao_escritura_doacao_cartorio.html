@@ -1,6 +1,12 @@
 {% extends 'servicos/base_cartorio.html' %}
 {% load static %}
 
+{% block imagem %}
+<div class="overflow-hidden">
+  <img src="{% static 'img/escritura-doacao.png' %}" alt="Certidão de Escritura de Doação" class="w-full max-h-[500px] h-auto object-contain" />
+</div>
+{% endblock %}
+
 {% block title %}Certidão de Escritura de Doação Online — E-Registro Brasil{% endblock %}
 {% block meta_description %}Solicite sua Certidão de Escritura de Doação online com segurança. Comprova a transferência gratuita de bens com validade jurídica plena. Entrega em todo o Brasil.{% endblock %}
 

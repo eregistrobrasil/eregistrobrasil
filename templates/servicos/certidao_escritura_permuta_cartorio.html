@@ -1,6 +1,12 @@
 {% extends 'servicos/base_cartorio.html' %}
 {% load static %}
 
+{% block imagem %}
+<div class="overflow-hidden">
+  <img src="{% static 'img/certidao-permuta.png' %}" alt="Certidão de Escritura de Permuta" class="w-full max-h-[500px] h-auto object-contain" />
+</div>
+{% endblock %}
+
 {% block title %}Certidão de Escritura de Permuta Online — E-Registro Brasil{% endblock %}
 {% block meta_description %}Solicite sua Certidão de Escritura de Permuta online. Comprova a troca formal de bens entre partes com toda a formalidade legal exigida. Entrega em todo o Brasil.{% endblock %}
 

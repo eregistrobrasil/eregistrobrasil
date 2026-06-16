@@ -1,6 +1,12 @@
 {% extends 'servicos/base_cartorio.html' %}
 {% load static %}
 
+{% block imagem %}
+<div class="overflow-hidden">
+  <img src="{% static 'img/certidao-escritura-testamento.png' %}" alt="Certidão de Testamento Público" class="w-full max-h-[500px] h-auto object-contain" />
+</div>
+{% endblock %}
+
 {% block title %}Certidão de Testamento Público Online — E-Registro Brasil{% endblock %}
 {% block meta_description %}Solicite sua Certidão de Testamento Público online. Comprova a manifestação de última vontade do testador perante o tabelião. Entrega em todo o Brasil.{% endblock %}
 

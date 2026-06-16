@@ -1,6 +1,12 @@
 {% extends 'servicos/base_cartorio.html' %}
 {% load static %}
 
+{% block imagem %}
+<div class="overflow-hidden">
+  <img src="{% static 'img/certidao-ata-notarial.png' %}" alt="Certidão de Ata Notarial" class="w-full max-h-[500px] h-auto object-contain" />
+</div>
+{% endblock %}
+
 {% block title %}Certidão de Ata Notarial Online — Entrega em Todo o Brasil | E-Registro Brasil{% endblock %}
 {% block meta_description %}Solicite sua Certidão de Ata Notarial lavrada em cartório de notas online. Documento com fé pública que narra fatos ou situações presenciadas pelo tabelião. Selecione o cartório, preencha os dados e receba em casa.{% endblock %}
 

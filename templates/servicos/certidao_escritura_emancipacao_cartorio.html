@@ -1,6 +1,12 @@
 {% extends 'servicos/base_cartorio.html' %}
 {% load static %}
 
+{% block imagem %}
+<div class="overflow-hidden">
+  <img src="{% static 'img/certidao-emancipacao.png' %}" alt="Certidão de Escritura de Emancipação" class="w-full max-h-[500px] h-auto object-contain" />
+</div>
+{% endblock %}
+
 {% block title %}Certidão de Escritura de Emancipação Online — E-Registro Brasil{% endblock %}
 {% block meta_description %}Solicite sua Certidão de Escritura de Emancipação online. Comprova a antecipação da maioridade civil e plena capacidade jurídica ao menor. Entrega em todo o Brasil.{% endblock %}
 

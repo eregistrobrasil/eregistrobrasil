@@ -1,6 +1,12 @@
 {% extends 'servicos/base_cartorio.html' %}
 {% load static %}
 
+{% block imagem %}
+<div class="overflow-hidden">
+  <img src="{% static 'img/certidao-escritura.png' %}" alt="Certidão de Escritura Compra e Venda" class="w-full max-h-[500px] h-auto object-contain" />
+</div>
+{% endblock %}
+
 {% block title %}Certidão de Escritura de Compra e Venda Online — E-Registro Brasil{% endblock %}
 {% block meta_description %}Solicite sua Certidão de Escritura de Compra e Venda online com agilidade e segurança. Documento essencial para transferência e regularização de imóveis. Entrega em todo o Brasil.{% endblock %}
 

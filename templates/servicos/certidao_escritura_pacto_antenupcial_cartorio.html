@@ -1,6 +1,12 @@
 {% extends 'servicos/base_cartorio.html' %}
 {% load static %}
 
+{% block imagem %}
+<div class="overflow-hidden">
+  <img src="{% static 'img/certidao-pacto-antenupcial.png' %}" alt="Certidão de Escritura de Pacto Antenupcial" class="w-full max-h-[500px] h-auto object-contain" />
+</div>
+{% endblock %}
+
 {% block title %}Certidão de Escritura de Pacto Antenupcial Online — E-Registro Brasil{% endblock %}
 {% block meta_description %}Solicite sua Certidão de Escritura de Pacto Antenupcial online. Comprova as condições patrimoniais estabelecidas entre os cônjuges antes do casamento. Entrega em todo o Brasil.{% endblock %}
 

@@ -92,9 +92,10 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    command: ["celery", "-A", "core", "beat", "-l", "info"]
+    command: ["celery", "-A", "core", "beat", "-l", "info", "--schedule=/app/celerybeat/celerybeat-schedule"]
     volumes:
       - .:/app
+      - celerybeat_data:/app/celerybeat
     depends_on:
       db:
         condition: service_healthy
@@ -109,6 +110,7 @@ volumes:
   redis_data:
   static_files:
   media_files:
+  celerybeat_data:
 
 # ── Redes ───────────────────────────────────
 networks:

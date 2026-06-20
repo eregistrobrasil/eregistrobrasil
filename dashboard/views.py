@@ -719,6 +719,7 @@ class BlogTogglePublishView(View):
 @method_decorator(staff_required, name='dispatch')
 class CartorioListView(View):
     template_name = 'dashboard/cartorio_list.html'
+    POR_PAGINA = 50
 
     def get(self, request):
         qs = Registry.objects.all()
@@ -727,6 +728,7 @@ class CartorioListView(View):
         estado = request.GET.get('estado', '').strip().upper()
         tipo = request.GET.get('tipo', '').strip()
         ativo = request.GET.get('ativo', '')
+        pagina = max(int(request.GET.get('p', 1) or 1), 1)
 
         if q:
             qs = qs.filter(Q(nome__icontains=q) | Q(cidade__icontains=q))
@@ -737,11 +739,18 @@ class CartorioListView(View):
         if ativo in ('1', '0'):
             qs = qs.filter(ativo=ativo == '1')
 
+        qs = qs.order_by('estado', 'cidade', 'nome')
+        total = qs.count()
+
+        offset = (pagina - 1) * self.POR_PAGINA
+        cartorios = qs[offset: offset + self.POR_PAGINA]
+        total_paginas = max(1, (total + self.POR_PAGINA - 1) // self.POR_PAGINA)
+
         from products.models import ESTADOS_BR
         return render(request, self.template_name, {
             'title': 'Cartórios',
-            'cartorios': qs.order_by('estado', 'cidade', 'nome'),
-            'total': qs.count(),
+            'cartorios': cartorios,
+            'total': total,
             'tipo_choices': Registry.TIPO_SERVICO_CHOICES,
             'estados': ESTADOS_BR,
             'filtros': {
@@ -750,6 +759,12 @@ class CartorioListView(View):
                 'tipo': tipo,
                 'ativo': ativo,
             },
+            # Paginação
+            'pagina': pagina,
+            'total_paginas': total_paginas,
+            'tem_proxima': pagina < total_paginas,
+            'tem_anterior': pagina > 1,
+            'range_paginas': range(max(1, pagina - 2), min(total_paginas + 1, pagina + 3)),
         })
 
 

@@ -26,6 +26,12 @@ psycopg2.connect(
 # ── Celery (worker ou beat): aguarda banco e executa ──
 if [ "$1" = "celery" ]; then
   wait_for_db
+  case "$*" in
+    *beat*)
+      mkdir -p /app/celerybeat
+      chown -R appuser:appgroup /app/celerybeat
+      ;;
+  esac
   echo "==> Iniciando Celery: $*"
   exec gosu appuser "$@"
 fi

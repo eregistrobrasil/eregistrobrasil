@@ -24,6 +24,10 @@ staticfiles/
 mediafiles/
 db.sqlite3
 
+# Celery beat (gerado em runtime)
+celerybeat-schedule*
+celerybeat/
+
 # Certbot / SSL (gerados na VPS)
 certbot/
 

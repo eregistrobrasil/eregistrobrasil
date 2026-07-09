@@ -835,7 +835,17 @@
   "DF": {
     "nome": "Distrito Federal",
     "cidades": [
-      "Brasília"
+      "Brasília",
+      "Brazlândia",
+      "Ceilândia",
+      "Gama",
+      "Guará",
+      "Núcleo Bandeirante",
+      "Paranoá",
+      "Planaltina",
+      "Samambaia",
+      "Sobradinho",
+      "Taguatinga"
     ]
   },
   "ES": {

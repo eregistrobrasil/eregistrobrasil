@@ -1,13 +1,13 @@
 {% load static %}
-{#
+{% comment %}
   Componente: imagem de cabeçalho do serviço.
-  Uso: {% include 'components/service_image.html' with product=product %}
+  Uso: include com product=product
 
   Comportamento:
   - Se product.imagem_static estiver definido → exibe a imagem configurada.
   - Se o arquivo não existir no servidor → onerror troca pelo default.svg.
   - Se o campo estiver vazio → exibe o default.svg diretamente.
-#}
+{% endcomment %}
 <div class="w-full overflow-hidden bg-gray-50" style="height:220px;">
   {% if product.imagem_static %}
   <img

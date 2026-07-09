@@ -1,4 +1,4 @@
-{% extends 'servicos/base_cartorio.html' %}
+﻿{% extends 'servicos/base_cartorio.html' %}
 {% load static %}
 
 {% block imagem %}
@@ -29,10 +29,9 @@
 </div>
 
 <!-- Valor do Serviço -->
-<div class="bg-white rounded-2xl shadow-md border border-gray-200 p-6">
+<div id="price-card" class="hidden bg-white rounded-2xl shadow-md border border-gray-200 p-6">
   <div class="flex items-center justify-between mb-3">
     <h3 class="text-base font-semibold text-primary">Valor do Serviço</h3>
-    <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">por estado</span>
   </div>
   <div class="flex items-start gap-3">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
@@ -84,10 +83,7 @@
   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
   </svg>
-  <p class="text-sm text-blue-700">
-    O prazo para emissão varia conforme o cartório. Nossa equipe acompanha todo o processo
-    e mantém você informado por e-mail.
-  </p>
+  <p class="text-sm text-blue-700">O prazo depende do cartório responsável pela emissão do documento. Como empresa privada intermediadora, acompanhamos todo o processo e mantemos você informado por e-mail.</p>
 </div>
 {% endblock %}
 

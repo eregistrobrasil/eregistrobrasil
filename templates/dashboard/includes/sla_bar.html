@@ -1,13 +1,14 @@
+{# Barra de SLA compacta. Parâmetro: order #}
 {% if order.prazo_entrega %}
-<div class="flex flex-col gap-0.5 min-w-[80px]">
-  <div class="w-full bg-gray-200 rounded-full h-1.5">
-    <div class="h-1.5 rounded-full transition-all
+<div class="flex min-w-[90px] flex-col gap-1">
+  <div class="h-1 w-full overflow-hidden rounded-full bg-gray-200">
+    <div class="h-1 rounded-full transition-all
       {% if order.sla_cor == 'red' %}bg-red-500
       {% elif order.sla_cor == 'yellow' %}bg-yellow-400
       {% else %}bg-green-500{% endif %}"
       style="width: {{ order.sla_percentual }}%"></div>
   </div>
-  <span class="text-xs {% if order.esta_atrasado %}text-red-600 font-semibold{% else %}text-gray-400{% endif %}">
+  <span class="text-[11px] leading-none {% if order.esta_atrasado %}font-semibold text-red-600{% else %}text-gray-400{% endif %}">
     {% if order.esta_atrasado %}
       Atrasado
     {% elif order.horas_restantes is not None %}

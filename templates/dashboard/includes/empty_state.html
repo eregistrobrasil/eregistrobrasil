@@ -1,0 +1,15 @@
+{% comment %}
+Estado vazio padrão.
+Uso: include com icon="bi-inbox", title="...", subtitle="..." (opcional),
+link_url + link_label (opcionais) para ação primária.
+{% endcomment %}
+<div class="px-6 py-16 text-center">
+  <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+    <i class="bi {{ icon|default:'bi-inbox' }} text-xl text-gray-400"></i>
+  </div>
+  <p class="text-sm font-medium text-gray-600">{{ title|default:"Nada por aqui" }}</p>
+  {% if subtitle %}<p class="mx-auto mt-1 max-w-sm text-xs text-gray-400">{{ subtitle }}</p>{% endif %}
+  {% if link_url %}
+  <a href="{{ link_url }}" class="btn btn-secondary btn-sm mt-4">{{ link_label|default:"Ver tudo" }}</a>
+  {% endif %}
+</div>

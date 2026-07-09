@@ -1,16 +1,217 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block meta_description %}Ressalva legal da E-Registro Brasil — empresa privada de intermediação documental. Não somos cartório, órgão público ou entidade governamental.{% endblock %}
+
+{% block extra_head %}
+<style>
+  .legal-section { scroll-margin-top: 90px; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="max-w-3xl mx-auto px-4 py-16">
-  <h1 class="text-3xl font-bold text-gray-900 mb-8">Aviso Legal</h1>
-  <div class="bg-white rounded-2xl border border-gray-200 p-10 prose prose-slate max-w-none">
-    <h2>Correspondente Cartorial</h2>
-    <p>O E-Registro Brasil <strong>não é um cartório</strong> e não possui competência notarial ou registral. Atuamos como correspondente cartorial, intermediando a solicitação de documentos junto aos cartórios competentes.</p>
 
-    <h2>Taxas Caritoriais</h2>
-    <p>Os valores cobrados incluem a taxa de serviço do E-Registro Brasil e, quando aplicável, as emolumentos devidos ao cartório conforme tabela oficial do estado.</p>
+<!-- ── Page Header ──────────────────────────────────────────────────── -->
+<div class="bg-white border-b border-gray-200">
+  <div class="max-w-5xl mx-auto px-4 py-10">
 
-    <h2>Isenção de Responsabilidade</h2>
-    <p>Não nos responsabilizamos por erros decorrentes de informações incorretas fornecidas pelo cliente, nem por eventuais negativas de expedição por parte dos cartórios.</p>
+    <!-- Breadcrumb -->
+    <nav class="text-xs text-gray-400 mb-5 flex items-center gap-1.5" aria-label="Breadcrumb">
+      <a href="{% url 'products:home' %}" class="hover:text-primary transition-colors">Início</a>
+      <svg class="w-3 h-3 opacity-35" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      <span class="text-gray-600 font-medium">Ressalva Legal</span>
+    </nav>
+
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight mb-2">Ressalva Legal</h1>
+        <p class="text-gray-400 text-sm">Última atualização: 09/07/2026</p>
+      </div>
+      <a href="{% url 'pages:terms' %}"
+         class="inline-flex items-center gap-2 text-sm font-semibold text-primary border border-primary/30 bg-primary/5 hover:bg-primary/10 px-4 py-2 rounded-xl transition-all flex-shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Termos de Uso
+      </a>
+    </div>
   </div>
 </div>
+
+<!-- ── Main ─────────────────────────────────────────────────────────── -->
+<div class="bg-gray-50 min-h-screen">
+<div class="max-w-5xl mx-auto px-4 py-12">
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+
+    <!-- Índice (sticky) -->
+    <aside class="lg:col-span-1 hidden lg:block" style="position:sticky;top:84px;align-self:start;">
+      <div class="bg-white rounded-2xl border border-gray-200 p-5">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Índice</p>
+        <nav class="space-y-0.5">
+          <a href="#sec-1" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">1. Empresa Privada</a>
+          <a href="#sec-2" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">2. Serviço Opcional</a>
+          <a href="#sec-3" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">3. Relação com Cartórios</a>
+          <a href="#sec-4" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">4. Taxas e Emolumentos</a>
+          <a href="#sec-5" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">5. Prazos</a>
+          <a href="#sec-6" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">6. Validade dos Documentos</a>
+          <a href="#sec-7" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">7. Isenção de Responsabilidade</a>
+          <a href="#sec-8" class="block text-xs py-1.5 px-2 rounded-lg text-gray-600 hover:text-primary hover:bg-primary/5 transition-all">8. Contato</a>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Conteúdo -->
+    <div class="lg:col-span-3 space-y-6">
+
+      <!-- Introdução -->
+      <div class="bg-white rounded-2xl border border-gray-200 p-7">
+        <p class="text-gray-700 text-sm leading-relaxed mb-3">
+          Esta página esclarece, de forma direta, a natureza jurídica da <strong class="text-gray-900">E-Registro Brasil</strong> e os limites da nossa atuação como intermediadora de documentos.
+        </p>
+        <p class="text-gray-600 text-sm leading-relaxed">
+          Recomendamos a leitura desta ressalva antes de utilizar nossos serviços, em complemento aos nossos <a href="{% url 'pages:terms' %}" class="text-primary font-semibold hover:underline">Termos de Uso</a>.
+        </p>
+      </div>
+
+      <!-- 1. Empresa Privada -->
+      <div id="sec-1" class="legal-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">1</span>
+          <h2 class="text-base font-extrabold text-gray-900">Empresa Privada — Correspondente Cartorial</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-5">
+          A E-Registro Brasil é uma <strong class="text-gray-800">empresa privada</strong> especializada na intermediação da solicitação de certidões e documentos emitidos pelos cartórios competentes. Atuamos como correspondente cartorial, cuidando da busca, do acompanhamento e da entrega da solicitação em nome do cliente.
+        </p>
+        <div class="bg-amber-50 rounded-xl border border-amber-200 p-5">
+          <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="text-sm text-amber-800">
+              <p class="font-bold mb-2">IMPORTANTE</p>
+              <p class="leading-relaxed">Não somos um cartório, não somos um órgão governamental e não possuímos qualquer vínculo societário, institucional ou comercial com órgãos públicos. Não representamos qualquer entidade pública ou governamental.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Serviço Opcional -->
+      <div id="sec-2" class="legal-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">2</span>
+          <h2 class="text-base font-extrabold text-gray-900">Serviço Opcional de Intermediação</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-3">
+          A utilização da E-Registro Brasil é <strong class="text-gray-800">inteiramente opcional</strong>. O cliente pode, caso prefira, solicitar o mesmo documento diretamente no cartório ou órgão competente, sem qualquer intermediação e sem custo adicional de serviço.
+        </p>
+        <p class="text-gray-600 text-sm leading-relaxed">
+          Nosso serviço existe para tornar esse processo mais simples e rápido: cuidamos da busca do cartório correto, do preenchimento da solicitação, do acompanhamento do andamento e da entrega do documento, poupando o cliente do deslocamento e da burocracia.
+        </p>
+      </div>
+
+      <!-- 3. Relação com Cartórios -->
+      <div id="sec-3" class="legal-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">3</span>
+          <h2 class="text-base font-extrabold text-gray-900">Relação com Cartórios e Órgãos Públicos</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-4">
+          A E-Registro Brasil não possui competência notarial ou registral, nem qualquer poder de decisão sobre a expedição de documentos. Cada solicitação é encaminhada ao cartório, tabelionato ou órgão efetivamente responsável pelo registro, que permanece a única autoridade competente para:
+        </p>
+        <ul class="space-y-2">
+          <li class="flex items-start gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>analisar e deferir ou indeferir a solicitação;</li>
+          <li class="flex items-start gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>expedir o documento com fé pública; e</li>
+          <li class="flex items-start gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>definir o prazo interno de processamento.</li>
+        </ul>
+      </div>
+
+      <!-- 4. Taxas -->
+      <div id="sec-4" class="legal-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">4</span>
+          <h2 class="text-base font-extrabold text-gray-900">Taxas e Emolumentos Cartoriais</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-3">
+          Os valores cobrados pela E-Registro Brasil incluem a taxa de serviço pela intermediação e, quando aplicável, os emolumentos devidos ao cartório conforme a tabela oficial do estado onde o registro está localizado.
+        </p>
+        <p class="text-gray-500 text-xs bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 leading-relaxed">
+          Os emolumentos cartoriais são fixados por lei estadual e não são definidos, alterados ou apropriados pela E-Registro Brasil.
+        </p>
+      </div>
+
+      <!-- 5. Prazos -->
+      <div id="sec-5" class="legal-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">5</span>
+          <h2 class="text-base font-extrabold text-gray-900">Prazos</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed">
+          Os prazos estimados no site referem-se ao tempo médio de processamento e podem variar de acordo com o cartório responsável, o volume de solicitações, exigências específicas do registro ou instabilidades de sistemas externos. A E-Registro Brasil não possui ingerência sobre o prazo interno dos cartórios e órgãos responsáveis pela emissão dos documentos.
+        </p>
+      </div>
+
+      <!-- 6. Validade dos Documentos -->
+      <div id="sec-6" class="legal-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">6</span>
+          <h2 class="text-base font-extrabold text-gray-900">Validade e Autenticidade dos Documentos</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed">
+          Todo documento obtido por meio da E-Registro Brasil é expedido e assinado pelo próprio cartório ou órgão competente, mantendo integralmente sua validade jurídica e fé pública. A responsabilidade pela autenticidade, veracidade e validade jurídica do conteúdo do documento pertence exclusivamente ao órgão emissor — a E-Registro Brasil atua apenas na intermediação da solicitação.
+        </p>
+      </div>
+
+      <!-- 7. Isenção de Responsabilidade -->
+      <div id="sec-7" class="legal-section bg-white rounded-2xl border border-gray-200 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">7</span>
+          <h2 class="text-base font-extrabold text-gray-900">Isenção de Responsabilidade</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-4">A E-Registro Brasil não se responsabiliza por:</p>
+        <ul class="space-y-2 mb-5">
+          <li class="flex items-start gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>erros decorrentes de informações incorretas fornecidas pelo cliente;</li>
+          <li class="flex items-start gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>negativas de expedição ou exigências adicionais determinadas pelo cartório; e</li>
+          <li class="flex items-start gap-2.5 text-sm text-gray-600"><svg class="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>atrasos causados por cartórios, órgãos públicos ou sistemas de terceiros.</li>
+        </ul>
+        <p class="text-gray-500 text-xs bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 leading-relaxed">
+          Para condições completas de pagamento, cancelamento e reembolso, consulte nossos <a href="{% url 'pages:terms' %}" class="text-primary font-semibold hover:underline">Termos de Uso</a>.
+        </p>
+      </div>
+
+      <!-- 8. Contato -->
+      <div id="sec-8" class="legal-section bg-primary/5 rounded-2xl border border-primary/15 p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0">8</span>
+          <h2 class="text-base font-extrabold text-gray-900">Contato</h2>
+        </div>
+        <p class="text-gray-600 text-sm leading-relaxed mb-5">Em caso de dúvidas sobre esta ressalva legal, entre em contato:</p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-white rounded-xl border border-gray-200 p-4">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">E-mail</p>
+            <p class="text-sm text-gray-700">contato@eregistrobrasil.com.br</p>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 p-4">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">WhatsApp</p>
+            <p class="text-sm text-gray-700">+55 (61) 9 9918-2631</p>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 p-4">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Horário</p>
+            <p class="text-sm text-gray-700">Das 9h às 18h</p>
+          </div>
+        </div>
+        <div class="mt-5 text-center">
+          <a href="{% url 'pages:contact' %}"
+             class="inline-flex items-center gap-2 bg-primary text-white font-bold px-6 py-2.5 rounded-xl hover:bg-primary-dark transition-all text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+            Ir para Fale Conosco
+          </a>
+        </div>
+      </div>
+
+      <!-- Nota final -->
+      <p class="text-center text-xs text-gray-400 pb-4">
+        Esta ressalva complementa os nossos <a href="{% url 'pages:terms' %}" class="text-primary hover:underline">Termos de Uso</a> e nossa <a href="{% url 'pages:privacy' %}" class="text-primary hover:underline">Política de Privacidade</a>.
+      </p>
+
+    </div>
+  </div>
+</div>
+</div>
+
 {% endblock %}

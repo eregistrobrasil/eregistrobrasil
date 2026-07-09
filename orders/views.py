@@ -257,6 +257,9 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['title'] = f'Pedido #{self.object.short_id}'
+        ctx['documentos'] = self.object.documents.filter(
+            tipo__in=['certidao_original', 'documento_entregue']
+        ).order_by('-data_upload')
         return ctx
 
 

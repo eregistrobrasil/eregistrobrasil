@@ -1,0 +1,33 @@
+{% load dashboard_tags %}
+{% comment %}
+Paginação padrão do painel. Uso: include com item_label="pedido".
+Espera no contexto: pagina, total_paginas, range_paginas, tem_anterior,
+tem_proxima, total. Usa url_com_param para preservar filtros ativos.
+{% endcomment %}
+{% if total_paginas > 1 %}
+<div class="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-5 py-3.5">
+  <p class="text-xs text-gray-400">
+    Página <span class="font-semibold text-gray-600">{{ pagina }}</span> de {{ total_paginas }}
+    &middot; {{ total }} {{ item_label|default:"registro" }}{{ total|pluralize }}
+  </p>
+  <nav class="flex items-center gap-1" aria-label="Paginação">
+    {% if tem_anterior %}
+    <a href="{% url_com_param p=pagina|add:'-1' %}" class="btn btn-secondary btn-sm" aria-label="Página anterior">
+      <i class="bi bi-chevron-left"></i>
+    </a>
+    {% endif %}
+    {% for num in range_paginas %}
+    <a href="{% url_com_param p=num %}"
+       class="inline-flex h-7 min-w-7 items-center justify-center rounded-lg px-2 text-xs font-medium transition-colors
+              {% if num == pagina %}bg-primary text-white{% else %}text-gray-500 hover:bg-gray-100 hover:text-gray-800{% endif %}">
+      {{ num }}
+    </a>
+    {% endfor %}
+    {% if tem_proxima %}
+    <a href="{% url_com_param p=pagina|add:'1' %}" class="btn btn-secondary btn-sm" aria-label="Próxima página">
+      <i class="bi bi-chevron-right"></i>
+    </a>
+    {% endif %}
+  </nav>
+</div>
+{% endif %}

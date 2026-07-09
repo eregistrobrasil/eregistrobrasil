@@ -1,0 +1,112 @@
+{% comment %}
+Navegação lateral do painel — usada no sidebar desktop e no drawer mobile.
+Mantém em um único lugar todos os links, estados ativos e o rodapé do usuário.
+{% endcomment %}
+{% with request.resolver_match.view_name as current %}
+
+<!-- Logo -->
+<div class="flex h-14 flex-shrink-0 items-center gap-2.5 border-b border-gray-200 px-4">
+  <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
+    <i class="bi bi-journal-check text-[15px]"></i>
+  </div>
+  <div class="min-w-0 leading-tight">
+    <p class="truncate text-[13px] font-semibold text-gray-900">E-Registro Brasil</p>
+    <p class="text-[11px] text-gray-400">Painel operacional</p>
+  </div>
+</div>
+
+<!-- Navegação -->
+<nav class="flex-1 space-y-0.5 overflow-y-auto px-3 py-3">
+
+  <p class="nav-section pt-2">Operação</p>
+
+  <a href="{% url 'dashboard:index' %}"
+     class="nav-item {% if current == 'dashboard:index' %}active{% endif %}">
+    <i class="bi bi-grid-1x2"></i> Dashboard
+  </a>
+
+  <a href="{% url 'dashboard:order_list' %}"
+     class="nav-item {% if 'order_list' in current or 'order_detail' in current %}active{% endif %}">
+    <i class="bi bi-inbox"></i> Pedidos
+  </a>
+
+  <a href="{% url 'dashboard:kanban' %}"
+     class="nav-item {% if 'kanban' in current %}active{% endif %}">
+    <i class="bi bi-kanban"></i> Kanban
+  </a>
+
+  <a href="{% url 'dashboard:notificacoes' %}"
+     class="nav-item {% if 'notificacoes' in current %}active{% endif %}">
+    <i class="bi bi-bell"></i> Notificações
+    {% if notificacoes_nao_lidas %}
+    <span class="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+      {{ notificacoes_nao_lidas }}
+    </span>
+    {% endif %}
+  </a>
+
+  <p class="nav-section">Cadastros</p>
+
+  <a href="{% url 'dashboard:blog_list' %}"
+     class="nav-item {% if 'blog' in current %}active{% endif %}">
+    <i class="bi bi-journal-text"></i> Blog
+  </a>
+
+  <a href="{% url 'dashboard:cartorio_list' %}"
+     class="nav-item {% if 'cartorio' in current %}active{% endif %}">
+    <i class="bi bi-bank"></i> Cartórios
+  </a>
+
+  <p class="nav-section">Análise</p>
+
+  <a href="{% url 'financeiro:dashboard' %}" class="nav-item">
+    <i class="bi bi-cash-coin"></i> Financeiro
+  </a>
+
+  <a href="{% url 'audit:historico' %}"
+     class="nav-item {% if 'audit' in current %}active{% endif %}">
+    <i class="bi bi-clock-history"></i> Histórico
+  </a>
+
+  <a href="{% url 'ai_reports:dashboard' %}"
+     class="nav-item {% if 'ai_reports' in current %}active{% endif %}">
+    <i class="bi bi-stars"></i> Relatórios IA
+  </a>
+
+  <p class="nav-section">Sistema</p>
+
+  <a href="{% url 'accounts:permissions_list' %}"
+     class="nav-item {% if 'permissions' in current %}active{% endif %}">
+    <i class="bi bi-shield-lock"></i> Permissões
+  </a>
+
+  <a href="/admin/" target="_blank" rel="noopener" class="nav-item">
+    <i class="bi bi-gear"></i> Admin Django
+    <i class="bi bi-box-arrow-up-right ml-auto !text-[11px]"></i>
+  </a>
+
+  <a href="/" target="_blank" rel="noopener" class="nav-item">
+    <i class="bi bi-globe2"></i> Ver site
+    <i class="bi bi-box-arrow-up-right ml-auto !text-[11px]"></i>
+  </a>
+</nav>
+
+<!-- Usuário -->
+<div class="flex-shrink-0 border-t border-gray-200 p-3">
+  <div class="flex items-center gap-2.5 rounded-lg px-2 py-1.5">
+    <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-50 text-[11px] font-bold text-primary">
+      {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper|default:"" }}
+    </div>
+    <div class="min-w-0 flex-1 leading-tight">
+      <p class="truncate text-[13px] font-medium text-gray-800">{{ request.user.get_full_name|default:request.user.username }}</p>
+      <p class="truncate text-[11px] text-gray-400">
+        {% if request.user.profile %}{{ request.user.profile.get_tipo_display }}{% else %}Operador{% endif %}
+      </p>
+    </div>
+    <a href="/conta/logout/" class="icon-btn !h-7 !w-7" title="Sair">
+      <i class="bi bi-box-arrow-right text-sm"></i>
+    </a>
+  </div>
+</div>
+
+{% endwith %}

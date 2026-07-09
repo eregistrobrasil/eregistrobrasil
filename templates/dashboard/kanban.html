@@ -3,68 +3,83 @@
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <style>
-  .kanban-col { min-height: 200px; }
+  .kanban-col { min-height: 300px; }
   .kanban-card.sortable-ghost { opacity: 0.3; }
   .kanban-card.sortable-drag { transform: rotate(2deg); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
 </style>
 {% endblock %}
 
 {% block content %}
+
 <!-- Filtros -->
-<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-5 flex flex-wrap gap-3 items-end">
-  <form method="get" class="flex flex-wrap gap-3 items-end w-full">
-    <div>
-      <label class="block text-xs text-gray-500 mb-1 font-medium">Responsável</label>
-      <select name="responsavel" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
-        <option value="">Todos</option>
-        {% for op in operadores %}
-        <option value="{{ op.pk }}" {% if filtro_responsavel == op.pk|stringformat:'s' %}selected{% endif %}>
-          {{ op.get_full_name|default:op.username }}
-        </option>
-        {% endfor %}
-      </select>
-    </div>
-    <div>
-      <label class="block text-xs text-gray-500 mb-1 font-medium">Tipo</label>
-      <select name="tipo" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
-        <option value="">Todos</option>
-        {% for val, lbl in tipos %}
-        <option value="{{ val }}" {% if filtro_tipo == val %}selected{% endif %}>{{ lbl }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div>
-      <label class="block text-xs text-gray-500 mb-1 font-medium">Prioridade</label>
-      <select name="prioridade" class="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
-        <option value="">Todas</option>
-        {% for val, lbl in prioridades %}
-        <option value="{{ val }}" {% if filtro_prioridade == val %}selected{% endif %}>{{ lbl }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <button type="submit" class="px-4 py-2 text-sm font-semibold bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
-      Filtrar
-    </button>
-    <a href="{% url 'dashboard:kanban' %}" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-      Limpar
-    </a>
-  </form>
-</div>
+<form method="get" class="card mb-5 flex flex-wrap items-end gap-3 p-4">
+  <div>
+    <label class="label" for="kb-responsavel">Responsável</label>
+    <select name="responsavel" id="kb-responsavel" data-autosubmit class="select !w-44">
+      <option value="">Todos</option>
+      {% for op in operadores %}
+      <option value="{{ op.pk }}" {% if filtro_responsavel == op.pk|stringformat:'s' %}selected{% endif %}>
+        {{ op.get_full_name|default:op.username }}
+      </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="label" for="kb-tipo">Tipo</label>
+    <select name="tipo" id="kb-tipo" data-autosubmit class="select !w-52">
+      <option value="">Todos</option>
+      {% for val, lbl in tipos %}
+      <option value="{{ val }}" {% if filtro_tipo == val %}selected{% endif %}>{{ lbl }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="label" for="kb-prioridade">Prioridade</label>
+    <select name="prioridade" id="kb-prioridade" data-autosubmit class="select !w-40">
+      <option value="">Todas</option>
+      {% for val, lbl in prioridades %}
+      <option value="{{ val }}" {% if filtro_prioridade == val %}selected{% endif %}>{{ lbl }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="btn btn-primary">
+    <i class="bi bi-funnel"></i> Filtrar
+  </button>
+  {% if filtro_responsavel or filtro_tipo or filtro_prioridade %}
+  <a href="{% url 'dashboard:kanban' %}" class="btn btn-secondary" title="Limpar filtros">
+    <i class="bi bi-x-lg"></i> Limpar
+  </a>
+  {% endif %}
+  <span class="ml-auto hidden items-center gap-1.5 text-xs text-gray-400 md:flex">
+    <i class="bi bi-arrows-move"></i> Arraste os cards para mudar o status
+  </span>
+</form>
 
-<!-- Kanban Board -->
-<div class="flex gap-4 overflow-x-auto pb-6 -mx-1 px-1">
+<!-- Quadro Kanban -->
+<div class="-mx-1 flex gap-4 overflow-x-auto px-1 pb-6">
   {% for coluna in colunas %}
-  <div class="flex-shrink-0 w-72">
-    <!-- Column header -->
-    <div class="flex items-center justify-between mb-3 px-1">
+  <div class="w-72 flex-shrink-0">
+    <!-- Cabeçalho da coluna -->
+    <div class="mb-2.5 flex items-center justify-between px-1">
       <div class="flex items-center gap-2">
-        <h3 class="text-sm font-semibold text-gray-700">{{ coluna.label }}</h3>
-        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full">{{ coluna.count }}</span>
+        <span class="badge-dot
+          {% if coluna.status == 'novo' %}bg-indigo-500
+          {% elif coluna.status == 'em_analise' %}bg-purple-500
+          {% elif coluna.status == 'aguardando_documentos' %}bg-orange-500
+          {% elif coluna.status == 'em_processamento' %}bg-blue-500
+          {% elif coluna.status == 'em_cartorio' %}bg-cyan-500
+          {% elif coluna.status == 'pronto_envio' %}bg-teal-500
+          {% elif coluna.status == 'enviado' %}bg-lime-500
+          {% elif coluna.status == 'concluido' %}bg-green-500
+          {% elif coluna.status == 'cancelado' %}bg-red-500
+          {% else %}bg-gray-400{% endif %}"></span>
+        <h3 class="text-[13px] font-semibold text-gray-700">{{ coluna.label }}</h3>
       </div>
+      <span class="rounded-full bg-gray-200/80 px-2 py-0.5 text-[10px] font-bold text-gray-600">{{ coluna.count }}</span>
     </div>
 
-    <!-- Drop zone -->
-    <div class="kanban-col bg-gray-100/60 rounded-2xl p-2 space-y-2 min-h-[300px]"
+    <!-- Zona de drop -->
+    <div class="kanban-col space-y-2 rounded-xl border border-gray-200/70 bg-gray-100/60 p-2"
          data-status="{{ coluna.status }}"
          id="col-{{ coluna.status }}">
       {% for pedido in coluna.pedidos %}

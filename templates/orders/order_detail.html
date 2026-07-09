@@ -56,6 +56,48 @@
     </div>
   </div>
 
+  <!-- Documentos -->
+  <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden mb-6">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="font-semibold text-gray-900">Documentos</h2>
+      {% if documentos %}
+      <span class="text-xs text-gray-400">{{ documentos.count }} arquivo{{ documentos.count|pluralize }}</span>
+      {% endif %}
+    </div>
+    {% if documentos %}
+    <div class="divide-y divide-gray-100">
+      {% for doc in documentos %}
+      <div class="px-6 py-4 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0
+            {% if doc.is_pdf %}bg-red-100 text-red-600{% elif doc.is_image %}bg-blue-100 text-blue-600{% else %}bg-gray-200 text-gray-500{% endif %}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-gray-900 truncate">{{ doc.get_tipo_display }}</p>
+            <p class="text-xs text-gray-400 truncate">{{ doc.nome_original }} · {{ doc.data_upload|date:"d/m/Y H:i" }}</p>
+          </div>
+        </div>
+        <a href="{{ doc.arquivo.url }}" target="_blank" rel="noopener"
+           class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+          Baixar
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="px-6 py-8 text-center">
+      <p class="text-sm text-gray-400">Nenhum documento disponível ainda.</p>
+      <p class="text-xs text-gray-400 mt-1">Assim que sua certidão for emitida, ela aparecerá aqui para download.</p>
+    </div>
+    {% endif %}
+  </div>
+
   {% if order.status == 'pending' %}
   <div class="text-center">
     <a href="{% url 'payments:create' order.pk %}"

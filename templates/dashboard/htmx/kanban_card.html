@@ -1,9 +1,9 @@
-<div class="kanban-card bg-white rounded-xl border border-gray-200 shadow-sm p-3 cursor-grab active:cursor-grabbing hover:shadow-md transition-all
-  {% if pedido.esta_atrasado %}border-red-300 bg-red-50/50{% elif pedido.prioridade == 'urgente' %}border-orange-300{% endif %}"
+<div class="kanban-card cursor-grab rounded-xl border bg-white p-3 shadow-sm transition-shadow hover:shadow-md active:cursor-grabbing
+  {% if pedido.esta_atrasado %}border-red-300{% elif pedido.prioridade == 'urgente' %}border-orange-300{% else %}border-gray-200{% endif %}"
   data-order-id="{{ pedido.pk }}">
 
-  <!-- Header -->
-  <div class="flex items-start justify-between mb-2">
+  <!-- Cabeçalho -->
+  <div class="mb-2 flex items-start justify-between gap-2">
     <a href="{% url 'dashboard:order_detail' pk=pedido.pk %}"
        class="font-mono text-xs font-bold text-primary hover:underline"
        onclick="event.stopPropagation()">
@@ -12,32 +12,34 @@
     {% include 'dashboard/includes/prioridade_badge.html' with prioridade=pedido.prioridade label=pedido.get_prioridade_display %}
   </div>
 
-  <!-- Name -->
-  <p class="text-sm font-semibold text-gray-800 truncate mb-1">{{ pedido.customer_name }}</p>
-  <p class="text-xs text-gray-400 mb-2">{{ pedido.get_tipo_certidao_display|default:"—" }}</p>
+  <!-- Cliente / serviço -->
+  <p class="mb-0.5 truncate text-sm font-semibold text-gray-800">{{ pedido.customer_name }}</p>
+  <p class="mb-2 truncate text-xs text-gray-400">{{ pedido.get_tipo_certidao_display|default:"—" }}</p>
 
   <!-- SLA -->
   {% if pedido.prazo_entrega %}
   <div class="mb-2">
-    <div class="w-full bg-gray-200 rounded-full h-1">
+    <div class="h-1 w-full overflow-hidden rounded-full bg-gray-200">
       <div class="h-1 rounded-full {% if pedido.sla_cor == 'red' %}bg-red-500{% elif pedido.sla_cor == 'yellow' %}bg-yellow-400{% else %}bg-green-500{% endif %}"
            style="width: {{ pedido.sla_percentual }}%"></div>
     </div>
-    <p class="text-xs mt-0.5 {% if pedido.esta_atrasado %}text-red-600 font-semibold{% else %}text-gray-400{% endif %}">
-      {% if pedido.esta_atrasado %}Atrasado!{% else %}{{ pedido.horas_restantes }}h restantes{% endif %}
+    <p class="mt-1 text-[11px] leading-none {% if pedido.esta_atrasado %}font-semibold text-red-600{% else %}text-gray-400{% endif %}">
+      {% if pedido.esta_atrasado %}<i class="bi bi-exclamation-triangle-fill"></i> Atrasado{% else %}{{ pedido.horas_restantes }}h restantes{% endif %}
     </p>
   </div>
   {% endif %}
 
-  <!-- Footer -->
-  <div class="flex items-center justify-between pt-2 border-t border-gray-100">
-    <span class="text-xs text-gray-400">{{ pedido.created_at|date:"d/m" }}</span>
+  <!-- Rodapé -->
+  <div class="flex items-center justify-between border-t border-gray-100 pt-2">
+    <span class="text-[11px] text-gray-400">
+      <i class="bi bi-calendar3 mr-0.5"></i>{{ pedido.created_at|date:"d/m" }}
+    </span>
     {% if pedido.responsavel %}
-    <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium truncate max-w-[90px]">
-      {{ pedido.responsavel.first_name|default:pedido.responsavel.username }}
+    <span class="inline-flex max-w-[110px] items-center gap-1 truncate rounded-full bg-primary-50 px-2 py-0.5 text-[11px] font-medium text-primary">
+      <i class="bi bi-person text-[10px]"></i>{{ pedido.responsavel.first_name|default:pedido.responsavel.username }}
     </span>
     {% else %}
-    <span class="text-xs text-gray-300">Sem responsável</span>
+    <span class="text-[11px] text-gray-300">Sem responsável</span>
     {% endif %}
   </div>
 </div>

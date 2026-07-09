@@ -108,64 +108,60 @@
 {% endfor %} -->
 
 <!-- Como Funciona -->
-<section class="bg-gray-200 border-t border-gray-300 py-10 sm:py-14">
-  <div class="max-w-4xl mx-auto px-4 text-center">
-    <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-1">Como Funciona</h2>
-    <p class="text-gray-500 text-sm mb-10">Certidões 24 horas por dia. A e-Registro Brasil possibilita que você solicite a sua certidão pela internet com segurança e total agilidade.</p>
+<section class="bg-gray-200 border-t border-gray-300 py-12 sm:py-16">
+  <div class="max-w-5xl mx-auto px-4">
 
-    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-0">
+    <!-- Header centralizado -->
+    <div class="mb-10 text-center">
+      <span class="text-xs font-bold text-primary uppercase tracking-widest">Processo simples</span>
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mt-1">Como funciona?</h2>
+      <p class="text-gray-500 text-sm mt-2 max-w-lg mx-auto">Solicite sua certidão em minutos, de qualquer lugar, sem sair de casa.</p>
+    </div>
+
+    <!-- Grid de cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
       <!-- Passo 1 -->
-      <div class="flex flex-col items-center flex-1 px-4">
-        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-base mb-4">1</div>
-        <div class="w-12 h-12 flex items-center justify-center mb-4">
-          <svg class="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm relative overflow-hidden group hover:border-primary hover:shadow-md transition-all">
+        <span class="absolute top-3 right-4 text-7xl font-black text-gray-100 select-none leading-none group-hover:text-primary/10 transition-colors">01</span>
+        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-5 mx-auto">
+          <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
           </svg>
         </div>
-        <p class="font-bold text-gray-900 text-sm mb-1">Escolha a certidão</p>
-        <p class="text-primary text-xs">Selecione o tipo de certidão que você precisa</p>
-      </div>
-
-      <!-- Seta -->
-      <div class="hidden sm:flex items-center text-gray-400 mb-8">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-        </svg>
+        <h3 class="font-bold text-gray-900 text-sm mb-1 text-center">Escolha a certidão</h3>
+        <p class="text-gray-500 text-xs leading-relaxed text-center">Selecione o tipo de certidão que você precisa no nosso catálogo completo.</p>
       </div>
 
       <!-- Passo 2 -->
-      <div class="flex flex-col items-center flex-1 px-4">
-        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-base mb-4">2</div>
-        <div class="w-12 h-12 flex items-center justify-center mb-4">
-          <svg class="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+      <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm relative overflow-hidden group hover:border-primary hover:shadow-md transition-all">
+        <span class="absolute top-3 right-4 text-7xl font-black text-gray-100 select-none leading-none group-hover:text-primary/10 transition-colors">02</span>
+        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-5 mx-auto">
+          <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
           </svg>
         </div>
-        <p class="font-bold text-gray-900 text-sm mb-1">Informe os dados</p>
-        <p class="text-primary text-xs">Preencha o formulário com as informações do registro</p>
-      </div>
-
-      <!-- Seta -->
-      <div class="hidden sm:flex items-center text-gray-400 mb-8">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-        </svg>
+        <h3 class="font-bold text-gray-900 text-sm mb-1 text-center">Informe os dados</h3>
+        <p class="text-gray-500 text-xs leading-relaxed text-center">Preencha o formulário com as informações do registro e finalize o pagamento.</p>
       </div>
 
       <!-- Passo 3 -->
-      <div class="flex flex-col items-center flex-1 px-4">
-        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-base mb-4">3</div>
-        <div class="w-12 h-12 flex items-center justify-center mb-4">
-          <svg class="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+      <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm relative overflow-hidden group hover:border-primary hover:shadow-md transition-all">
+        <span class="absolute top-3 right-4 text-7xl font-black text-gray-100 select-none leading-none group-hover:text-primary/10 transition-colors">03</span>
+        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-5 mx-auto">
+          <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
           </svg>
         </div>
-        <p class="font-bold text-gray-900 text-sm mb-1">Pague e receba</p>
-        <p class="text-primary text-xs">PDF por e-mail ou impresso pelos Correios — você decide</p>
+        <h3 class="font-bold text-gray-900 text-sm mb-1 text-center">Receba onde quiser</h3>
+        <p class="text-gray-500 text-xs leading-relaxed text-center">PDF por e-mail ou impresso pelos Correios — você escolhe a forma de entrega.</p>
       </div>
 
     </div>
+
+    <!-- Rodapé da section -->
+    <p class="text-xs text-gray-400 mt-6 text-center">Disponível 24h por dia, 7 dias por semana.</p>
+
   </div>
 </section>
 {% endblock %}

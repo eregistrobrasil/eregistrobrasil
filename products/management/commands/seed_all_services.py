@@ -64,9 +64,10 @@ CATEGORIES = [
                 "short": "Certidão de nascimento atualizada para uso em processos, casamentos e outros fins legais.",
                 "description": (
                     "Solicite a 2ª via da certidão de nascimento com agilidade e segurança. "
-                    "Nosso serviço localiza o registro em qualquer cartório do Brasil e emite "
-                    "a certidão com validade legal plena. Ideal para processos judiciais, "
-                    "casamentos, passaportes, mudança de nome e outros fins oficiais."
+                    "Localizamos o registro em qualquer cartório do Brasil e encaminhamos sua "
+                    "solicitação para emissão pelo cartório competente, com validade legal plena. "
+                    "Ideal para processos judiciais, casamentos, passaportes, mudança de nome e "
+                    "outros fins oficiais."
                 ),
                 "price": "89.90",
                 "original_price": "129.90",
@@ -83,9 +84,9 @@ CATEGORIES = [
                 "slug": "certidao-de-casamento-2a-via",
                 "short": "Segunda via da certidão de casamento com validade em todo território nacional.",
                 "description": (
-                    "Emitimos a 2ª via da certidão de casamento diretamente no cartório de registro civil "
-                    "onde o matrimônio foi realizado. Válida para processos de divórcio, inventário, "
-                    "passaporte, alteração de nome e outros fins legais."
+                    "Solicitamos a 2ª via da certidão de casamento diretamente junto ao cartório de "
+                    "registro civil onde o matrimônio foi realizado. Válida para processos de "
+                    "divórcio, inventário, passaporte, alteração de nome e outros fins legais."
                 ),
                 "price": "89.90",
                 "original_price": "129.90",

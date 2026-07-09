@@ -7,14 +7,24 @@
 {% endblock %}
 
 {% block content %}
-<div class="max-w-2xl">
-  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+<div class="mx-auto max-w-2xl">
+
+  <!-- Cabeçalho -->
+  <div class="mb-5 flex items-center gap-3">
+    <a href="{% url 'dashboard:cartorio_list' %}" class="icon-btn" title="Voltar">
+      <i class="bi bi-arrow-left text-base"></i>
+    </a>
+    <h2 class="text-lg font-bold tracking-tight text-gray-900">{{ title|default:"Cartório" }}</h2>
+  </div>
+
+  <div class="card p-6">
     <form method="post" novalidate>
       {% csrf_token %}
 
       {% if form.non_field_errors %}
-      <div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-5 text-sm text-red-700">
-        {% for err in form.non_field_errors %}{{ err }}{% endfor %}
+      <div class="mb-5 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <i class="bi bi-x-circle mt-px"></i>
+        <div>{% for err in form.non_field_errors %}{{ err }}{% endfor %}</div>
       </div>
       {% endif %}
 
@@ -22,28 +32,28 @@
 
         <!-- Nome -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1.5">
-            Nome do Cartório <span class="text-red-500">*</span>
+          <label class="label !text-[13px] !text-gray-700">
+            Nome do cartório <span class="text-red-500">*</span>
           </label>
           {{ form.nome }}
-          {% if form.nome.errors %}<p class="text-xs text-red-500 mt-1">{{ form.nome.errors.0 }}</p>{% endif %}
+          {% if form.nome.errors %}<p class="mt-1 text-xs text-red-500">{{ form.nome.errors.0 }}</p>{% endif %}
         </div>
 
         <!-- Estado e Cidade -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+            <label class="label !text-[13px] !text-gray-700">
               Estado <span class="text-red-500">*</span>
             </label>
             {{ form.estado }}
-            {% if form.estado.errors %}<p class="text-xs text-red-500 mt-1">{{ form.estado.errors.0 }}</p>{% endif %}
+            {% if form.estado.errors %}<p class="mt-1 text-xs text-red-500">{{ form.estado.errors.0 }}</p>{% endif %}
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+            <label class="label !text-[13px] !text-gray-700" for="id_cidade_select">
               Cidade <span class="text-red-500">*</span>
             </label>
             <div id="cidade-wrapper">
-              <select id="id_cidade_select" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" {% if not form.instance.pk %}disabled{% endif %}>
+              <select id="id_cidade_select" class="select" {% if not form.instance.pk %}disabled{% endif %}>
                 {% if form.instance.pk %}
                   <option value="{{ form.instance.cidade }}" selected>{{ form.instance.cidade }}</option>
                 {% else %}
@@ -52,73 +62,73 @@
               </select>
             </div>
             <input type="hidden" id="id_cidade" name="cidade" value="{{ form.instance.cidade|default:'' }}">
-            {% if form.cidade.errors %}<p class="text-xs text-red-500 mt-1">{{ form.cidade.errors.0 }}</p>{% endif %}
+            {% if form.cidade.errors %}<p class="mt-1 text-xs text-red-500">{{ form.cidade.errors.0 }}</p>{% endif %}
           </div>
         </div>
 
         <!-- Tipos de Serviço -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            Tipos de Serviço <span class="text-red-500">*</span>
+          <label class="label !text-[13px] !text-gray-700 mb-2">
+            Tipos de serviço <span class="text-red-500">*</span>
           </label>
-          <div class="flex flex-wrap gap-4">
+          <div class="flex flex-wrap gap-2">
             {% for val, lbl in form.tipos_servico.field.choices %}
-            <label class="flex items-center gap-2 cursor-pointer select-none">
+            <label class="flex cursor-pointer select-none items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 transition-colors hover:border-primary/40 hover:bg-primary-50/40 has-[:checked]:border-primary has-[:checked]:bg-primary-50">
               <input type="checkbox" name="tipos_servico" value="{{ val }}"
-                     class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
+                     class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                      {% if val in form.tipos_servico.value %}checked{% endif %}>
               <span class="text-sm text-gray-700">{{ lbl }}</span>
             </label>
             {% endfor %}
           </div>
           {% if form.tipos_servico.errors %}
-            <p class="text-xs text-red-500 mt-1">{{ form.tipos_servico.errors.0 }}</p>
+            <p class="mt-1 text-xs text-red-500">{{ form.tipos_servico.errors.0 }}</p>
           {% endif %}
         </div>
 
         <!-- CNPJ -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1.5">CNPJ</label>
+          <label class="label !text-[13px] !text-gray-700">CNPJ</label>
           {{ form.cnpj }}
-          {% if form.cnpj.errors %}<p class="text-xs text-red-500 mt-1">{{ form.cnpj.errors.0 }}</p>{% endif %}
+          {% if form.cnpj.errors %}<p class="mt-1 text-xs text-red-500">{{ form.cnpj.errors.0 }}</p>{% endif %}
         </div>
 
         <!-- Endereço -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1.5">Endereço</label>
+          <label class="label !text-[13px] !text-gray-700">Endereço</label>
           {{ form.endereco }}
-          {% if form.endereco.errors %}<p class="text-xs text-red-500 mt-1">{{ form.endereco.errors.0 }}</p>{% endif %}
+          {% if form.endereco.errors %}<p class="mt-1 text-xs text-red-500">{{ form.endereco.errors.0 }}</p>{% endif %}
         </div>
 
         <!-- Email e Telefone -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">E-mail</label>
+            <label class="label !text-[13px] !text-gray-700">E-mail</label>
             {{ form.email }}
-            {% if form.email.errors %}<p class="text-xs text-red-500 mt-1">{{ form.email.errors.0 }}</p>{% endif %}
+            {% if form.email.errors %}<p class="mt-1 text-xs text-red-500">{{ form.email.errors.0 }}</p>{% endif %}
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">Telefone</label>
+            <label class="label !text-[13px] !text-gray-700">Telefone</label>
             {{ form.telefone }}
-            {% if form.telefone.errors %}<p class="text-xs text-red-500 mt-1">{{ form.telefone.errors.0 }}</p>{% endif %}
+            {% if form.telefone.errors %}<p class="mt-1 text-xs text-red-500">{{ form.telefone.errors.0 }}</p>{% endif %}
           </div>
         </div>
 
         <!-- Ativo -->
-        <div class="flex items-center gap-2">
+        <label class="flex cursor-pointer items-center gap-2.5 rounded-lg border border-gray-200 bg-gray-50/60 px-3 py-2.5">
           {{ form.ativo }}
-          <label class="text-sm text-gray-700 cursor-pointer">Cartório ativo</label>
-        </div>
+          <span class="text-sm font-medium text-gray-700">Cartório ativo</span>
+        </label>
 
       </div><!-- /grid -->
 
       <!-- Ações -->
-      <div class="flex items-center justify-between mt-8 pt-6 border-t border-gray-100">
-        <a href="{% url 'dashboard:cartorio_list' %}"
-           class="text-sm text-gray-500 hover:text-gray-700 transition-colors">← Voltar</a>
-        <button type="submit"
-                class="px-6 py-2.5 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-dark transition-colors">
-          {{ action }}
+      <div class="mt-8 flex items-center justify-between border-t border-gray-100 pt-5">
+        <a href="{% url 'dashboard:cartorio_list' %}" class="btn btn-ghost">
+          <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+        <button type="submit" class="btn btn-primary !px-6">
+          <i class="bi bi-check-lg"></i> {{ action }}
         </button>
       </div>
     </form>

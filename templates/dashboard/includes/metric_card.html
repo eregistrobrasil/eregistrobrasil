@@ -1,25 +1,19 @@
-<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col gap-2
-  {% if alert and value > 0 %}border-red-200 bg-red-50{% endif %}">
-  <div class="flex items-start justify-between">
-    <div class="w-10 h-10 rounded-xl flex items-center justify-center
-      {% if color == 'blue' %}bg-blue-100 text-blue-600
-      {% elif color == 'green' %}bg-green-100 text-green-600
-      {% elif color == 'red' %}bg-red-100 text-red-600
-      {% elif color == 'indigo' %}bg-indigo-100 text-indigo-600
-      {% else %}bg-gray-100 text-gray-600{% endif %}">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        {% if icon == 'plus-circle' %}
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        {% elif icon == 'clock' %}
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        {% elif icon == 'exclamation' %}
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-        {% elif icon == 'check-circle' %}
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        {% endif %}
-      </svg>
-    </div>
+<div class="card flex items-center gap-4 p-5 {% if alert and value > 0 %}!border-red-200{% endif %}">
+  <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg
+    {% if color == 'blue' %}bg-blue-50 text-blue-600
+    {% elif color == 'green' %}bg-green-50 text-green-600
+    {% elif color == 'red' %}bg-red-50 text-red-600
+    {% elif color == 'indigo' %}bg-indigo-50 text-indigo-600
+    {% else %}bg-gray-100 text-gray-500{% endif %}">
+    <i class="bi text-base
+      {% if icon == 'plus-circle' %}bi-plus-circle
+      {% elif icon == 'clock' %}bi-clock
+      {% elif icon == 'exclamation' %}bi-exclamation-triangle
+      {% elif icon == 'check-circle' %}bi-check-circle
+      {% else %}bi-graph-up{% endif %}"></i>
   </div>
-  <p class="text-3xl font-bold text-gray-900 {% if alert and value > 0 %}text-red-700{% endif %}">{{ value }}</p>
-  <p class="text-sm text-gray-500 font-medium">{{ label }}</p>
+  <div class="min-w-0">
+    <p class="text-2xl font-bold leading-tight tracking-tight {% if alert and value > 0 %}text-red-600{% else %}text-gray-900{% endif %}">{{ value }}</p>
+    <p class="truncate text-xs font-medium text-gray-500">{{ label }}</p>
+  </div>
 </div>

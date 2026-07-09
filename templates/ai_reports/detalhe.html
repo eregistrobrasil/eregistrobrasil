@@ -3,70 +3,70 @@
 {% block title %}{{ title }} — E-Registro Brasil{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto space-y-5">
+<div class="mx-auto max-w-3xl space-y-5">
+
+  <!-- Cabeçalho -->
   <div class="flex items-center gap-3">
-    <a href="{% url 'ai_reports:dashboard' %}" class="text-gray-400 hover:text-gray-600 transition-colors">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-      </svg>
+    <a href="{% url 'ai_reports:dashboard' %}" class="icon-btn" title="Voltar">
+      <i class="bi bi-arrow-left text-base"></i>
     </a>
-    <h2 class="text-xl font-bold text-gray-800">{{ title }}</h2>
+    <h2 class="text-lg font-bold tracking-tight text-gray-900">{{ title }}</h2>
   </div>
 
   {% with r=relatorio %}
 
   <!-- Score + resumo -->
-  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-    <div class="flex items-start justify-between gap-4">
+  <div class="card p-6">
+    <div class="flex items-start justify-between gap-6">
       <div class="flex-1">
-        <p class="text-sm font-medium text-gray-500 mb-1">Resumo Executivo</p>
-        <p class="text-gray-800 leading-relaxed">{{ r.resumo|default:"Sem resumo gerado." }}</p>
+        <p class="mb-1.5 text-xs font-medium uppercase tracking-wider text-gray-400">Resumo executivo</p>
+        <p class="text-sm leading-relaxed text-gray-800">{{ r.resumo|default:"Sem resumo gerado." }}</p>
       </div>
-      <div class="text-center flex-shrink-0">
-        <div class="w-20 h-20 rounded-full border-4 flex items-center justify-center
+      <div class="flex-shrink-0 text-center">
+        <div class="flex h-20 w-20 items-center justify-center rounded-full border-4
           {% if r.score_produtividade >= 75 %}border-green-500 bg-green-50{% elif r.score_produtividade >= 50 %}border-yellow-500 bg-yellow-50{% else %}border-red-500 bg-red-50{% endif %}">
           <span class="text-xl font-bold
             {% if r.score_produtividade >= 75 %}text-green-700{% elif r.score_produtividade >= 50 %}text-yellow-700{% else %}text-red-700{% endif %}">
             {{ r.score_produtividade|floatformat:0 }}
           </span>
         </div>
-        <p class="text-xs text-gray-400 mt-1">Score</p>
+        <p class="mt-1.5 text-xs text-gray-400">Score</p>
       </div>
     </div>
   </div>
 
   <!-- Indicadores -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 text-center">
-      <p class="text-2xl font-bold text-gray-800">{{ r.total_acoes }}</p>
-      <p class="text-xs text-gray-500 mt-1">Total de Ações</p>
+  <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+    <div class="card p-4 text-center">
+      <p class="text-2xl font-bold tracking-tight text-gray-900">{{ r.total_acoes }}</p>
+      <p class="mt-1 text-xs text-gray-500">Total de ações</p>
     </div>
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 text-center">
-      <p class="text-2xl font-bold text-gray-800">{{ r.modulos_acessados|length }}</p>
-      <p class="text-xs text-gray-500 mt-1">Módulos</p>
+    <div class="card p-4 text-center">
+      <p class="text-2xl font-bold tracking-tight text-gray-900">{{ r.modulos_acessados|length }}</p>
+      <p class="mt-1 text-xs text-gray-500">Módulos</p>
     </div>
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 text-center">
-      <p class="text-2xl font-bold {% if r.alertas %}text-red-600{% else %}text-gray-800{% endif %}">
+    <div class="card p-4 text-center">
+      <p class="text-2xl font-bold tracking-tight {% if r.alertas %}text-red-600{% else %}text-gray-900{% endif %}">
         {{ r.alertas|length }}
       </p>
-      <p class="text-xs text-gray-500 mt-1">Alertas</p>
+      <p class="mt-1 text-xs text-gray-500">Alertas</p>
     </div>
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 text-center">
-      <p class="text-2xl font-bold text-gray-800">{{ r.recomendacoes|length }}</p>
-      <p class="text-xs text-gray-500 mt-1">Recomendações</p>
+    <div class="card p-4 text-center">
+      <p class="text-2xl font-bold tracking-tight text-gray-900">{{ r.recomendacoes|length }}</p>
+      <p class="mt-1 text-xs text-gray-500">Recomendações</p>
     </div>
   </div>
 
   <!-- Alertas -->
   {% if r.alertas %}
-  <div class="bg-red-50 border border-red-200 rounded-xl p-5">
-    <h3 class="font-semibold text-red-700 mb-3">Alertas / Anomalias</h3>
+  <div class="rounded-xl border border-red-200 bg-red-50 p-5">
+    <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold text-red-700">
+      <i class="bi bi-exclamation-triangle"></i> Alertas / anomalias
+    </h3>
     <ul class="space-y-2">
       {% for alerta in r.alertas %}
       <li class="flex items-start gap-2 text-sm text-red-800">
-        <svg class="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-        </svg>
+        <i class="bi bi-exclamation-circle-fill mt-0.5 flex-shrink-0 text-xs text-red-500"></i>
         {{ alerta }}
       </li>
       {% endfor %}
@@ -76,14 +76,14 @@
 
   <!-- Recomendações -->
   {% if r.recomendacoes %}
-  <div class="bg-blue-50 border border-blue-200 rounded-xl p-5">
-    <h3 class="font-semibold text-blue-700 mb-3">Recomendações da IA</h3>
+  <div class="rounded-xl border border-blue-200 bg-blue-50 p-5">
+    <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold text-blue-700">
+      <i class="bi bi-lightbulb"></i> Recomendações da IA
+    </h3>
     <ul class="space-y-2">
       {% for rec in r.recomendacoes %}
       <li class="flex items-start gap-2 text-sm text-blue-800">
-        <svg class="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-        </svg>
+        <i class="bi bi-check-circle-fill mt-0.5 flex-shrink-0 text-xs text-blue-500"></i>
         {{ rec }}
       </li>
       {% endfor %}
@@ -93,23 +93,23 @@
 
   <!-- Módulos acessados -->
   {% if r.modulos_acessados %}
-  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-    <h3 class="font-semibold text-gray-700 mb-3">Módulos Acessados</h3>
+  <div class="card p-5">
+    <h3 class="card-title mb-3">Módulos acessados</h3>
     <div class="flex flex-wrap gap-2">
       {% for mod in r.modulos_acessados %}
-      <span class="text-sm bg-primary/10 text-primary px-3 py-1 rounded-full font-medium">{{ mod }}</span>
+      <span class="badge bg-primary-50 text-primary ring-primary/20 !px-3 !py-1 !text-xs">{{ mod }}</span>
       {% endfor %}
     </div>
   </div>
   {% endif %}
 
   <!-- Indicadores brutos -->
-  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-    <h3 class="font-semibold text-gray-700 mb-3">Indicadores Detalhados</h3>
-    <pre class="text-xs bg-gray-50 p-3 rounded-lg overflow-x-auto text-gray-600">{{ r.indicadores }}</pre>
+  <div class="card p-5">
+    <h3 class="card-title mb-3">Indicadores detalhados</h3>
+    <pre class="overflow-x-auto rounded-lg bg-gray-50 p-3 text-xs text-gray-600">{{ r.indicadores }}</pre>
   </div>
 
-  <p class="text-xs text-gray-400 text-right">
+  <p class="text-right text-xs text-gray-400">
     Gerado em {{ r.criado_em|date:"d/m/Y H:i" }}
   </p>
   {% endwith %}

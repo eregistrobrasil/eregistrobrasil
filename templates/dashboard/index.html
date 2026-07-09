@@ -1,72 +1,73 @@
 {% extends 'dashboard/base.html' %}
 
 {% block content %}
-<!-- Metric Cards operacionais -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-  {% include 'dashboard/includes/metric_card.html' with label="Pedidos Hoje" value=pedidos_hoje icon="plus-circle" color="blue" %}
-  {% include 'dashboard/includes/metric_card.html' with label="Em Andamento" value=pedidos_ativos icon="clock" color="indigo" %}
+
+<!-- Métricas operacionais -->
+<div class="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
+  {% include 'dashboard/includes/metric_card.html' with label="Pedidos hoje" value=pedidos_hoje icon="plus-circle" color="blue" %}
+  {% include 'dashboard/includes/metric_card.html' with label="Em andamento" value=pedidos_ativos icon="clock" color="indigo" %}
   {% include 'dashboard/includes/metric_card.html' with label="Atrasados" value=pedidos_atrasados icon="exclamation" color="red" alert=True %}
-  {% include 'dashboard/includes/metric_card.html' with label="Concluídos Hoje" value=concluidos_hoje icon="check-circle" color="green" %}
+  {% include 'dashboard/includes/metric_card.html' with label="Concluídos hoje" value=concluidos_hoje icon="check-circle" color="green" %}
 </div>
 
-<!-- Recent Orders -->
-<div class="bg-white rounded-2xl border border-gray-200 shadow-sm">
-  <div class="flex items-center justify-between p-5 border-b border-gray-100">
-    <h3 class="text-sm font-semibold text-gray-700">Pedidos Recentes</h3>
-    <a href="{% url 'dashboard:order_list' %}" class="text-xs text-primary hover:underline font-medium">Ver todos →</a>
+<!-- Pedidos recentes -->
+<div class="card overflow-hidden">
+  <div class="card-header">
+    <h3 class="card-title">Pedidos recentes</h3>
+    <a href="{% url 'dashboard:order_list' %}" class="btn btn-ghost btn-sm">
+      Ver todos <i class="bi bi-arrow-right"></i>
+    </a>
   </div>
   <div class="overflow-x-auto">
-    <table class="w-full text-sm">
+    <table class="w-full">
       <thead>
-        <tr class="border-b border-gray-100">
-          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">ID</th>
-          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Cliente</th>
-          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Tipo</th>
-          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Prioridade</th>
-          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">SLA</th>
-          <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Responsável</th>
-          <th class="px-5 py-3"></th>
+        <tr class="border-b border-gray-100 bg-gray-50/60">
+          <th class="th">Pedido</th>
+          <th class="th">Cliente</th>
+          <th class="th">Tipo</th>
+          <th class="th">Status</th>
+          <th class="th">Prioridade</th>
+          <th class="th">SLA</th>
+          <th class="th">Responsável</th>
+          <th class="th"><span class="sr-only">Ações</span></th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-50">
         {% for pedido in ultimos_pedidos %}
-        <tr class="hover:bg-gray-50 transition-colors {% if pedido.esta_atrasado %}bg-red-50/40{% endif %}">
-          <td class="px-5 py-3">
+        <tr data-href="{% url 'dashboard:order_detail' pk=pedido.pk %}"
+            class="transition-colors hover:bg-gray-50 {% if pedido.esta_atrasado %}bg-red-50/40{% endif %}">
+          <td class="td">
             <span class="font-mono text-xs font-semibold text-primary">#{{ pedido.short_id }}</span>
           </td>
-          <td class="px-5 py-3">
-            <p class="font-medium text-gray-800 truncate max-w-[160px]">{{ pedido.customer_name }}</p>
+          <td class="td">
+            <p class="max-w-[180px] truncate font-medium text-gray-800">{{ pedido.customer_name }}</p>
             <p class="text-xs text-gray-400">{{ pedido.customer_cpf }}</p>
           </td>
-          <td class="px-5 py-3">
+          <td class="td">
             <span class="text-xs text-gray-600">{{ pedido.get_tipo_certidao_display|default:"—" }}</span>
           </td>
-          <td class="px-5 py-3">
+          <td class="td">
             {% include 'dashboard/includes/status_badge.html' with status=pedido.status label=pedido.get_status_display %}
           </td>
-          <td class="px-5 py-3">
+          <td class="td">
             {% include 'dashboard/includes/prioridade_badge.html' with prioridade=pedido.prioridade label=pedido.get_prioridade_display %}
           </td>
-          <td class="px-5 py-3">
+          <td class="td">
             {% include 'dashboard/includes/sla_bar.html' with order=pedido %}
           </td>
-          <td class="px-5 py-3">
-            <span class="text-xs text-gray-500">
-              {{ pedido.responsavel.get_full_name|default:"—" }}
-            </span>
+          <td class="td">
+            <span class="text-xs text-gray-500">{{ pedido.responsavel.get_full_name|default:"—" }}</span>
           </td>
-          <td class="px-5 py-3">
-            <a href="{% url 'dashboard:order_detail' pk=pedido.pk %}"
-               class="text-xs font-semibold text-primary hover:text-primary-dark hover:underline">
-              Ver
+          <td class="td text-right">
+            <a href="{% url 'dashboard:order_detail' pk=pedido.pk %}" class="icon-btn" title="Abrir pedido">
+              <i class="bi bi-chevron-right text-xs"></i>
             </a>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="8" class="px-5 py-10 text-center text-gray-400 text-sm">
-            Nenhum pedido ainda.
+          <td colspan="8" class="p-0">
+            {% include 'dashboard/includes/empty_state.html' with icon="bi-inbox" title="Nenhum pedido ainda" subtitle="Os pedidos aparecem aqui assim que forem criados." %}
           </td>
         </tr>
         {% endfor %}

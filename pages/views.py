@@ -459,7 +459,7 @@ class CertidaoProcuracaoView(BaseCertidaoCartorioView):
     template_name = 'servicos/certidao_procuracao_cartorio.html'
     dados_step_name = 'pages:certidao_procuracao_dados'
     tipo_cartorio = 'notas'
-    descricao_servico = 'Localização e emissão de certidão de procuração lavrada em cartório de notas.'
+    descricao_servico = 'Localização e intermediação da certidão de procuração lavrada em cartório de notas.'
     imagem_static = 'img/certidao-de-nascimento.png'
     # Tenta o slug preferido primeiro; fallback para o slug base
     _product_slugs = ['certidao-de-procuracao-1', 'certidao-de-procuracao']

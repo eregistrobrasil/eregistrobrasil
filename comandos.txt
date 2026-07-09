@@ -35,3 +35,18 @@ docker compose up -d --force-recreate web celery
 docker compose ps
 
 
+
+
+
+--------------------------------------------------------------------
+TAG Conta google 
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18311431593"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-18311431593');
+</script>

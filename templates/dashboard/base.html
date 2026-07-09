@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="pt-BR" class="h-full bg-gray-50">
+<html lang="pt-BR" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,255 +12,185 @@
       theme: {
         extend: {
           colors: {
-            primary: { DEFAULT: '#1B4F72', light: '#2471A3', dark: '#154360', 50: '#EBF5FB' },
-            accent:  { DEFAULT: '#1E8449', light: '#27AE60' },
+            primary: {
+              DEFAULT: '#1B4F72', light: '#2471A3', dark: '#154360',
+              50: '#EBF5FB', 100: '#D6EAF8', 600: '#1B4F72', 700: '#154360',
+            },
+            accent: { DEFAULT: '#1E8449', light: '#27AE60' },
           },
           fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
         }
       }
     }
   </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <script src="https://unpkg.com/htmx.org@1.9.10" defer></script>
+
+  {# ── Design system do painel: componentes reutilizáveis ─────────────── #}
+  <style type="text/tailwindcss">
+    @layer base {
+      html { font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11'; }
+      ::-webkit-scrollbar { height: 8px; width: 8px; }
+      ::-webkit-scrollbar-thumb { @apply rounded-full bg-gray-300; }
+      ::-webkit-scrollbar-track { background: transparent; }
+    }
+    @layer components {
+      /* Navegação lateral */
+      .nav-section { @apply px-3 pb-1 pt-5 text-[11px] font-semibold uppercase tracking-wider text-gray-400; }
+      .nav-item { @apply flex items-center gap-2.5 rounded-lg px-3 py-[7px] text-[13px] font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900; }
+      .nav-item .bi { @apply w-4 text-center text-[15px] leading-none text-gray-400 transition-colors; }
+      .nav-item:hover .bi { @apply text-gray-600; }
+      .nav-item.active { @apply bg-primary-50 font-semibold text-primary; }
+      .nav-item.active .bi { @apply text-primary; }
+
+      /* Cartões */
+      .card { @apply rounded-xl border border-gray-200 bg-white; }
+      .card-header { @apply flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-3.5; }
+      .card-title { @apply text-sm font-semibold text-gray-800; }
+
+      /* Botões */
+      .btn { @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:pointer-events-none disabled:opacity-50; }
+      .btn-primary { @apply bg-primary text-white shadow-sm hover:bg-primary-dark; }
+      .btn-secondary { @apply border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50; }
+      .btn-ghost { @apply text-gray-500 hover:bg-gray-100 hover:text-gray-800; }
+      .btn-danger { @apply border border-red-200 bg-white text-red-600 hover:bg-red-50; }
+      .btn-sm { @apply px-2.5 py-1.5 text-xs; }
+      .icon-btn { @apply inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700; }
+
+      /* Formulários */
+      .input, .select { @apply w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm transition-colors placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20; }
+      .label { @apply mb-1 block text-xs font-medium text-gray-500; }
+
+      /* Tabelas */
+      .th { @apply whitespace-nowrap px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400 first:pl-5 last:pr-5; }
+      .td { @apply px-4 py-3 align-middle text-sm first:pl-5 last:pr-5; }
+      tr[data-href] { @apply cursor-pointer; }
+
+      /* Badges */
+      .badge { @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset; }
+      .badge-dot { @apply h-1.5 w-1.5 flex-shrink-0 rounded-full; }
+
+      /* Chips de filtro (subcategorias) */
+      .chip { @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:border-primary/40 hover:text-primary; }
+      .chip.active { @apply border-primary bg-primary-50 font-semibold text-primary; }
+      .chip .chip-count { @apply rounded-full bg-gray-100 px-1.5 py-px text-[10px] font-bold text-gray-500; }
+      .chip.active .chip-count { @apply bg-primary text-white; }
+    }
+  </style>
+
   {% block extra_head %}{% endblock %}
 </head>
-<body class="h-full font-sans antialiased">
-<div class="flex h-screen overflow-hidden bg-gray-50">
+<body class="h-full bg-gray-50 font-sans text-gray-900 antialiased">
+<div class="flex h-screen overflow-hidden">
 
-  <!-- Sidebar -->
-  <aside id="sidebar" class="hidden lg:flex flex-col w-64 bg-primary text-white flex-shrink-0 shadow-xl">
-    <!-- Logo -->
-    <div class="flex items-center gap-3 h-16 px-6 border-b border-primary-light/30">
-      <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-      </div>
-      <div>
-        <p class="font-bold text-sm leading-tight">E-Registro Brasil</p>
-        <p class="text-xs text-white/60">Painel Operacional</p>
-      </div>
-    </div>
+  <!-- Sidebar desktop -->
+  <aside class="hidden w-60 flex-shrink-0 flex-col border-r border-gray-200 bg-white lg:flex">
+    {% include 'dashboard/includes/sidebar_nav.html' %}
+  </aside>
 
-    <!-- Nav -->
-    <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-      {% with request.resolver_match.view_name as current %}
-      <a href="{% url 'dashboard:index' %}"
-         class="nav-link {% if 'index' in current %}bg-white/15 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-        </svg>
-        Dashboard
-      </a>
+  <!-- Main -->
+  <div class="flex flex-1 flex-col overflow-hidden">
 
-      <a href="{% url 'dashboard:kanban' %}"
-         class="nav-link {% if 'kanban' in current %}bg-white/15 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
-        </svg>
-        Kanban
-      </a>
+    <!-- Topbar -->
+    <header class="flex h-14 flex-shrink-0 items-center gap-3 border-b border-gray-200 bg-white px-4 lg:px-6">
+      <button type="button" id="sidebarToggle" aria-label="Abrir menu" class="icon-btn lg:hidden">
+        <i class="bi bi-list text-xl"></i>
+      </button>
 
-      <a href="{% url 'dashboard:order_list' %}"
-         class="nav-link {% if 'order_list' in current or 'order_detail' in current %}bg-white/15 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-        </svg>
-        Pedidos
-      </a>
+      <h1 class="min-w-0 flex-1 truncate text-[15px] font-semibold text-gray-900">
+        {% block page_title %}{{ title }}{% endblock %}
+      </h1>
 
-      <a href="{% url 'dashboard:blog_list' %}"
-         class="nav-link {% if 'blog' in current %}bg-white/15 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-        </svg>
-        Blog
-      </a>
+      <!-- Busca rápida global -->
+      <form action="{% url 'dashboard:order_list' %}" method="get" class="hidden md:block">
+        <div class="relative">
+          <i class="bi bi-search pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-gray-400"></i>
+          <input type="text" name="q" placeholder="Buscar pedido, nome ou CPF…"
+                 class="input !w-64 !py-1.5 !pl-8 !text-[13px]">
+        </div>
+      </form>
 
-      <a href="{% url 'dashboard:cartorio_list' %}"
-         class="nav-link {% if 'cartorio' in current %}bg-white/15 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-        </svg>
-        Cartórios
-      </a>
-
-      <div class="pt-3 pb-1 px-3">
-        <p class="text-xs font-semibold text-white/40 uppercase tracking-wider">Sistema</p>
-      </div>
-
-      <a href="{% url 'dashboard:notificacoes' %}"
-         class="nav-link text-white/70 hover:bg-white/10 hover:text-white relative">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-        </svg>
-        Notificações
+      <a href="{% url 'dashboard:notificacoes' %}" class="icon-btn relative" title="Notificações">
+        <i class="bi bi-bell text-base"></i>
         {% if notificacoes_nao_lidas %}
-        <span class="absolute right-3 top-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+        <span class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
           {{ notificacoes_nao_lidas }}
         </span>
         {% endif %}
       </a>
-
-      <a href="{% url 'financeiro:dashboard' %}"
-         class="nav-link text-white/70 hover:bg-white/10 hover:text-white">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        Painel Financeiro
-      </a>
-
-      <a href="{% url 'audit:historico' %}"
-         class="nav-link {% if 'audit' in current %}bg-white/15 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-        </svg>
-        Histórico
-      </a>
-
-      <a href="{% url 'ai_reports:dashboard' %}"
-         class="nav-link {% if 'ai_reports' in current %}bg-white/15 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/>
-        </svg>
-        Relatórios IA
-      </a>
-
-      <a href="{% url 'accounts:permissions_list' %}"
-         class="nav-link {% if 'permissions' in current %}bg-white/15 text-white{% else %}text-white/70 hover:bg-white/10 hover:text-white{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-        </svg>
-        Permissões
-      </a>
-
-      <a href="/admin/" target="_blank"
-         class="nav-link text-white/70 hover:bg-white/10 hover:text-white">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-        </svg>
-        Admin Django
-      </a>
-
-      <a href="/" class="nav-link text-white/70 hover:bg-white/10 hover:text-white">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-        </svg>
-        Ver Site
-      </a>
-      {% endwith %}
-    </nav>
-
-    <!-- User info -->
-    <div class="p-4 border-t border-primary-light/30">
-      <div class="flex items-center gap-3">
-        <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-sm font-bold">
-          {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
-        </div>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium truncate">{{ request.user.get_full_name|default:request.user.username }}</p>
-          <p class="text-xs text-white/50 truncate">
-            {% if request.user.profile %}{{ request.user.profile.get_tipo_display }}{% else %}Operador{% endif %}
-          </p>
-        </div>
-        <a href="/conta/logout/" class="text-white/50 hover:text-white transition-colors" title="Sair">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-          </svg>
-        </a>
-      </div>
-    </div>
-  </aside>
-
-  <!-- Main -->
-  <div class="flex-1 flex flex-col overflow-hidden">
-
-    <!-- Topbar -->
-    <header class="bg-white border-b border-gray-200 h-16 flex items-center px-4 lg:px-6 gap-4 flex-shrink-0 shadow-sm">
-      <!-- Mobile menu button -->
-      <button type="button" id="sidebarToggle" aria-label="Abrir menu" class="lg:hidden text-gray-500 hover:text-gray-700">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-        </svg>
-      </button>
-
-      <!-- Breadcrumb -->
-      <div class="flex-1">
-        <h1 class="text-lg font-semibold text-gray-800">{% block page_title %}{{ title }}{% endblock %}</h1>
-      </div>
-
-      <!-- Actions -->
-      <div class="flex items-center gap-2">
-        <!-- Notification bell -->
-        <a href="{% url 'dashboard:notificacoes' %}" class="relative p-2 text-gray-500 hover:text-primary rounded-lg hover:bg-gray-100 transition-colors">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-          </svg>
-          {% if notificacoes_nao_lidas %}
-          <span class="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-            {{ notificacoes_nao_lidas }}
-          </span>
-          {% endif %}
-        </a>
-      </div>
     </header>
 
-    <!-- Content -->
-    <main class="flex-1 overflow-y-auto p-4 lg:p-6">
-      <!-- Flash messages -->
-      {% if messages %}
-      <div class="mb-4 space-y-2">
-        {% for msg in messages %}
-        <div class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium
-          {% if msg.tags == 'error' %}bg-red-50 text-red-800 border border-red-200
-          {% elif msg.tags == 'success' %}bg-green-50 text-green-800 border border-green-200
-          {% elif msg.tags == 'warning' %}bg-yellow-50 text-yellow-800 border border-yellow-200
-          {% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
-          {{ msg }}
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
+    <!-- Conteúdo -->
+    <main class="flex-1 overflow-y-auto">
+      <div class="mx-auto max-w-[1440px] px-4 py-6 lg:px-8">
 
-      {% block content %}{% endblock %}
+        {% if messages %}
+        <div class="mb-5 space-y-2">
+          {% for msg in messages %}
+          <div class="flex items-start gap-3 rounded-lg border px-4 py-3 text-sm
+            {% if msg.tags == 'error' %}border-red-200 bg-red-50 text-red-800
+            {% elif msg.tags == 'success' %}border-green-200 bg-green-50 text-green-800
+            {% elif msg.tags == 'warning' %}border-yellow-200 bg-yellow-50 text-yellow-800
+            {% else %}border-blue-200 bg-blue-50 text-blue-800{% endif %}">
+            <i class="bi mt-px flex-shrink-0
+              {% if msg.tags == 'error' %}bi-x-circle
+              {% elif msg.tags == 'success' %}bi-check-circle
+              {% elif msg.tags == 'warning' %}bi-exclamation-triangle
+              {% else %}bi-info-circle{% endif %}"></i>
+            <span class="flex-1 font-medium">{{ msg }}</span>
+            <button type="button" class="opacity-50 transition-opacity hover:opacity-100"
+                    onclick="this.parentElement.remove()" aria-label="Fechar">
+              <i class="bi bi-x-lg text-xs"></i>
+            </button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+      </div>
     </main>
   </div>
 </div>
 
-<!-- Mobile sidebar overlay -->
-<div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden"></div>
-<div id="mobileSidebar" class="fixed inset-y-0 left-0 w-64 bg-primary z-50 transform -translate-x-full transition-transform duration-300 lg:hidden">
-  <!-- Clone sidebar content for mobile via JS or duplicate - simplified version -->
-  <div class="p-4 text-white font-bold border-b border-white/20">E-Registro Brasil</div>
-  <nav class="p-3 space-y-1">
-    <a href="{% url 'dashboard:index' %}" class="nav-link text-white/80 hover:bg-white/10 hover:text-white">Dashboard</a>
-    <a href="{% url 'dashboard:kanban' %}" class="nav-link text-white/80 hover:bg-white/10 hover:text-white">Kanban</a>
-    <a href="{% url 'dashboard:order_list' %}" class="nav-link text-white/80 hover:bg-white/10 hover:text-white">Pedidos</a>
-    <a href="{% url 'dashboard:blog_list' %}" class="nav-link text-white/80 hover:bg-white/10 hover:text-white">Blog</a>
-    <a href="{% url 'dashboard:notificacoes' %}" class="nav-link text-white/80 hover:bg-white/10 hover:text-white">Notificações</a>
-  </nav>
-</div>
-
-<style>
-  .nav-link { display: flex; align-items: center; gap: 0.625rem; padding: 0.5rem 0.75rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 500; transition: all 0.15s; }
-</style>
+<!-- Drawer mobile -->
+<div id="sidebarOverlay" class="fixed inset-0 z-40 hidden bg-black/40 lg:hidden"></div>
+<aside id="mobileSidebar"
+       class="fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col border-r border-gray-200 bg-white transition-transform duration-200 lg:hidden">
+  {% include 'dashboard/includes/sidebar_nav.html' %}
+</aside>
 
 <script>
-  const btn = document.getElementById('sidebarToggle');
-  const overlay = document.getElementById('sidebarOverlay');
-  const mobile = document.getElementById('mobileSidebar');
-  if (btn) {
+  // Drawer mobile
+  (function () {
+    const btn = document.getElementById('sidebarToggle');
+    const overlay = document.getElementById('sidebarOverlay');
+    const drawer = document.getElementById('mobileSidebar');
+    if (!btn) return;
+    const close = () => { drawer.classList.add('-translate-x-full'); overlay.classList.add('hidden'); };
     btn.addEventListener('click', () => {
-      mobile.classList.toggle('-translate-x-full');
+      drawer.classList.toggle('-translate-x-full');
       overlay.classList.toggle('hidden');
     });
-    overlay.addEventListener('click', () => {
-      mobile.classList.add('-translate-x-full');
-      overlay.classList.add('hidden');
-    });
-  }
+    overlay.addEventListener('click', close);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  })();
+
+  // Selects com auto-submit: menos cliques nos filtros de listagem
+  document.querySelectorAll('[data-autosubmit]').forEach(el => {
+    el.addEventListener('change', () => el.form && el.form.submit());
+  });
+
+  // Linhas de tabela clicáveis (data-href) — não intercepta links/botões internos
+  document.addEventListener('click', e => {
+    const row = e.target.closest('tr[data-href]');
+    if (!row) return;
+    if (e.target.closest('a, button, form, input, select, label')) return;
+    window.location = row.dataset.href;
+  });
 </script>
 
 {% block extra_js %}{% endblock %}

@@ -116,8 +116,17 @@ def enviar_email_status(order_id, status_novo):
         ),
     }
 
+    assinatura_privada = (
+        '\n\n---\n'
+        'A E-Registro Brasil é uma empresa privada de intermediação de certidões e documentos. '
+        'Não somos um cartório, órgão público ou entidade governamental — atuamos facilitando '
+        'sua solicitação junto ao cartório ou órgão competente.'
+    )
+
     assunto = templates_assunto.get(status_novo)
     corpo = templates_corpo.get(status_novo)
+    if corpo:
+        corpo += assinatura_privada
 
     if assunto and corpo and order.customer_email:
         send_mail(

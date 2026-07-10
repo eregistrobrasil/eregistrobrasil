@@ -1002,6 +1002,19 @@ class PesquisaBensImovelForm(forms.Form):
         return _imovel_clean_cpf(self)
 
 
+class PesquisaBensCartorioForm(CertidaoCartorioForm):
+    """Etapa 1 da Pesquisa de Bens — permite pesquisar em todos os cartórios da cidade."""
+    todos_cartorios = forms.BooleanField(required=False)
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get('todos_cartorios'):
+            cidade = cleaned.get('cidade', '')
+            cleaned['cartorio_id'] = None
+            cleaned['cartorio'] = f'Todos os cartórios de {cidade}'
+        return cleaned
+
+
 # ─────────────────────────────────────────────
 #  CND Estadual SEFAZ
 # ─────────────────────────────────────────────
@@ -1672,20 +1685,27 @@ _ESTADOS_CHOICES = [
 ]
 
 
-class CertidaoNegativaTestamentoForm(forms.Form):
+class CertidaoNegativaTestamentoEtapa1Form(forms.Form):
+    """Etapa 1 — nome do falecido e local do registro do óbito."""
     nome_falecido = _char_field(
         'Nome do Falecido', 'Nome completo do falecido', msg_label='o nome do falecido',
     )
-    data_nascimento = _date_field('Data de Nascimento', msg_label='a data de nascimento')
-    data_obito = _date_field('Data do Óbito', msg_label='a data do óbito')
-    nome_mae = _char_field(
-        'Nome da Mãe do Falecido', 'Nome completo da mãe do falecido',
-        msg_label='o nome da mãe do falecido',
+    estado_obito = forms.ChoiceField(
+        label='Estado onde foi registrado o óbito',
+        choices=_ESTADOS_CHOICES,
+        error_messages={'required': 'Selecione o estado do registro do óbito.'},
+        widget=forms.Select(attrs={'class': _INPUT_CLASS}),
     )
-    orgao_emissor = _char_field(
-        'Órgão Emissor', 'Ex: SSP/SP, DETRAN/MG, SESP/BA',
-        msg_label='o órgão emissor',
-    )
+
+    def clean_estado_obito(self):
+        val = self.cleaned_data.get('estado_obito', '').strip()
+        if not val:
+            raise forms.ValidationError('Selecione o estado do registro do óbito.')
+        return val
+
+
+class CertidaoNegativaTestamentoForm(forms.Form):
+    """Etapa 2 — demais dados do falecido."""
     cpf_falecido = forms.CharField(
         label='CPF do Falecido',
         max_length=14,
@@ -1698,19 +1718,19 @@ class CertidaoNegativaTestamentoForm(forms.Form):
             'data-mask': 'cpf',
         }),
     )
-    estado_obito = forms.ChoiceField(
-        label='Estado onde foi registrado o óbito',
-        choices=_ESTADOS_CHOICES,
-        error_messages={'required': 'Selecione o estado do registro do óbito.'},
-        widget=forms.Select(attrs={'class': _INPUT_CLASS}),
-    )
-    nome_pai = _char_field(
-        'Nome do Pai do Falecido', 'Nome completo do pai (opcional)',
-        required=False, msg_label='o nome do pai do falecido',
+    data_nascimento = _date_field('Data de Nascimento', msg_label='a data de nascimento')
+    data_obito = _date_field('Data do Óbito', msg_label='a data do óbito')
+    nome_mae = _char_field(
+        'Nome da Mãe do Falecido', 'Nome completo da mãe do falecido',
+        msg_label='o nome da mãe do falecido',
     )
     rg = _char_field(
-        'Número da Identidade (RG)', 'Número do RG (opcional)',
+        'Número da Identidade (RG)', 'Número do RG do falecido',
         required=False, msg_label='o RG',
+    )
+    orgao_emissor = _char_field(
+        'Órgão Emissor', 'Ex: SSP/SP, DETRAN/MG, SESP/BA',
+        msg_label='o órgão emissor',
     )
 
     def clean_cpf_falecido(self):
@@ -1718,9 +1738,3 @@ class CertidaoNegativaTestamentoForm(forms.Form):
         if len(cpf) != 11:
             raise forms.ValidationError('CPF inválido. Informe os 11 dígitos.')
         return cpf
-
-    def clean_estado_obito(self):
-        val = self.cleaned_data.get('estado_obito', '').strip()
-        if not val:
-            raise forms.ValidationError('Selecione o estado do registro do óbito.')
-        return val

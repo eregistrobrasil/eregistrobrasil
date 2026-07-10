@@ -1,4 +1,4 @@
-﻿{% extends 'servicos/base_cartorio.html' %}
+{% extends 'servicos/base_cartorio.html' %}
 {% load static %}
 
 
@@ -6,6 +6,24 @@
 {% block imagem %}
 <div class="overflow-hidden">
   <img src="{% static 'img/pesquisa-bens.png' %}" alt="Pesquisa de Bens" class="w-full max-h-[500px] h-auto object-contain" />
+</div>
+{% endblock %}
+
+{# ===== Checkbox "Todos os cartórios" — exibido apenas quando a cidade tem mais de 1 cartório ===== #}
+{% block form_campos_extra %}
+<div id="todos-cartorios-wrapper" class="hidden bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 animate-fade-in">
+  <div class="flex items-start gap-3">
+    <input type="checkbox" id="todos-cartorios" name="todos_cartorios" value="true"
+           class="w-4 h-4 mt-0.5 rounded border-gray-300 text-primary focus:ring-primary"
+           {% if form.todos_cartorios.value %}checked{% endif %}>
+    <label for="todos-cartorios" class="text-sm text-gray-700 cursor-pointer select-none">
+      Pesquisar em <strong>todos os cartórios</strong> da cidade selecionada
+      <span class="block text-xs text-gray-500 mt-0.5">
+        Esta cidade possui <strong id="qtd-cartorios-label">0</strong> cartórios de registro de imóveis.
+        O valor corresponde a uma busca por cartório.
+      </span>
+    </label>
+  </div>
 </div>
 {% endblock %}
 
@@ -36,6 +54,7 @@
   <div id="price-area">
     <div id="price-value">
       <p id="price-display" class="text-3xl font-bold text-accent"></p>
+      <p id="price-multi-note" class="hidden text-xs text-blue-600 mt-1 font-medium"></p>
       <p class="text-xs text-gray-500 mt-1">Este valor inclui todas as custas do documento e a taxa de serviço para entrega do E-Registro Brasil.</p>
     </div>
   </div>
@@ -72,28 +91,86 @@
   const STATE_PRICES = {{ state_prices_json|safe }};
   const BASE_PRICE = '{{ product_base_price }}';
 
+  let cartorioCount = 0;
+
+  const $todosWrapper = $('#todos-cartorios-wrapper');
+  const $todosCheck = $('#todos-cartorios');
+  const $cartorioWrapper = $('#cartorio-field-wrapper');
+
   function fmt(value) {
     return 'R$ ' + parseFloat(value).toLocaleString('pt-BR', {
       minimumFractionDigits: 2, maximumFractionDigits: 2,
     });
   }
 
-  $(document).on('change', '#select-estado', function () {
-    const uf = $(this).val();
-    const placeholder = document.getElementById('price-placeholder');
-    const valueEl    = document.getElementById('price-value');
-    const display    = document.getElementById('price-display');
+  function unitPrice() {
+    const uf = $('#select-estado').val();
+    if (!uf) return 0;
+    return parseFloat(STATE_PRICES[uf] !== undefined ? STATE_PRICES[uf] : BASE_PRICE) || 0;
+  }
 
-    if (uf && display) {
-      const preco = STATE_PRICES[uf] || BASE_PRICE;
-      display.textContent = fmt(preco);
-      if (placeholder) placeholder.classList.add('hidden');
-      if (valueEl) valueEl.classList.remove('hidden');
+  function updatePriceCard() {
+    const todos = $todosCheck.prop('checked');
+    const preco = unitPrice();
+    const cartorioSelecionado = !!$('#cartorio-id-input').val();
+    const $card = $('#price-card');
+    const $display = $('#price-display');
+    const $note = $('#price-multi-note');
+
+    if (preco > 0 && (todos || cartorioSelecionado)) {
+      const qtd = todos ? Math.max(cartorioCount, 1) : 1;
+      $display.text(fmt(preco * qtd));
+      if (qtd > 1) {
+        $note.text(qtd + ' cartórios × ' + fmt(preco)).removeClass('hidden');
+      } else {
+        $note.addClass('hidden');
+      }
+      $card.removeClass('hidden');
     } else {
-      if (placeholder) placeholder.classList.remove('hidden');
-      if (valueEl) valueEl.classList.add('hidden');
+      $note.addClass('hidden');
+      $card.addClass('hidden');
     }
+  }
+
+  function toggleCartorioField() {
+    const checked = $todosCheck.prop('checked');
+    $cartorioWrapper.toggle(!checked);
+    if (checked) {
+      $('#cartorio-id-input').val('');
+      $('#cartorio-nome-input').val('');
+      $('#select-cartorio').val('').prop('disabled', true);
+    } else {
+      $('#select-cartorio').prop('disabled', cartorioCount === 0);
+    }
+    updatePriceCard();
+  }
+
+  // Cartórios carregados para a cidade selecionada (evento do template base)
+  $(document).on('cartorios:loaded', function (_e, data) {
+    cartorioCount = (data || []).length;
+    $('#qtd-cartorios-label').text(cartorioCount);
+    if (cartorioCount > 1) {
+      $todosWrapper.removeClass('hidden');
+    } else {
+      $todosWrapper.addClass('hidden');
+      $todosCheck.prop('checked', false);
+    }
+    toggleCartorioField();
   });
+
+  // Troca de cidade: esconde o checkbox até a nova lista chegar
+  $(document).on('change', '#select-cidade', function () {
+    cartorioCount = 0;
+    $todosWrapper.addClass('hidden');
+    $todosCheck.prop('checked', false);
+    $cartorioWrapper.show();
+    $('#price-multi-note').addClass('hidden');
+  });
+
+  $todosCheck.on('change', toggleCartorioField);
+
+  $(document).on('change', '#select-cartorio', updatePriceCard);
+  $(document).on('change', '#select-estado', updatePriceCard);
 })();
 </script>
 {% endblock %}

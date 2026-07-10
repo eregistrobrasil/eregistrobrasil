@@ -44,7 +44,7 @@
         <img src="{% static 'img/certidao-testamento.png' %}" alt="Certidão Negativa de Testamento " class="w-full max-h-[500px] h-auto object-contain" />
       </div>
 
-      <!-- Formulário Unificado -->
+      <!-- Formulário Etapa 1 -->
       <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-5">
         <h2 class="text-lg font-semibold text-primary border-b border-gray-100 pb-3">
           Dados do Falecido
@@ -82,81 +82,6 @@
             {% endif %}
           </div>
 
-          <!-- CPF -->
-          <div>
-            <label for="{{ form.cpf_falecido.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-              CPF do Falecido <span class="text-red-500">*</span>
-            </label>
-            <input type="text"
-                   name="{{ form.cpf_falecido.html_name }}"
-                   id="{{ form.cpf_falecido.id_for_label }}"
-                   value="{{ form.cpf_falecido.value|default:'' }}"
-                   required
-                   placeholder="000.000.000-00"
-                   inputmode="numeric"
-                   maxlength="14"
-                   data-mask="cpf"
-                   class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all {% if form.cpf_falecido.errors %}is-invalid border-red-300{% endif %}">
-            {% if form.cpf_falecido.errors %}
-              <p class="text-xs text-red-500 mt-1">{{ form.cpf_falecido.errors.0 }}</p>
-            {% endif %}
-          </div>
-
-          <!-- Datas: nascimento e óbito em grade -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label for="{{ form.data_nascimento.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                Data de Nascimento <span class="text-red-500">*</span>
-              </label>
-              <input type="text"
-                     name="{{ form.data_nascimento.html_name }}"
-                     id="{{ form.data_nascimento.id_for_label }}"
-                     value="{{ form.data_nascimento.value|default:'' }}"
-                     required
-                     placeholder="DD/MM/AAAA"
-                     inputmode="numeric"
-                     maxlength="10"
-                     class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all {% if form.data_nascimento.errors %}is-invalid border-red-300{% endif %}">
-              {% if form.data_nascimento.errors %}
-                <p class="text-xs text-red-500 mt-1">{{ form.data_nascimento.errors.0 }}</p>
-              {% endif %}
-            </div>
-            <div>
-              <label for="{{ form.data_obito.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                Data do Óbito <span class="text-red-500">*</span>
-              </label>
-              <input type="text"
-                     name="{{ form.data_obito.html_name }}"
-                     id="{{ form.data_obito.id_for_label }}"
-                     value="{{ form.data_obito.value|default:'' }}"
-                     required
-                     placeholder="DD/MM/AAAA"
-                     inputmode="numeric"
-                     maxlength="10"
-                     class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all {% if form.data_obito.errors %}is-invalid border-red-300{% endif %}">
-              {% if form.data_obito.errors %}
-                <p class="text-xs text-red-500 mt-1">{{ form.data_obito.errors.0 }}</p>
-              {% endif %}
-            </div>
-          </div>
-
-          <!-- Nome da Mãe -->
-          <div>
-            <label for="{{ form.nome_mae.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-              Nome da Mãe do Falecido <span class="text-red-500">*</span>
-            </label>
-            <input type="text"
-                   name="{{ form.nome_mae.html_name }}"
-                   id="{{ form.nome_mae.id_for_label }}"
-                   value="{{ form.nome_mae.value|default:'' }}"
-                   required
-                   placeholder="Nome completo da mãe do falecido"
-                   class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all {% if form.nome_mae.errors %}is-invalid border-red-300{% endif %}">
-            {% if form.nome_mae.errors %}
-              <p class="text-xs text-red-500 mt-1">{{ form.nome_mae.errors.0 }}</p>
-            {% endif %}
-          </div>
-
           <!-- Estado do Óbito -->
           <div>
             <label for="{{ form.estado_obito.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
@@ -176,32 +101,15 @@
             <p id="estado-obito-error" class="hidden text-xs text-red-500 mt-1">Selecione o estado do registro do óbito.</p>
           </div>
 
-          <!-- Órgão Emissor -->
-          <div>
-            <label for="{{ form.orgao_emissor.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-              Órgão Emissor do RG <span class="text-red-500">*</span>
-            </label>
-            <input type="text"
-                   name="{{ form.orgao_emissor.html_name }}"
-                   id="{{ form.orgao_emissor.id_for_label }}"
-                   value="{{ form.orgao_emissor.value|default:'' }}"
-                   required
-                   placeholder="Ex: SSP/SP, DETRAN/MG, SESP/BA"
-                   class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all {% if form.orgao_emissor.errors %}is-invalid border-red-300{% endif %}">
-            {% if form.orgao_emissor.errors %}
-              <p class="text-xs text-red-500 mt-1">{{ form.orgao_emissor.errors.0 }}</p>
-            {% endif %}
-          </div>
-
           <!-- Botão -->
           <button
             type="submit"
             class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
+            Continuar
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
             </svg>
-            Solicitar Pesquisa
           </button>
         </form>
       </div>
@@ -228,6 +136,18 @@
           deixou ou não testamento registrado em qualquer Tabelionato de Notas do Brasil.
           Indispensável em processos de <strong class="text-gray-800">inventário, arrolamento e partilha de herança</strong>.
         </p>
+      </div>
+
+      <!-- Indicador de Etapas -->
+      <div class="flex items-center gap-0 text-xs font-medium">
+        <div class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-l-full">
+          <span class="w-5 h-5 rounded-full bg-white text-primary flex items-center justify-center font-bold text-xs">1</span>
+          Dados do Falecido
+        </div>
+        <div class="flex items-center gap-2 bg-gray-100 text-gray-400 px-4 py-2 rounded-r-full border-l border-white">
+          <span class="w-5 h-5 rounded-full bg-gray-300 text-white flex items-center justify-center font-bold text-xs">2</span>
+          Complemento
+        </div>
       </div>
 
       <!-- Como funciona -->
@@ -281,33 +201,6 @@
 {% block extra_scripts %}
 <script>
 (function () {
-  function maskCPF(input) {
-    input.addEventListener('input', function () {
-      var v = this.value.replace(/\D/g, '').slice(0, 11);
-      if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
-      else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
-      else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
-      this.value = v;
-    });
-  }
-
-  function maskDate(input) {
-    input.addEventListener('input', function () {
-      var v = this.value.replace(/\D/g, '').slice(0, 8);
-      if (v.length > 4) v = v.replace(/(\d{2})(\d{2})(\d{1,4})/, '$1/$2/$3');
-      else if (v.length > 2) v = v.replace(/(\d{2})(\d{1,2})/, '$1/$2');
-      this.value = v;
-    });
-  }
-
-  var cpfEl = document.getElementById('{{ form.cpf_falecido.id_for_label }}');
-  if (cpfEl) maskCPF(cpfEl);
-
-  ['{{ form.data_nascimento.id_for_label }}', '{{ form.data_obito.id_for_label }}'].forEach(function (id) {
-    var el = document.getElementById(id);
-    if (el) maskDate(el);
-  });
-
   var testamentoForm = document.getElementById('testamento-form');
   if (testamentoForm) {
     testamentoForm.addEventListener('submit', function (e) {
@@ -327,4 +220,3 @@
 })();
 </script>
 {% endblock %}
-

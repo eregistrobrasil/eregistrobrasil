@@ -2,6 +2,19 @@
 {% load static %}
 
 {% block form_campos %}
+{% if cartorio_data.todos_cartorios and qtd_cartorios > 1 %}
+<!-- Aviso de pesquisa em todos os cartórios -->
+<div class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex gap-3 text-sm text-blue-800">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+  </svg>
+  <p>
+    A pesquisa será realizada em <strong>todos os {{ qtd_cartorios }} cartórios de registro de imóveis</strong>
+    de {{ cartorio_data.cidade }}. O valor total corresponde a {{ qtd_cartorios }} buscas.
+  </p>
+</div>
+{% endif %}
+
 <!-- Nome Completo -->
 <div>
   <label for="{{ form.nome_completo.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">

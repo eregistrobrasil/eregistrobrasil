@@ -197,6 +197,7 @@
             data.forEach(function (c) { $selectCartorio.append($('<option>').val(c.id).text(c.nome).data('nome', c.nome)); });
             $selectCartorio.prop('disabled', false);
           }
+          $(document).trigger('cartorios:loaded', [data]);
         })
         .fail(function () { resetCartorio('Erro ao carregar cartórios'); })
         .always(function () { $cartorioLoading.addClass('hidden'); });

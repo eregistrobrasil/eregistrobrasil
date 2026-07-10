@@ -29,6 +29,8 @@ from .forms import (
     CndItrReceitaFederalForm,
     CnjImprobidadeAdministrativaForm,
     CertidaoNegativaTestamentoForm,
+    CertidaoNegativaTestamentoEtapa1Form,
+    _ESTADOS_CHOICES,
 )
 
 
@@ -2470,6 +2472,37 @@ class PesquisaBensView(BaseImovelVarianteView):
         "no Cartório de Registro de Imóveis."
     )
 
+    def post(self, request):
+        from .forms import PesquisaBensCartorioForm
+        from registry.models import Registry
+        dados_ec = _load_estados_cidades()
+        form = PesquisaBensCartorioForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            estado_uf = cd['estado'].upper()
+            estado_nome = dados_ec.get(estado_uf, {}).get('nome', estado_uf)
+            todos = bool(cd.get('todos_cartorios', False))
+            qtd_cartorios = 1
+            if todos:
+                # Quantidade recontada no servidor — nunca confia no frontend
+                qtd_cartorios = Registry.objects.filter(
+                    estado=estado_uf,
+                    cidade__iexact=cd['cidade'],
+                    ativo=True,
+                    tipo_servico__contains=self.tipo_cartorio,
+                ).count() or 1
+            request.session['certidao_cartorio'] = {
+                'estado_uf': estado_uf,
+                'estado_nome': estado_nome,
+                'cidade': cd['cidade'],
+                'cartorio': cd['cartorio'],
+                'cartorio_id': cd.get('cartorio_id'),
+                'todos_cartorios': todos,
+                'qtd_cartorios': qtd_cartorios,
+            }
+            return redirect(self.dados_step_name)
+        return render(request, self.template_name, self._ctx(dados_ec, form))
+
 
 class PesquisaBensDadosView(BaseImovelVarianteDadosView):
     from .forms import PesquisaBensImovelForm as _PesquisaBensImovelForm
@@ -2482,27 +2515,136 @@ class PesquisaBensDadosView(BaseImovelVarianteDadosView):
     tipo_certidao_valor = "imovel_pesquisa_bens"
     descricao_step2 = "Informe o nome e CPF do titular para pesquisa de bens imóveis registrados."
 
+    @staticmethod
+    def _qtd_cartorios(cartorio_data):
+        try:
+            return max(int((cartorio_data or {}).get("qtd_cartorios") or 1), 1)
+        except (TypeError, ValueError):
+            return 1
+
+    def _ctx(self, form, cartorio_data):
+        from products.services import obter_preco_por_estado
+        ctx = super()._ctx(form, cartorio_data)
+        qtd = self._qtd_cartorios(cartorio_data)
+        ctx["qtd_cartorios"] = qtd
+        if qtd > 1:
+            estado_uf = (cartorio_data or {}).get("estado_uf", "")
+            product = self._get_product()
+            if estado_uf and product:
+                preco = obter_preco_por_estado(product, estado_uf)
+                if preco is None:
+                    preco = product.price
+                total = preco * qtd
+                ctx["preco_display"] = "R$ " + f"{total:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        return ctx
+
+    def _add_to_cart(self, request, cartorio_data, dados):
+        super()._add_to_cart(request, cartorio_data, dados)
+        # Pesquisa em todos os cartórios da cidade: 1 busca por cartório
+        from orders.models import CartItem
+        product = self._get_product()
+        if not product or not request.session.session_key:
+            return
+        CartItem.objects.filter(
+            cart__session_key=request.session.session_key, product=product
+        ).update(quantity=self._qtd_cartorios(cartorio_data))
+
 
 # ===========================================================================
 #  Certidão Negativa de Testamento
 #  Pesquisa nacional de testamentos — preço fixo nacional (editável no painel)
+#  Fluxo em 2 etapas: (1) nome do falecido + estado do óbito, (2) demais dados
 # ===========================================================================
 
-class CertidaoNegativaTestamentoView(BaseServicoSimplesDadosView):
+_TESTAMENTO_ETAPA1_SESSION_KEY = "testamento_etapa1"
+
+
+class _BaseTestamentoView(View):
     title = "Certidão Negativa de Testamento — E-Registro Brasil"
-    form_class = CertidaoNegativaTestamentoForm
-    template_name = "servicos/certidao_negativa_testamento.html"
     product_slug = "certidao-negativa-de-testamento"
     tipo_certidao_sessao = "busca_testamento"
-    fixed_price = False
+
+    def _get_product(self):
+        from products.models import Product
+        try:
+            return Product.objects.get(slug=self.product_slug, is_active=True)
+        except Product.DoesNotExist:
+            return None
 
     def _ctx(self, form, product=None):
-        ctx = super()._ctx(form, product)
+        ctx = {
+            "title": self.title,
+            "form": form,
+            "passos": _PASSOS,
+        }
         if product:
+            ctx["product"] = product
             price = product.price
             ctx['price_display'] = 'R$ {:,.2f}'.format(price).replace(',', 'X').replace('.', ',').replace('X', '.')
             ctx['show_fixed_price'] = True
         return ctx
+
+
+class CertidaoNegativaTestamentoView(_BaseTestamentoView):
+    """Etapa 1 — nome do falecido e local do registro do óbito."""
+    template_name = "servicos/certidao_negativa_testamento.html"
+
+    def get(self, request):
+        initial = request.session.get(_TESTAMENTO_ETAPA1_SESSION_KEY) or {}
+        form = CertidaoNegativaTestamentoEtapa1Form(initial=initial)
+        return render(request, self.template_name, self._ctx(form, self._get_product()))
+
+    def post(self, request):
+        form = CertidaoNegativaTestamentoEtapa1Form(request.POST)
+        if form.is_valid():
+            request.session[_TESTAMENTO_ETAPA1_SESSION_KEY] = {
+                'nome_falecido': form.cleaned_data['nome_falecido'],
+                'estado_obito': form.cleaned_data['estado_obito'],
+            }
+            return redirect('pages:certidao_negativa_testamento_dados')
+        return render(request, self.template_name, self._ctx(form, self._get_product()))
+
+
+class CertidaoNegativaTestamentoDadosView(_BaseTestamentoView):
+    """Etapa 2 — demais dados do falecido (CPF, datas, mãe, RG e órgão emissor)."""
+    template_name = "servicos/certidao_negativa_testamento_dados.html"
+
+    def _get_etapa1(self, request):
+        return request.session.get(_TESTAMENTO_ETAPA1_SESSION_KEY)
+
+    def _ctx(self, form, product=None, etapa1=None):
+        ctx = super()._ctx(form, product)
+        etapa1 = etapa1 or {}
+        estado_uf = etapa1.get('estado_obito', '')
+        ctx['etapa1'] = etapa1
+        ctx['estado_obito_nome'] = dict(_ESTADOS_CHOICES).get(estado_uf, estado_uf)
+        return ctx
+
+    def get(self, request):
+        etapa1 = self._get_etapa1(request)
+        if not etapa1:
+            messages.warning(request, 'Por favor, informe primeiro os dados do falecido.')
+            return redirect('pages:certidao_negativa_testamento')
+        form = CertidaoNegativaTestamentoForm()
+        return render(request, self.template_name, self._ctx(form, self._get_product(), etapa1))
+
+    def post(self, request):
+        etapa1 = self._get_etapa1(request)
+        if not etapa1:
+            return redirect('pages:certidao_negativa_testamento')
+        product = self._get_product()
+        form = CertidaoNegativaTestamentoForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            dados = {k: v.strftime('%d/%m/%Y') if hasattr(v, 'strftime') else str(v) for k, v in cd.items()}
+            dados['nome_falecido'] = etapa1.get('nome_falecido', '')
+            dados['estado_obito'] = etapa1.get('estado_obito', '')
+            dados['tipo_servico'] = self.product_slug
+            request.session['certidao_dados'] = dados
+            self._add_to_cart(request, dados, product)
+            request.session.pop(_TESTAMENTO_ETAPA1_SESSION_KEY, None)
+            return redirect('orders:checkout')
+        return render(request, self.template_name, self._ctx(form, product, etapa1))
 
     def _add_to_cart(self, request, dados, product):
         from orders.models import Cart, CartItem

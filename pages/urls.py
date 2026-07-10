@@ -119,6 +119,7 @@ urlpatterns = [
     path('servico/busca-em-tabelionatos-notas/', views.BuscaTabelionatoNotasView.as_view(), name='busca_tabelionatos_notas'),
     # Certidão Negativa de Testamento — pesquisa nacional de testamentos
     path('servico/certidao-negativa-de-testamento/', views.CertidaoNegativaTestamentoView.as_view(), name='certidao_negativa_testamento'),
+    path('servico/certidao-negativa-de-testamento/dados/', views.CertidaoNegativaTestamentoDadosView.as_view(), name='certidao_negativa_testamento_dados'),
     # Apostilamento
     path('servico/apostila-de-haia/', views.ApostilaHaiaView.as_view(), name='apostila_haia'),
     path('servico/traducao-juramentada/', views.TraducaoJuramentadaView.as_view(), name='traducao_juramentada'),

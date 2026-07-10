@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta_description %}Complete os dados do falecido para a pesquisa nacional de testamentos em tabelionatos de notas de todo o Brasil.{% endblock %}
+
+{% block extra_head %}
+<style>
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in  { animation: fadeInUp 0.5s ease both; }
+  .animate-delay-1  { animation-delay: 0.1s; }
+  .animate-delay-2  { animation-delay: 0.2s; }
+  .animate-delay-3  { animation-delay: 0.3s; }
+  .field-input:focus { border-color: #1B4F72; box-shadow: 0 0 0 3px rgba(27,79,114,0.15); outline: none; }
+  .field-input.is-invalid { border-color: #ef4444; }
+  .field-input.is-invalid:focus { box-shadow: 0 0 0 3px rgba(239,68,68,0.12); }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="py-10 px-4 max-w-6xl mx-auto">
+
+  <!-- Breadcrumb -->
+  <nav class="text-sm text-gray-500 mb-6 animate-fade-in" aria-label="Breadcrumb">
+    <ol class="flex items-center gap-2 flex-wrap">
+      <li><a href="/" class="hover:text-primary transition-colors">Início</a></li>
+      <li class="text-gray-400">/</li>
+      <li><a href="/servicos/" class="hover:text-primary transition-colors">Serviços</a></li>
+      <li class="text-gray-400">/</li>
+      <li><a href="{% url 'pages:certidao_negativa_testamento' %}" class="hover:text-primary transition-colors">Certidão Negativa de Testamento</a></li>
+      <li class="text-gray-400">/</li>
+      <li class="text-primary font-medium">Complemento</li>
+    </ol>
+  </nav>
+
+  <!-- Main Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+
+    <!-- ===== Coluna Esquerda: Formulário ===== -->
+    <div class="space-y-6 animate-fade-in animate-delay-1">
+
+      <!-- Formulário Etapa 2 -->
+      <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-5">
+        <h2 class="text-lg font-semibold text-primary border-b border-gray-100 pb-3">
+          Complemento dos Dados do Falecido
+        </h2>
+
+        {% if messages %}
+          {% for m in messages %}
+            <div class="rounded-lg px-4 py-3 text-sm border
+              {% if m.tags == 'error' %}bg-red-50 text-red-700 border-red-200
+              {% elif m.tags == 'success' %}bg-green-50 text-green-700 border-green-200
+              {% else %}bg-yellow-50 text-yellow-700 border-yellow-200{% endif %}">
+              {{ m }}
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <form id="testamento-form" method="post" novalidate class="space-y-5">
+          {% csrf_token %}
+
+          <!-- CPF -->
+          <div>
+            <label for="{{ form.cpf_falecido.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              CPF do Falecido <span class="text-red-500">*</span>
+            </label>
+            <input type="text"
+                   name="{{ form.cpf_falecido.html_name }}"
+                   id="{{ form.cpf_falecido.id_for_label }}"
+                   value="{{ form.cpf_falecido.value|default:'' }}"
+                   required
+                   placeholder="000.000.000-00"
+                   inputmode="numeric"
+                   maxlength="14"
+                   data-mask="cpf"
+                   class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all {% if form.cpf_falecido.errors %}is-invalid border-red-300{% endif %}">
+            {% if form.cpf_falecido.errors %}
+              <p class="text-xs text-red-500 mt-1">{{ form.cpf_falecido.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Datas: nascimento e óbito em grade -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="{{ form.data_nascimento.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Data de Nascimento <span class="text-red-500">*</span>
+              </label>
+              <input type="text"
+                     name="{{ form.data_nascimento.html_name }}"
+                     id="{{ form.data_nascimento.id_for_label }}"
+                     value="{{ form.data_nascimento.value|default:'' }}"
+                     required
+                     placeholder="DD/MM/AAAA"
+                     inputmode="numeric"
+                     maxlength="10"
+                     class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all {% if form.data_nascimento.errors %}is-invalid border-red-300{% endif %}">
+              {% if form.data_nascimento.errors %}
+                <p class="text-xs text-red-500 mt-1">{{ form.data_nascimento.errors.0 }}</p>
+              {% endif %}
+            </div>
+            <div>
+              <label for="{{ form.data_obito.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Data do Óbito <span class="text-red-500">*</span>
+              </label>
+              <input type="text"
+                     name="{{ form.data_obito.html_name }}"
+                     id="{{ form.data_obito.id_for_label }}"
+                     value="{{ form.data_obito.value|default:'' }}"
+                     required
+                     placeholder="DD/MM/AAAA"
+                     inputmode="numeric"
+                     maxlength="10"
+                     class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all {% if form.data_obito.errors %}is-invalid border-red-300{% endif %}">
+              {% if form.data_obito.errors %}
+                <p class="text-xs text-red-500 mt-1">{{ form.data_obito.errors.0 }}</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Nome da Mãe -->
+          <div>
+            <label for="{{ form.nome_mae.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Nome da Mãe do Falecido <span class="text-red-500">*</span>
+            </label>
+            <input type="text"
+                   name="{{ form.nome_mae.html_name }}"
+                   id="{{ form.nome_mae.id_for_label }}"
+                   value="{{ form.nome_mae.value|default:'' }}"
+                   required
+                   placeholder="Nome completo da mãe do falecido"
+                   class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all {% if form.nome_mae.errors %}is-invalid border-red-300{% endif %}">
+            {% if form.nome_mae.errors %}
+              <p class="text-xs text-red-500 mt-1">{{ form.nome_mae.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <!-- RG e Órgão Emissor em grade -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="{{ form.rg.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Número da Identidade (RG)
+              </label>
+              <input type="text"
+                     name="{{ form.rg.html_name }}"
+                     id="{{ form.rg.id_for_label }}"
+                     value="{{ form.rg.value|default:'' }}"
+                     placeholder="Número do RG do falecido"
+                     autocomplete="off"
+                     class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all {% if form.rg.errors %}is-invalid border-red-300{% endif %}">
+              {% if form.rg.errors %}
+                <p class="text-xs text-red-500 mt-1">{{ form.rg.errors.0 }}</p>
+              {% endif %}
+            </div>
+            <div>
+              <label for="{{ form.orgao_emissor.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                Órgão Emissor do RG <span class="text-red-500">*</span>
+              </label>
+              <input type="text"
+                     name="{{ form.orgao_emissor.html_name }}"
+                     id="{{ form.orgao_emissor.id_for_label }}"
+                     value="{{ form.orgao_emissor.value|default:'' }}"
+                     required
+                     placeholder="Ex: SSP/SP, DETRAN/MG, SESP/BA"
+                     class="field-input w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm placeholder-gray-400 transition-all {% if form.orgao_emissor.errors %}is-invalid border-red-300{% endif %}">
+              {% if form.orgao_emissor.errors %}
+                <p class="text-xs text-red-500 mt-1">{{ form.orgao_emissor.errors.0 }}</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Botões -->
+          <div class="flex flex-col sm:flex-row gap-3 pt-1">
+            <a href="{% url 'pages:certidao_negativa_testamento' %}"
+               class="sm:w-1/3 text-center px-5 py-3 rounded-lg text-sm font-medium text-gray-600 border border-gray-300 hover:bg-gray-50 transition-colors">
+              ← Voltar
+            </a>
+            <button
+              type="submit"
+              class="sm:w-2/3 bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
+              </svg>
+              Solicitar Pesquisa
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===== Coluna Direita: Resumo + Informações ===== -->
+    <div class="space-y-6 animate-fade-in animate-delay-2">
+
+      <!-- Indicador de Etapas -->
+      <div class="flex items-center gap-0 text-xs font-medium">
+        <div class="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-l-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+          Dados do Falecido
+        </div>
+        <div class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-r-full border-l border-white">
+          <span class="w-5 h-5 rounded-full bg-white text-primary flex items-center justify-center font-bold text-xs">2</span>
+          Complemento
+        </div>
+      </div>
+
+      <!-- Resumo Etapa 1 -->
+      <div class="bg-gray-50 rounded-2xl border border-gray-200 p-5 text-sm text-gray-600 space-y-1">
+        <p class="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+          Dados informados
+        </p>
+        <p><span class="text-gray-500">Nome do falecido:</span> <strong>{{ etapa1.nome_falecido }}</strong></p>
+        <p><span class="text-gray-500">Estado do óbito:</span> <strong>{{ estado_obito_nome }}</strong></p>
+        <a href="{% url 'pages:certidao_negativa_testamento' %}" class="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Alterar dados
+        </a>
+      </div>
+
+      <!-- Preço fixo -->
+      <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-6 animate-fade-in animate-delay-3">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-base font-semibold text-primary">Valor do Serviço</h3>
+          <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">preço fixo nacional</span>
+        </div>
+        {% if show_fixed_price and price_display %}
+        <div>
+          <p class="text-3xl font-bold text-accent">{{ price_display }}</p>
+          <p class="text-xs text-gray-500 mt-1">Até 15 dias úteis após confirmação do pagamento</p>
+        </div>
+        {% else %}
+        <p class="text-sm text-gray-400">Preço nacional único</p>
+        {% endif %}
+      </div>
+
+      <!-- Informação adicional -->
+      <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 flex gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+        </svg>
+        <p class="text-sm text-blue-700">
+          O prazo para emissão é de até 15 dias úteis. Nossa equipe acompanha todo o processo e mantém você informado por e-mail.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+  function maskCPF(input) {
+    input.addEventListener('input', function () {
+      var v = this.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+      else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+      else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+      this.value = v;
+    });
+  }
+
+  function maskDate(input) {
+    input.addEventListener('input', function () {
+      var v = this.value.replace(/\D/g, '').slice(0, 8);
+      if (v.length > 4) v = v.replace(/(\d{2})(\d{2})(\d{1,4})/, '$1/$2/$3');
+      else if (v.length > 2) v = v.replace(/(\d{2})(\d{1,2})/, '$1/$2');
+      this.value = v;
+    });
+  }
+
+  var cpfEl = document.getElementById('{{ form.cpf_falecido.id_for_label }}');
+  if (cpfEl) maskCPF(cpfEl);
+
+  ['{{ form.data_nascimento.id_for_label }}', '{{ form.data_obito.id_for_label }}'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) maskDate(el);
+  });
+})();
+</script>
+{% endblock %}

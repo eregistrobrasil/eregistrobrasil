@@ -13,7 +13,7 @@ def verificar_atrasos():
     atrasados = Order.objects.filter(
         prazo_entrega__lt=timezone.now(),
     ).exclude(
-        status__in=('concluido', 'cancelado', 'refunded', 'completed')
+        status__in=Order.STATUS_FINALIZADOS
     ).select_related('responsavel')
 
     count = 0
@@ -44,7 +44,7 @@ def verificar_prazo_proximo():
         prazo_entrega__lte=limite,
         prazo_entrega__gt=timezone.now(),
     ).exclude(
-        status__in=('concluido', 'cancelado', 'refunded', 'completed')
+        status__in=Order.STATUS_FINALIZADOS
     ).select_related('responsavel')
 
     count = 0

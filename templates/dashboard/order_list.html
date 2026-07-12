@@ -7,7 +7,7 @@
 <div class="mb-4 border-b border-gray-200">
   <div class="-mb-px flex items-end gap-1 overflow-x-auto">
     {% for aba in abas %}
-    <a href="{% url 'dashboard:order_list' %}?categoria={{ aba.slug }}"
+    <a href="{% url list_url_name %}?categoria={{ aba.slug }}"
        class="flex flex-shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors
               {% if aba.ativa %}border-primary font-semibold text-primary
               {% else %}border-transparent font-medium text-gray-500 hover:border-gray-300 hover:text-gray-800{% endif %}">
@@ -80,7 +80,7 @@
         <i class="bi bi-funnel"></i> Filtrar
       </button>
       {% if filtros.q or filtros.status or filtros.estado or filtros.prioridade or filtros.responsavel or filtros.data_de or filtros.data_ate %}
-      <a href="{% url 'dashboard:order_list' %}?categoria={{ filtros.categoria }}{% if filtros.tipo %}&tipo={{ filtros.tipo }}{% endif %}"
+      <a href="{% url list_url_name %}?categoria={{ filtros.categoria }}{% if filtros.tipo %}&tipo={{ filtros.tipo }}{% endif %}"
          class="btn btn-secondary" title="Limpar filtros">
         <i class="bi bi-x-lg"></i>
       </a>
@@ -104,9 +104,20 @@
       <span class="text-xs text-gray-400">de {{ total_geral }} no total</span>
       {% endif %}
     </div>
-    <a href="{% url 'dashboard:kanban' %}" class="btn btn-ghost btn-sm">
-      <i class="bi bi-kanban"></i> Kanban
-    </a>
+    <div class="flex items-center gap-2">
+      {% if finalizados %}
+      <a href="{% url 'dashboard:order_list' %}" class="btn btn-ghost btn-sm">
+        <i class="bi bi-arrow-left"></i> Ver pedidos pendentes
+      </a>
+      {% else %}
+      <a href="{% url 'dashboard:order_list_finalizados' %}" class="btn btn-ghost btn-sm">
+        <i class="bi bi-check2-circle"></i> Ver finalizados
+      </a>
+      {% endif %}
+      <a href="{% url 'dashboard:kanban' %}" class="btn btn-ghost btn-sm">
+        <i class="bi bi-kanban"></i> Kanban
+      </a>
+    </div>
   </div>
 
   <div class="overflow-x-auto">

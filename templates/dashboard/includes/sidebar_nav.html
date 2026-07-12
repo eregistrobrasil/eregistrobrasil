@@ -26,8 +26,13 @@ Mantém em um único lugar todos os links, estados ativos e o rodapé do usuári
   </a>
 
   <a href="{% url 'dashboard:order_list' %}"
-     class="nav-item {% if 'order_list' in current or 'order_detail' in current %}active{% endif %}">
+     class="nav-item {% if current == 'dashboard:order_list' or 'order_detail' in current %}active{% endif %}">
     <i class="bi bi-inbox"></i> Pedidos
+  </a>
+
+  <a href="{% url 'dashboard:order_list_finalizados' %}"
+     class="nav-item {% if current == 'dashboard:order_list_finalizados' %}active{% endif %}">
+    <i class="bi bi-check2-circle"></i> Finalizados
   </a>
 
   <a href="{% url 'dashboard:kanban' %}"

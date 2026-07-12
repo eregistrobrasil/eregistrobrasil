@@ -29,7 +29,7 @@ class DashboardIndexView(View):
         inicio_hoje = timezone.make_aware(timezone.datetime.combine(hoje, timezone.datetime.min.time()))
 
         pedidos_hoje = Order.objects.filter(created_at__gte=inicio_hoje)
-        pedidos_ativos = Order.objects.exclude(status__in=('concluido', 'cancelado', 'refunded', 'completed'))
+        pedidos_ativos = Order.objects.exclude(status__in=Order.STATUS_FINALIZADOS)
         pedidos_atrasados = [o for o in pedidos_ativos if o.esta_atrasado]
         concluidos_hoje = Order.objects.filter(data_conclusao__gte=inicio_hoje, status='concluido')
 
@@ -109,6 +109,14 @@ class KanbanView(View):
 class OrderOpsListView(View):
     template_name = 'dashboard/order_list.html'
     PEDIDOS_POR_PAGINA = 50
+    finalizados = False  # OrderFinalizadosListView sobrescreve para True
+
+    def _escopo_qs(self):
+        """Restringe a pedidos finalizados ou pendentes, conforme a view."""
+        qs = Order.objects.all()
+        if self.finalizados:
+            return qs.filter(status__in=Order.STATUS_FINALIZADOS)
+        return qs.exclude(status__in=Order.STATUS_FINALIZADOS)
 
     def get(self, request):
         # ── Parâmetros da requisição ──────────────────────────────────────
@@ -123,15 +131,15 @@ class OrderOpsListView(View):
         data_ate    = request.GET.get('data_ate', '')
         pagina      = max(int(request.GET.get('p', 1) or 1), 1)
 
-        # ── Base queryset ─────────────────────────────────────────────────
-        qs_base = Order.objects.select_related(
+        # ── Base queryset (restrita a pendentes ou finalizados) ────────────
+        qs_base = self._escopo_qs().select_related(
             'responsavel', 'cartorio'
         ).order_by('-created_at')
 
         # ── Contadores por categoria (query única) ────────────────────────
         from django.db.models import Count, Q as DQ
         contagens_raw = (
-            Order.objects.values('categoria_painel')
+            self._escopo_qs().values('categoria_painel')
             .annotate(total=Count('id'))
         )
         contagens = {row['categoria_painel']: row['total'] for row in contagens_raw}
@@ -204,7 +212,7 @@ class OrderOpsListView(View):
         total_registro_civil = 0
         if categoria == 'registro_civil':
             rc_counts_raw = (
-                Order.objects.filter(categoria_painel='registro_civil')
+                self._escopo_qs().filter(categoria_painel='registro_civil')
                 .values('tipo_certidao')
                 .annotate(total=Count('id'))
             )
@@ -239,7 +247,7 @@ class OrderOpsListView(View):
         total_notas = 0
         if categoria == 'notas':
             notas_counts_raw = (
-                Order.objects.filter(categoria_painel='notas')
+                self._escopo_qs().filter(categoria_painel='notas')
                 .values('tipo_certidao')
                 .annotate(total=Count('id'))
             )
@@ -268,7 +276,7 @@ class OrderOpsListView(View):
         total_imoveis = 0
         if categoria == 'imoveis':
             imoveis_counts_raw = (
-                Order.objects.filter(categoria_painel='imoveis')
+                self._escopo_qs().filter(categoria_painel='imoveis')
                 .values('tipo_certidao')
                 .annotate(total=Count('id'))
             )
@@ -308,7 +316,7 @@ class OrderOpsListView(View):
         total_federais = 0
         if categoria == 'federais_estaduais':
             fe_counts_raw = (
-                Order.objects.filter(categoria_painel='federais_estaduais')
+                self._escopo_qs().filter(categoria_painel='federais_estaduais')
                 .values('tipo_certidao')
                 .annotate(total=Count('id'))
             )
@@ -332,7 +340,7 @@ class OrderOpsListView(View):
         total_apostilamento = 0
         if categoria == 'apostilamento':
             apost_counts_raw = (
-                Order.objects.filter(categoria_painel='apostilamento')
+                self._escopo_qs().filter(categoria_painel='apostilamento')
                 .values('tipo_certidao')
                 .annotate(total=Count('id'))
             )
@@ -347,8 +355,15 @@ class OrderOpsListView(View):
                     'ativa': (tipo == slug_tipo),
                 })
 
+        if self.finalizados:
+            status_choices = [c for c in Order.STATUS_CHOICES if c[0] in Order.STATUS_FINALIZADOS]
+        else:
+            status_choices = [c for c in Order.STATUS_CHOICES if c[0] not in Order.STATUS_FINALIZADOS]
+
         ctx = {
-            'title': 'Pedidos',
+            'title': 'Pedidos Finalizados' if self.finalizados else 'Pedidos',
+            'finalizados': self.finalizados,
+            'list_url_name': 'dashboard:order_list_finalizados' if self.finalizados else 'dashboard:order_list',
             'pedidos': pedidos,
             'total': total_filtrado,
             'total_geral': total_geral,
@@ -366,7 +381,7 @@ class OrderOpsListView(View):
             'subcategorias_apostilamento': subcategorias_apostilamento,
             'total_apostilamento': total_apostilamento,
             'operadores': operadores,
-            'status_choices': Order.STATUS_CHOICES,
+            'status_choices': status_choices,
             'prioridade_choices': Order.PRIORIDADE_CHOICES,
             'estados': ESTADOS_BR,
             'pode_ver_financeiro': (
@@ -395,6 +410,14 @@ class OrderOpsListView(View):
             },
         }
         return render(request, self.template_name, ctx)
+
+
+class OrderFinalizadosListView(OrderOpsListView):
+    """Local dedicado aos pedidos finalizados (concluídos, completos, cancelados ou reembolsados).
+
+    dispatch já herda staff_required de OrderOpsListView.
+    """
+    finalizados = True
 
 
 @method_decorator(staff_required, name='dispatch')
@@ -501,9 +524,7 @@ class AtribuirResponsavelView(View):
 @method_decorator(login_required, name='dispatch')
 class NotificacoesView(View):
     def get(self, request):
-        notifs = Notification.objects.filter(
-            usuario=request.user
-        ).select_related('order').order_by('-data')[:50]
+        notifs = Notification.ativas(request.user).select_related('order').order_by('-data')[:50]
         Notification.objects.filter(usuario=request.user, lida=False).update(lida=True)
         return render(request, 'dashboard/notificacoes.html', {
             'title': 'Notificações',

@@ -268,6 +268,9 @@ class Order(models.Model):
         ('completed', 'Completo'),
     ]
 
+    # Status que representam um pedido finalizado (sem mais ação pendente).
+    STATUS_FINALIZADOS = ('concluido', 'completed', 'cancelado', 'refunded')
+
     PRIORIDADE_CHOICES = [
         ('baixa', 'Baixa'),
         ('media', 'Média'),
@@ -401,14 +404,18 @@ class Order(models.Model):
         return self.PRIORIDADE_CORES.get(self.prioridade, 'gray')
 
     @property
+    def esta_finalizado(self):
+        return self.status in self.STATUS_FINALIZADOS
+
+    @property
     def esta_atrasado(self):
-        if self.prazo_entrega and self.status not in ('concluido', 'cancelado', 'refunded', 'completed'):
+        if self.prazo_entrega and not self.esta_finalizado:
             return timezone.now() > self.prazo_entrega
         return False
 
     @property
     def horas_restantes(self):
-        if self.prazo_entrega and self.status not in ('concluido', 'cancelado', 'refunded', 'completed'):
+        if self.prazo_entrega and not self.esta_finalizado:
             delta = self.prazo_entrega - timezone.now()
             return int(delta.total_seconds() / 3600)
         return None

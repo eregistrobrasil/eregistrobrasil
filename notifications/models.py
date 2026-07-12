@@ -40,5 +40,16 @@ class Notification(models.Model):
         return cls.objects.create(usuario=usuario, tipo=tipo, mensagem=mensagem, order=order)
 
     @classmethod
+    def ativas(cls, usuario):
+        """
+        Notificações do usuário cujo pedido vinculado ainda não foi finalizado.
+        Notificações sem pedido vinculado (order=None) são sempre mantidas.
+        """
+        from orders.models import Order
+        return cls.objects.filter(usuario=usuario).exclude(
+            order__status__in=Order.STATUS_FINALIZADOS
+        )
+
+    @classmethod
     def nao_lidas(cls, usuario):
-        return cls.objects.filter(usuario=usuario, lida=False).count()
+        return cls.ativas(usuario).filter(lida=False).count()

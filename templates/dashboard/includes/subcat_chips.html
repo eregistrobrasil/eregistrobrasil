@@ -6,12 +6,12 @@ total (contagem do "Todos"), tipo_ativo (do contexto da view).
 {% endcomment %}
 {% if subcats %}
 <div class="mb-4 flex flex-wrap items-center gap-2">
-  <a href="{% url 'dashboard:order_list' %}?categoria={{ categoria }}"
+  <a href="{% url list_url_name %}?categoria={{ categoria }}"
      class="chip {% if not tipo_ativo %}active{% endif %}">
     Todos <span class="chip-count">{{ total }}</span>
   </a>
   {% for sc in subcats %}
-  <a href="{% url 'dashboard:order_list' %}?categoria={{ categoria }}&tipo={{ sc.slug }}"
+  <a href="{% url list_url_name %}?categoria={{ categoria }}&tipo={{ sc.slug }}"
      class="chip {% if sc.ativa %}active{% endif %}">
     {{ sc.label }} <span class="chip-count">{{ sc.count }}</span>
   </a>

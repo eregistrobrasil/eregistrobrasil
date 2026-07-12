@@ -1,6 +1,7 @@
 #SSH
 ssh root@72.60.144.18
 
+eregistrobrasil.com.br
 
 #Abrir Pasta
 cd /opt/eregistro-brasil

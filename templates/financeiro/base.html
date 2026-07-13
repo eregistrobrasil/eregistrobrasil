@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}{{ title|default:"Financeiro" }} — E-Registro Brasil{% endblock %}</title>
+  <title>{% block title %}{{ title|default:"Financeiro" }} — E-Registro Brasil LTDA{% endblock %}</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -33,8 +33,8 @@
   </style>
   {% block extra_head %}{% endblock %}
 </head>
-<body class="h-full font-sans antialiased">
-<div class="flex h-screen overflow-hidden bg-gray-50">
+<body class="h-full font-sans antialiased flex flex-col">
+<div class="flex flex-1 min-h-0 overflow-hidden bg-gray-50">
 
   <!-- Sidebar -->
   <aside id="sidebar" class="hidden lg:flex flex-col w-64 bg-fin text-white flex-shrink-0 shadow-xl">
@@ -45,7 +45,7 @@
         </svg>
       </div>
       <div>
-        <p class="font-bold text-sm leading-tight">E-Registro Brasil</p>
+        <p class="font-bold text-sm leading-tight">E-Registro Brasil LTDA</p>
         <p class="text-xs text-white/60">Painel Financeiro</p>
       </div>
     </div>
@@ -158,6 +158,8 @@
     </main>
   </div>
 </div>
+{% include 'includes/disclaimer_banner.html' %}
+
 {% block extra_js %}{% endblock %}
 </body>
 </html>

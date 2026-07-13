@@ -1,0 +1,17 @@
+{# Aviso de canal oficial (páginas /servico/). Personalize via variável de contexto "canal_oficial" ou campo Product.canal_oficial; sem valor, usa o texto genérico. #}
+{% firstof canal_oficial product.canal_oficial '' as canal %}
+<div role="note" class="bg-gray-50 border border-gray-200 rounded-xl p-5 flex items-start gap-3">
+  <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+  </svg>
+  <p class="text-sm text-gray-600 leading-relaxed">
+    {% if canal %}
+    Este documento também pode ser solicitado diretamente pelo interessado, sem intermediação,
+    junto ao órgão responsável ou pelo canal oficial <strong class="text-gray-800">{{ canal }}</strong>.
+    {% else %}
+    Este documento também pode ser solicitado diretamente pelo interessado, sem intermediação,
+    junto ao cartório ou órgão responsável pela emissão, por meio dos seus canais oficiais de atendimento.
+    {% endif %}
+    Nosso serviço é uma facilitação opcional e paga, que cuida de todo o processo por você.
+  </p>
+</div>

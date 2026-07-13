@@ -24,6 +24,18 @@
     .select2-search--dropdown .select2-search__field { border-radius: 0.375rem; border-color: #d1d5db; padding: 0.4rem 0.6rem; }
     .select2-container { width: 100% !important; }
 
+    /* Cartório: nome longo quebra em várias linhas, sem sair da coluna */
+    .select2-container--default .select2-selection--cartorio.select2-selection--single {
+      height: auto; min-height: 2.75rem;
+    }
+    .select2-container--default .select2-selection--cartorio .select2-selection__rendered {
+      white-space: normal; word-break: break-word;
+      line-height: 1.45; padding: 0.5rem 1.5rem 0.5rem 0.25rem;
+    }
+    .select2-dropdown--cartorio .select2-results__option {
+      white-space: normal; word-break: break-word;
+    }
+
     @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
     .animate-fade-in { animation: fadeInUp 0.5s ease both; }
     .animate-delay-1 { animation-delay: 0.1s; }
@@ -46,10 +58,10 @@
 
   {% include 'servicos/includes/_breadcrumb.html' with servico_nome=title only %}
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-10 items-start">
 
     <!-- ===== Coluna Esquerda: Imagem + Formulário ===== -->
-    <div class="space-y-6 animate-fade-in animate-delay-1">
+    <div class="lg:col-span-3 space-y-6 animate-fade-in animate-delay-1">
 
       {% block imagem %}
       {% if imagem_static %}
@@ -83,7 +95,7 @@
     </div>
 
     <!-- ===== Coluna Direita: Informações ===== -->
-    <div class="space-y-6 animate-fade-in animate-delay-2">
+    <div class="lg:col-span-2 space-y-6 animate-fade-in animate-delay-2">
       {% block info_coluna %}
       <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-8">
         <div class="flex items-start gap-4 mb-5">
@@ -136,6 +148,11 @@
   $(function () {
     $('#select-estado').select2({ placeholder: 'Selecione um estado', allowClear: true, language: { noResults: () => 'Nenhum estado encontrado' } });
     $('#select-cidade').select2({ placeholder: 'Selecione primeiro o estado', allowClear: true, language: { noResults: () => 'Nenhuma cidade encontrada' } });
+    $('#select-cartorio').select2({
+      language: { noResults: () => 'Nenhum cartório encontrado' },
+      selectionCssClass: 'select2-selection--cartorio',
+      dropdownCssClass: 'select2-dropdown--cartorio',
+    });
 
     $('#select-estado').on('change', function () {
       const uf = $(this).val();
@@ -173,6 +190,7 @@
     function resetCartorio(msg) {
       $selectCartorio.empty().append('<option value="">' + msg + '</option>');
       $selectCartorio.prop('disabled', true);
+      $selectCartorio.trigger('change.select2');
       $cartorioIdInput.val('');
       $cartorioNomeInput.val('');
       $cartorioEmpty.addClass('hidden');
@@ -197,6 +215,7 @@
             data.forEach(function (c) { $selectCartorio.append($('<option>').val(c.id).text(c.nome).data('nome', c.nome)); });
             $selectCartorio.prop('disabled', false);
           }
+          $selectCartorio.trigger('change.select2');
           $(document).trigger('cartorios:loaded', [data]);
         })
         .fail(function () { resetCartorio('Erro ao carregar cartórios'); })

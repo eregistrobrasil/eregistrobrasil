@@ -40,6 +40,13 @@ class ProductAdmin(admin.ModelAdmin):
         ('Configurações', {
             'fields': ('is_active', 'is_featured', 'order', 'icon_svg')
         }),
+        ('Transparência', {
+            'fields': ('canal_oficial',),
+            'description': (
+                'Canal oficial onde o interessado pode solicitar o documento diretamente, '
+                'sem intermediação (exibido no aviso de transparência da página do serviço).'
+            ),
+        }),
         ('Imagem do Serviço', {
             'fields': ('imagem_static', 'preview_imagem'),
             'description': (

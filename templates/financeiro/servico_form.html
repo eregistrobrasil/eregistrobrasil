@@ -68,6 +68,15 @@
           {% if form.description.errors %}<p class="text-xs text-red-500 mt-1">{{ form.description.errors.0 }}</p>{% endif %}
         </div>
 
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Canal Oficial Direto (opcional)</label>
+          {{ form.canal_oficial }}
+          <p class="text-xs text-gray-400 mt-1">
+            Canal oficial onde o interessado pode solicitar o documento diretamente, sem intermediação.
+            Exibido no aviso de transparência da página do serviço; em branco, usa o texto genérico.
+          </p>
+        </div>
+
         <div class="flex items-center gap-6">
           <label class="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
             {{ form.is_active }}

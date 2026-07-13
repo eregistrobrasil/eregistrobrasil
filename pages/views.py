@@ -71,6 +71,7 @@ class BaseCertidaoCartorioView(View):
     descricao_servico = ''
     imagem_static = ''            # ex: 'img/certidao-de-nascimento.png'
     tipo_cartorio = ''            # ex: 'civil', 'notas', 'imoveis', 'protesto'
+    canal_oficial = ''            # nome do canal oficial direto (ex: 'CENSEC/e-notariado')
 
     def _ctx(self, dados_ec, form):
         return {
@@ -81,6 +82,7 @@ class BaseCertidaoCartorioView(View):
             'descricao_servico': self.descricao_servico,
             'imagem_static': self.imagem_static,
             'tipo_cartorio': self.tipo_cartorio,
+            'canal_oficial': self.canal_oficial,
         }
 
     def get(self, request):
@@ -123,6 +125,7 @@ class BaseCertidaoDadosView(View):
     descricao_step2 = 'Informe os dados constantes na certidão.'
     # Tipo de certidão propagado à sessão para categorização automática do pedido
     tipo_certidao = ''
+    canal_oficial = ''            # nome do canal oficial direto (ex: 'CENSEC/e-notariado')
 
     def _get_cartorio(self, request):
         return request.session.get('certidao_cartorio')
@@ -135,6 +138,7 @@ class BaseCertidaoDadosView(View):
             'step1_url': self.step1_url,
             'date_field_ids': mark_safe(json.dumps(self.date_field_ids)),
             'descricao_step2': self.descricao_step2,
+            'canal_oficial': self.canal_oficial,
         }
 
     def get(self, request):
@@ -210,7 +214,7 @@ class BaseCertidaoDadosView(View):
 # ─────────────────────────────────────────────
 
 class CertidaoNascimentoView(BaseCertidaoCartorioView):
-    title = 'Certidão de Nascimento 2ª Via — E-Registro Brasil'
+    title = 'Certidão de Nascimento 2ª Via — E-Registro Brasil LTDA'
     template_name = 'pages/certidao_nascimento.html'
     dados_step_name = 'pages:certidao_nascimento_dados'
     tipo_cartorio = 'civil'
@@ -250,7 +254,7 @@ class CertidaoDadosView(BaseCertidaoDadosView):
 # ─────────────────────────────────────────────
 
 class CertidaoObitoView(BaseCertidaoCartorioView):
-    title = 'Certidão de Óbito 2ª Via — E-Registro Brasil'
+    title = 'Certidão de Óbito 2ª Via — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_obito_cartorio.html'
     dados_step_name = 'pages:certidao_obito_dados'
     tipo_cartorio = 'civil'
@@ -317,7 +321,7 @@ class CertidaoObitoDadosView(BaseCertidaoDadosView):
 # ─────────────────────────────────────────────
 
 class CertidaoCasamentoView(BaseCertidaoCartorioView):
-    title = 'Certidão de Casamento 2ª Via — E-Registro Brasil'
+    title = 'Certidão de Casamento 2ª Via — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_casamento_cartorio.html'
     dados_step_name = 'pages:certidao_casamento_dados'
     tipo_cartorio = 'civil'
@@ -385,7 +389,7 @@ class CertidaoCasamentoDadosView(BaseCertidaoDadosView):
 # ─────────────────────────────────────────────
 
 class CertidaoInterdicaoView(BaseCertidaoCartorioView):
-    title = 'Certidão de Interdição — E-Registro Brasil'
+    title = 'Certidão de Interdição — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_interdicao_cartorio.html'
     dados_step_name = 'pages:certidao_interdicao_dados'
     tipo_cartorio = 'civil'
@@ -457,7 +461,7 @@ class CertidaoInterdicaoDadosView(BaseCertidaoDadosView):
 # ─────────────────────────────────────────────
 
 class CertidaoProcuracaoView(BaseCertidaoCartorioView):
-    title = 'Certidão de Procuração — E-Registro Brasil'
+    title = 'Certidão de Procuração — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_procuracao_cartorio.html'
     dados_step_name = 'pages:certidao_procuracao_dados'
     tipo_cartorio = 'notas'
@@ -622,7 +626,7 @@ _IMOVEL_DESCRICAO_STEP3 = {
 
 class CertidaoImovelView(BaseCertidaoCartorioView):
     """Etapa 1: seleção de estado, cidade e cartório."""
-    title = 'Certidão de Imóvel — E-Registro Brasil'
+    title = 'Certidão de Imóvel — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_imovel_cartorio.html'
     dados_step_name = 'pages:certidao_imovel_tipo'
     tipo_cartorio = 'imoveis'
@@ -774,7 +778,7 @@ class CertidaoImovelDadosView(View):
 # ─────────────────────────────────────────────
 
 class CertidaoEscrituraView(BaseCertidaoCartorioView):
-    title = 'Certidão de Escritura — E-Registro Brasil'
+    title = 'Certidão de Escritura — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_escritura_cartorio.html'
     dados_step_name = 'pages:certidao_escritura_dados'
     tipo_cartorio = 'notas'
@@ -848,7 +852,7 @@ class CertidaoEscrituraDadosView(BaseCertidaoDadosView):
 # ─────────────────────────────────────────────
 
 class CertidaoUniaoEstavelView(BaseCertidaoCartorioView):
-    title = 'Certidão de Escritura de União Estável — E-Registro Brasil'
+    title = 'Certidão de Escritura de União Estável — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_uniao_estavel_cartorio.html'
     dados_step_name = 'pages:certidao_uniao_estavel_dados'
     tipo_cartorio = 'notas'
@@ -989,7 +993,7 @@ class _EscrituraDadosMixin(BaseCertidaoDadosView):
 # ─────────────────────────────────────────────
 
 class CertidaoEscrituraAtaNotarialView(_EscrituraCartorioMixin):
-    title = 'Certidão de Escritura de Ata Notarial — E-Registro Brasil'
+    title = 'Certidão de Escritura de Ata Notarial — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_escritura_ata_notarial_cartorio.html'
     dados_step_name = 'pages:certidao_escritura_ata_notarial_dados'
     descricao_servico = (
@@ -1013,7 +1017,7 @@ class CertidaoEscrituraAtaNotarialDadosView(_EscrituraDadosMixin):
 # ─────────────────────────────────────────────
 
 class CertidaoEscrituraCompraVendaView(_EscrituraCartorioMixin):
-    title = 'Certidão de Escritura de Compra e Venda — E-Registro Brasil'
+    title = 'Certidão de Escritura de Compra e Venda — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_escritura_compra_venda_cartorio.html'
     dados_step_name = 'pages:certidao_escritura_compra_venda_dados'
     descricao_servico = (
@@ -1037,7 +1041,7 @@ class CertidaoEscrituraCompraVendaDadosView(_EscrituraDadosMixin):
 # ─────────────────────────────────────────────
 
 class CertidaoEscrituraDivorcioView(_EscrituraCartorioMixin):
-    title = 'Certidão de Escritura de Divórcio — E-Registro Brasil'
+    title = 'Certidão de Escritura de Divórcio — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_escritura_divorcio_cartorio.html'
     dados_step_name = 'pages:certidao_escritura_divorcio_dados'
     descricao_servico = (
@@ -1061,7 +1065,7 @@ class CertidaoEscrituraDivorcioDadosView(_EscrituraDadosMixin):
 # ─────────────────────────────────────────────
 
 class CertidaoEscrituraDoacaoView(_EscrituraCartorioMixin):
-    title = 'Certidão de Escritura de Doação — E-Registro Brasil'
+    title = 'Certidão de Escritura de Doação — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_escritura_doacao_cartorio.html'
     dados_step_name = 'pages:certidao_escritura_doacao_dados'
     descricao_servico = (
@@ -1085,7 +1089,7 @@ class CertidaoEscrituraDoacaoDadosView(_EscrituraDadosMixin):
 # ─────────────────────────────────────────────
 
 class CertidaoEscrituraEmancipacaoView(_EscrituraCartorioMixin):
-    title = 'Certidão de Escritura de Emancipação — E-Registro Brasil'
+    title = 'Certidão de Escritura de Emancipação — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_escritura_emancipacao_cartorio.html'
     dados_step_name = 'pages:certidao_escritura_emancipacao_dados'
     descricao_servico = (
@@ -1109,7 +1113,7 @@ class CertidaoEscrituraEmancipacaoDadosView(_EscrituraDadosMixin):
 # ─────────────────────────────────────────────
 
 class CertidaoEscrituraHipotecaView(_EscrituraCartorioMixin):
-    title = 'Certidão de Escritura de Hipoteca — E-Registro Brasil'
+    title = 'Certidão de Escritura de Hipoteca — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_escritura_hipoteca_cartorio.html'
     dados_step_name = 'pages:certidao_escritura_hipoteca_dados'
     descricao_servico = (
@@ -1133,7 +1137,7 @@ class CertidaoEscrituraHipotecaDadosView(_EscrituraDadosMixin):
 # ─────────────────────────────────────────────
 
 class CertidaoEscrituraInventarioView(_EscrituraCartorioMixin):
-    title = 'Certidão de Escritura de Inventário — E-Registro Brasil'
+    title = 'Certidão de Escritura de Inventário — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_escritura_inventario_cartorio.html'
     dados_step_name = 'pages:certidao_escritura_inventario_dados'
     descricao_servico = (
@@ -1157,7 +1161,7 @@ class CertidaoEscrituraInventarioDadosView(_EscrituraDadosMixin):
 # ─────────────────────────────────────────────
 
 class CertidaoEscrituraPactoAntenupcialView(_EscrituraCartorioMixin):
-    title = 'Certidão de Escritura de Pacto Antenupcial — E-Registro Brasil'
+    title = 'Certidão de Escritura de Pacto Antenupcial — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_escritura_pacto_antenupcial_cartorio.html'
     dados_step_name = 'pages:certidao_escritura_pacto_antenupcial_dados'
     descricao_servico = (
@@ -1181,7 +1185,7 @@ class CertidaoEscrituraPactoAntenupcialDadosView(_EscrituraDadosMixin):
 # ─────────────────────────────────────────────
 
 class CertidaoEscrituraPermutaView(_EscrituraCartorioMixin):
-    title = 'Certidão de Escritura de Permuta — E-Registro Brasil'
+    title = 'Certidão de Escritura de Permuta — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_escritura_permuta_cartorio.html'
     dados_step_name = 'pages:certidao_escritura_permuta_dados'
     descricao_servico = (
@@ -1205,7 +1209,7 @@ class CertidaoEscrituraPermutaDadosView(_EscrituraDadosMixin):
 # ─────────────────────────────────────────────
 
 class CertidaoEscrituraTestamentoView(_EscrituraCartorioMixin):
-    title = 'Certidão de Testamento Público — E-Registro Brasil'
+    title = 'Certidão de Testamento Público — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_escritura_testamento_cartorio.html'
     dados_step_name = 'pages:certidao_escritura_testamento_dados'
     descricao_servico = (
@@ -1230,7 +1234,7 @@ class CertidaoEscrituraTestamentoDadosView(_EscrituraDadosMixin):
 
 class CertidaoPenhorSafraView(BaseCertidaoCartorioView):
     """Etapa 1: seleção de estado, cidade e cartório para Penhor de Safra."""
-    title = 'Certidão de Penhor de Safra — E-Registro Brasil'
+    title = 'Certidão de Penhor de Safra — E-Registro Brasil LTDA'
     template_name = 'servicos/certidao_penhor_safra_cartorio.html'
     tipo_cartorio = 'imoveis'
     dados_step_name = 'pages:certidao_penhor_safra_dados'
@@ -1339,7 +1343,7 @@ class AboutView(TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Quem Somos — E-Registro Brasil'
+        ctx['title'] = 'Quem Somos — E-Registro Brasil LTDA'
         return ctx
 
 
@@ -1350,7 +1354,7 @@ class ContactView(FormView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Fale Conosco — E-Registro Brasil'
+        ctx['title'] = 'Fale Conosco — E-Registro Brasil LTDA'
         return ctx
 
     def form_valid(self, form):
@@ -1374,7 +1378,7 @@ class TermsView(TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Termos de Uso — E-Registro Brasil'
+        ctx['title'] = 'Termos de Uso — E-Registro Brasil LTDA'
         return ctx
 
 
@@ -1383,7 +1387,7 @@ class PrivacyView(TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Política de Privacidade — E-Registro Brasil'
+        ctx['title'] = 'Política de Privacidade — E-Registro Brasil LTDA'
         return ctx
 
 
@@ -1392,7 +1396,7 @@ class LegalView(TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Ressalva Legal — E-Registro Brasil'
+        ctx['title'] = 'Ressalva Legal — E-Registro Brasil LTDA'
         return ctx
 
 
@@ -1423,7 +1427,7 @@ class AboutView(TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Quem Somos — E-Registro Brasil'
+        ctx['title'] = 'Quem Somos — E-Registro Brasil LTDA'
         return ctx
 
 
@@ -1434,7 +1438,7 @@ class ContactView(FormView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Fale Conosco — E-Registro Brasil'
+        ctx['title'] = 'Fale Conosco — E-Registro Brasil LTDA'
         return ctx
 
     def form_valid(self, form):
@@ -1461,7 +1465,7 @@ class CertidaoNascimentoView(View):
         from products.models import Product
         from products.services import get_state_prices_dict
         ctx = {
-            'title': 'Certidão de Nascimento 2ª Via — E-Registro Brasil',
+            'title': 'Certidão de Nascimento 2ª Via — E-Registro Brasil LTDA',
             'estados': _estados_list(dados_ec),
             'passos': _PASSOS,
             'form': form,
@@ -1569,7 +1573,7 @@ class TermsView(TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Termos de Uso — E-Registro Brasil'
+        ctx['title'] = 'Termos de Uso — E-Registro Brasil LTDA'
         return ctx
 
 
@@ -1578,7 +1582,7 @@ class PrivacyView(TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Política de Privacidade — E-Registro Brasil'
+        ctx['title'] = 'Política de Privacidade — E-Registro Brasil LTDA'
         return ctx
 
 
@@ -1587,7 +1591,7 @@ class LegalView(TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Ressalva Legal — E-Registro Brasil'
+        ctx['title'] = 'Ressalva Legal — E-Registro Brasil LTDA'
         return ctx
 
 
@@ -1790,7 +1794,7 @@ class _BaseProtestoDadosView(BaseCertidaoDadosView):
 
 
 class CertidaoProtestoCartorioView(_BaseProtestoCartorioView):
-    title = 'Certidão de Protesto — E-Registro Brasil'
+    title = 'Certidão de Protesto — E-Registro Brasil LTDA'
     template_name = 'servicos/protesto/certidao_protesto_cartorio.html'
     dados_step_url = 'pages:certidao_protesto_dados'
     product_slug = 'certidao-de-protesto'
@@ -1806,7 +1810,7 @@ class CertidaoProtestoDadosView(_BaseProtestoDadosView):
 
 
 class BuscaProtestoCartorioView(_BaseProtestoCartorioView):
-    title = 'Busca de Protesto — E-Registro Brasil'
+    title = 'Busca de Protesto — E-Registro Brasil LTDA'
     template_name = 'servicos/protesto/busca_protesto_cartorio.html'
     dados_step_url = 'pages:busca_protesto_dados'
     product_slug = 'busca-de-protesto'
@@ -1832,7 +1836,7 @@ class CndFederalView(BaseServicoSimplesDadosView):
 
 
 class CertidaoFgtsInssView(BaseServicoSimplesDadosView):
-    title = "Certidão FGTS / INSS — E-Registro Brasil"
+    title = "Certidão FGTS / INSS — E-Registro Brasil LTDA"
     form_class = CertidaoFgtsInssForm
     template_name = "servicos/federais_estaduais/certidao-fgts-inss.html"
     product_slug = "certidao-fgts-inss"
@@ -1855,7 +1859,7 @@ class CertidaoFgtsInssView(BaseServicoSimplesDadosView):
 
 
 class CndEstadualView(BaseServicoSimplesDadosView):
-    title = "CND Estadual SEFAZ — E-Registro Brasil"
+    title = "CND Estadual SEFAZ — E-Registro Brasil LTDA"
     form_class = CndEstadualSefazForm
     template_name = "servicos/federais_estaduais/cnd_estadual_sefaz.html"
     product_slug = "cnd-estadual-sefaz"
@@ -1924,7 +1928,7 @@ class CnjImprobidadeAdministrativaView(BaseServicoSimplesDadosView):
 
 
 class CafirView(BaseServicoSimplesDadosView):
-    title = "Cadastro de Imóveis Rurais CAFIR — E-Registro Brasil"
+    title = "Cadastro de Imóveis Rurais CAFIR — E-Registro Brasil LTDA"
     form_class = CafirForm
     template_name = "servicos/federais_estaduais/cadastro-de-imoveis-rurais-cafir.html"
     product_slug = "cadastro-de-imoveis-rurais-cafir"
@@ -1947,7 +1951,7 @@ class CafirView(BaseServicoSimplesDadosView):
 
 
 class CertidaoIbamaEmbargosView(BaseServicoSimplesDadosView):
-    title = "Certidão IBAMA — Certidão de Embargos | E-Registro Brasil"
+    title = "Certidão IBAMA — Certidão de Embargos | E-Registro Brasil LTDA"
     form_class = CertidaoIbamaEmbargosForm
     template_name = "servicos/federais_estaduais/certidao-ibama-certidao-de-embargos.html"
     product_slug = "certidao-ibama-certidao-de-embargos"
@@ -1976,7 +1980,7 @@ class CertidaoIbamaEmbargosView(BaseServicoSimplesDadosView):
 
 
 class CertidaoNegativaAcoesCriminaisView(BaseServicoSimplesDadosView):
-    title = "Certidão Negativa de Ações Criminais — E-Registro Brasil"
+    title = "Certidão Negativa de Ações Criminais — E-Registro Brasil LTDA"
     form_class = CertidaoNegativaAcoesCriminaisForm
     template_name = "servicos/federais_estaduais/certidao-negativa-de-acoes-criminais.html"
     product_slug = "certidao-negativa-de-acoes-criminais"
@@ -2000,7 +2004,7 @@ class CertidaoNegativaAcoesCriminaisView(BaseServicoSimplesDadosView):
 
 
 class CertidaoNegativaDebitosAmbientaisView(BaseServicoSimplesDadosView):
-    title = "Certidão Negativa de Débitos Ambientais — E-Registro Brasil"
+    title = "Certidão Negativa de Débitos Ambientais — E-Registro Brasil LTDA"
     form_class = CertidaoNegativaDebitosAmbientaisForm
     template_name = "servicos/federais_estaduais/certidao-negativa-de-debitos-ambientais.html"
     product_slug = "certidao-negativa-de-debitos-ambientais"
@@ -2024,7 +2028,7 @@ class CertidaoNegativaDebitosAmbientaisView(BaseServicoSimplesDadosView):
 
 
 class CertidaoNegativaMunicipioView(BaseServicoSimplesDadosView):
-    title = "Certidão Negativa de Débitos Municipais — E-Registro Brasil"
+    title = "Certidão Negativa de Débitos Municipais — E-Registro Brasil LTDA"
     form_class = CertidaoNegativaMunicipioForm
     template_name = "servicos/federais_estaduais/certidao-negativa-municipio.html"
     product_slug = "certidao-negativa-municipio"
@@ -2053,7 +2057,7 @@ class CertidaoNegativaMunicipioView(BaseServicoSimplesDadosView):
 
 
 class CotaLegalPcdsView(BaseServicoSimplesDadosView):
-    title = "Certidão de Cumprimento da Cota Legal de PCDs — E-Registro Brasil"
+    title = "Certidão de Cumprimento da Cota Legal de PCDs — E-Registro Brasil LTDA"
     form_class = CotaLegalPcdsForm
     template_name = "servicos/federais_estaduais/certidao-de-cumprimento-da-cota-legal-de-pcds.html"
     product_slug = "certidao-de-cumprimento-da-cota-legal-de-pcds"
@@ -2077,7 +2081,7 @@ class CotaLegalPcdsView(BaseServicoSimplesDadosView):
 
 
 class DebitosTrabalhalistasView(BaseServicoSimplesDadosView):
-    title = "Certidão Negativa de Débitos Trabalhistas — E-Registro Brasil"
+    title = "Certidão Negativa de Débitos Trabalhistas — E-Registro Brasil LTDA"
     form_class = DebitosTrabalhalistasForm
     template_name = "servicos/federais_estaduais/certidao-negativa-de-debitos-trabalhistas.html"
     product_slug = "certidao-negativa-de-debitos-trabalhistas"
@@ -2101,7 +2105,7 @@ class DebitosTrabalhalistasView(BaseServicoSimplesDadosView):
 
 
 class PropriedadeAeronaveView(BaseServicoSimplesDadosView):
-    title = "Certidão de Propriedade de Aeronave — E-Registro Brasil"
+    title = "Certidão de Propriedade de Aeronave — E-Registro Brasil LTDA"
     form_class = PropriedadeAeronaveForm
     template_name = "servicos/federais_estaduais/certidao-de-propriedade-de-aeronave.html"
     product_slug = "certidao-de-propriedade-de-aeronave"
@@ -2125,7 +2129,7 @@ class PropriedadeAeronaveView(BaseServicoSimplesDadosView):
 
 
 class JuntaComercialCertidaoEmpresaView(BaseServicoSimplesDadosView):
-    title = "Junta Comercial — Certidão da Empresa — E-Registro Brasil"
+    title = "Junta Comercial — Certidão da Empresa — E-Registro Brasil LTDA"
     form_class = JuntaComercialCertidaoEmpresaForm
     template_name = "servicos/federais_estaduais/junta-comercial-certidao-da-empresa.html"
     product_slug = "junta-comercial-certidao-da-empresa"
@@ -2148,7 +2152,7 @@ class JuntaComercialCertidaoEmpresaView(BaseServicoSimplesDadosView):
 
 
 class CertidaoRegularidadeCreView(BaseServicoSimplesDadosView):
-    title = "Certidão de Regularidade no CREA — E-Registro Brasil"
+    title = "Certidão de Regularidade no CREA — E-Registro Brasil LTDA"
     form_class = CertidaoRegularidadeCreacForm
     template_name = "servicos/federais_estaduais/certidao-regularidade-crea.html"
     product_slug = "certidao-regularidade-crea"
@@ -2172,7 +2176,7 @@ class CertidaoRegularidadeCreView(BaseServicoSimplesDadosView):
 
 
 class CertidaoAntecedentesCriminaisView(BaseServicoSimplesDadosView):
-    title = "Certidão de Antecedentes Criminais — E-Registro Brasil"
+    title = "Certidão de Antecedentes Criminais — E-Registro Brasil LTDA"
     form_class = CertidaoAntecedentesCriminaisForm
     template_name = "servicos/federais_estaduais/certidao_antecedentes_criminais.html"
     product_slug = "certidao-antecedentes-criminais"
@@ -2206,14 +2210,14 @@ class TseQuitacaoEleitoralView(BaseServicoSimplesDadosView):
 
 # Busca em Cartorios
 class BuscaCartorioRegistroCivilView(BaseServicoSimplesDadosView):
-    title = "Busca em Cartorios de Registro Civil - E-Registro Brasil"
+    title = "Busca em Cartorios de Registro Civil - E-Registro Brasil LTDA"
     form_class = BuscaCartorioForm
     template_name = "servicos/busca_cartorio.html"
     product_slug = "busca-em-cartorios-registro-civil"
 
 
 class BuscaTabelionatoNotasView(BaseServicoSimplesDadosView):
-    title = "Busca em Tabelionatos de Notas - E-Registro Brasil"
+    title = "Busca em Tabelionatos de Notas - E-Registro Brasil LTDA"
     form_class = BuscaCartorioForm
     template_name = "servicos/busca_cartorio.html"
     product_slug = "busca-em-tabelionatos-notas"
@@ -2221,7 +2225,7 @@ class BuscaTabelionatoNotasView(BaseServicoSimplesDadosView):
 
 # Apostilamento
 class ApostilaHaiaView(BaseServicoSimplesDadosView):
-    title = "Apostila de Haia - E-Registro Brasil"
+    title = "Apostila de Haia - E-Registro Brasil LTDA"
     form_class = ApostilaHaiaForm
     template_name = "servicos/apostila_haia.html"
     product_slug = "apostila-de-haia"
@@ -2229,7 +2233,7 @@ class ApostilaHaiaView(BaseServicoSimplesDadosView):
 
 
 class TraducaoJuramentadaView(BaseServicoSimplesDadosView):
-    title = "Traducao Juramentada - E-Registro Brasil"
+    title = "Traducao Juramentada - E-Registro Brasil LTDA"
     form_class = TraducaoJuramentadaForm
     template_name = "servicos/traducao_juramentada.html"
     product_slug = "traducao-juramentada"
@@ -2388,7 +2392,7 @@ class BaseImovelVarianteDadosView(View):
 # ─── Certidão Negativa de Alienação Fiduciária ──────────────────────────────
 
 class CertidaoAlienacaoFiduciariaView(BaseImovelVarianteView):
-    title = "Certidão Negativa de Alienação Fiduciária — E-Registro Brasil"
+    title = "Certidão Negativa de Alienação Fiduciária — E-Registro Brasil LTDA"
     template_name = "servicos/imoveis/alienacao_fiduciaria_cartorio.html"
     dados_step_name = "pages:certidao_alienacao_fiduciaria_dados"
     _product_slug = "certidao-negativa-de-alienacao-fiduciaria"
@@ -2400,7 +2404,7 @@ class CertidaoAlienacaoFiduciariaView(BaseImovelVarianteView):
 
 class CertidaoAlienacaoFiduciariaDadosView(BaseImovelVarianteDadosView):
     from .forms import CertidaoAlienacaoFiduciariaForm as _CertidaoAlienacaoFiduciariaForm
-    title = "Certidão Negativa de Alienação Fiduciária — E-Registro Brasil"
+    title = "Certidão Negativa de Alienação Fiduciária — E-Registro Brasil LTDA"
     form_class = _CertidaoAlienacaoFiduciariaForm
     template_name = "servicos/imoveis/alienacao_fiduciaria_dados.html"
     product_slug = "certidao-negativa-de-alienacao-fiduciaria"
@@ -2413,7 +2417,7 @@ class CertidaoAlienacaoFiduciariaDadosView(BaseImovelVarianteDadosView):
 # ─── Certidão de Matrícula Atualizada ───────────────────────────────────────
 
 class CertidaoMatriculaAtualizadaView(BaseImovelVarianteView):
-    title = "Certidão de Matrícula Atualizada — E-Registro Brasil"
+    title = "Certidão de Matrícula Atualizada — E-Registro Brasil LTDA"
     template_name = "servicos/imoveis/matricula_atualizada_cartorio.html"
     dados_step_name = "pages:certidao_matricula_atualizada_dados"
     _product_slug = "certidao-de-matricula-atualizada"
@@ -2425,7 +2429,7 @@ class CertidaoMatriculaAtualizadaView(BaseImovelVarianteView):
 
 class CertidaoMatriculaAtualizadaDadosView(BaseImovelVarianteDadosView):
     from .forms import CertidaoImovelMatriculaForm as _CertidaoImovelMatriculaForm
-    title = "Certidão de Matrícula Atualizada — E-Registro Brasil"
+    title = "Certidão de Matrícula Atualizada — E-Registro Brasil LTDA"
     form_class = _CertidaoImovelMatriculaForm
     template_name = "servicos/imoveis/matricula_atualizada_dados.html"
     product_slug = "certidao-de-matricula-atualizada"
@@ -2438,7 +2442,7 @@ class CertidaoMatriculaAtualizadaDadosView(BaseImovelVarianteDadosView):
 # ─── Certidão de Ônus Reais ──────────────────────────────────────────────────
 
 class CertidaoOnusReaisView(BaseImovelVarianteView):
-    title = "Certidão de Ônus Reais — E-Registro Brasil"
+    title = "Certidão de Ônus Reais — E-Registro Brasil LTDA"
     template_name = "servicos/imoveis/onus_reais_cartorio.html"
     dados_step_name = "pages:certidao_onus_reais_dados"
     _product_slug = "certidao-de-onus-reais"
@@ -2450,7 +2454,7 @@ class CertidaoOnusReaisView(BaseImovelVarianteView):
 
 class CertidaoOnusReaisDadosView(BaseImovelVarianteDadosView):
     from .forms import CertidaoImovelInteiroTeorForm as _CertidaoImovelInteiroTeorForm
-    title = "Certidão de Ônus Reais — E-Registro Brasil"
+    title = "Certidão de Ônus Reais — E-Registro Brasil LTDA"
     form_class = _CertidaoImovelInteiroTeorForm
     template_name = "servicos/imoveis/onus_reais_dados.html"
     product_slug = "certidao-de-onus-reais"
@@ -2463,7 +2467,7 @@ class CertidaoOnusReaisDadosView(BaseImovelVarianteDadosView):
 # ─── Pesquisa de Bens ────────────────────────────────────────────────────────
 
 class PesquisaBensView(BaseImovelVarianteView):
-    title = "Pesquisa de Bens — E-Registro Brasil"
+    title = "Pesquisa de Bens — E-Registro Brasil LTDA"
     template_name = "servicos/imoveis/pesquisa_bens_cartorio.html"
     dados_step_name = "pages:pesquisa_bens_dados"
     _product_slug = "pesquisa-de-bens"
@@ -2506,7 +2510,7 @@ class PesquisaBensView(BaseImovelVarianteView):
 
 class PesquisaBensDadosView(BaseImovelVarianteDadosView):
     from .forms import PesquisaBensImovelForm as _PesquisaBensImovelForm
-    title = "Pesquisa de Bens — E-Registro Brasil"
+    title = "Pesquisa de Bens — E-Registro Brasil LTDA"
     form_class = _PesquisaBensImovelForm
     template_name = "servicos/imoveis/pesquisa_bens_dados.html"
     product_slug = "pesquisa-de-bens"
@@ -2560,9 +2564,10 @@ _TESTAMENTO_ETAPA1_SESSION_KEY = "testamento_etapa1"
 
 
 class _BaseTestamentoView(View):
-    title = "Certidão Negativa de Testamento — E-Registro Brasil"
+    title = "Certidão Negativa de Testamento — E-Registro Brasil LTDA"
     product_slug = "certidao-negativa-de-testamento"
     tipo_certidao_sessao = "busca_testamento"
+    canal_oficial = "CENSEC/e-notariado (busca de testamentos)"
 
     def _get_product(self):
         from products.models import Product
@@ -2576,6 +2581,7 @@ class _BaseTestamentoView(View):
             "title": self.title,
             "form": form,
             "passos": _PASSOS,
+            "canal_oficial": self.canal_oficial,
         }
         if product:
             ctx["product"] = product

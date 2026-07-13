@@ -55,12 +55,12 @@ class PostListView(ListView):
         ctx = super().get_context_data(**kwargs)
         ctx.update(_sidebar_ctx())
         ctx['blog_categories'] = BlogCategory.objects.all()
-        ctx['title'] = 'Blog — E-Registro Brasil'
+        ctx['title'] = 'Blog — E-Registro Brasil LTDA'
         ctx['search_query'] = self.request.GET.get('q', '')
         ctx['active_category'] = ''
         ctx['meta_description'] = (
             'Artigos, guias e dicas sobre certidões, documentão e cartórios no Brasil. '
-            'Blog E-Registro Brasil.'
+            'Blog E-Registro Brasil LTDA.'
         )
         if not ctx['search_query']:
             ctx['featured_post'] = (
@@ -94,9 +94,9 @@ class CategoryListView(ListView):
         ctx['category'] = self.category
         ctx['blog_categories'] = BlogCategory.objects.all()
         ctx['active_category'] = self.category.slug
-        ctx['title'] = f'{self.category.name} — Blog E-Registro Brasil'
+        ctx['title'] = f'{self.category.name} — Blog E-Registro Brasil LTDA'
         ctx['meta_description'] = (
-            f'Artigos sobre {self.category.name} no Blog E-Registro Brasil. '
+            f'Artigos sobre {self.category.name} no Blog E-Registro Brasil LTDA. '
             'Guias completos, dicas e informações sobre certidões e cartórios.'
         )
         return ctx

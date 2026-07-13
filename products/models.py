@@ -113,6 +113,13 @@ class Product(models.Model):
     order = models.PositiveIntegerField('Ordem', default=0)
     meta_title = models.CharField('Meta Título', max_length=200, blank=True)
     meta_description = models.CharField('Meta Descrição', max_length=300, blank=True)
+    canal_oficial = models.CharField(
+        'Canal Oficial Direto', max_length=200, blank=True,
+        help_text='Nome do canal oficial onde o interessado pode solicitar o documento '
+                  'diretamente, sem intermediação. Ex: CENSEC/e-notariado, Registro Civil '
+                  'Nacional (registrocivil.org.br). Exibido no aviso de transparência da '
+                  'página do serviço; em branco, usa o texto genérico.',
+    )
     # ── Campos de controle do sistema ────────────────────────────────────────
     imagem_static = models.CharField(
         'Imagem do Serviço',

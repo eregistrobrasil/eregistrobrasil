@@ -73,7 +73,7 @@ CATEGORIES = [
                 "original_price": "129.90",
                 "days": 7,
                 "featured": True,
-                "meta_title": "Certidão de Nascimento 2ª Via Online — E-Registro Brasil",
+                "meta_title": "Certidão de Nascimento 2ª Via Online — E-Registro Brasil LTDA",
                 "meta_desc": (
                     "Solicite sua certidão de nascimento 2ª via online. "
                     "Rápido, seguro e com entrega em todo o Brasil."
@@ -92,7 +92,7 @@ CATEGORIES = [
                 "original_price": "129.90",
                 "days": 7,
                 "featured": True,
-                "meta_title": "Certidão de Casamento 2ª Via Online — E-Registro Brasil",
+                "meta_title": "Certidão de Casamento 2ª Via Online — E-Registro Brasil LTDA",
                 "meta_desc": (
                     "Obtenha a 2ª via da certidão de casamento online. "
                     "Buscamos no cartório de origem e entregamos em todo o Brasil."
@@ -111,7 +111,7 @@ CATEGORIES = [
                 "original_price": "129.90",
                 "days": 7,
                 "featured": True,
-                "meta_title": "Certidão de Óbito 2ª Via Online — E-Registro Brasil",
+                "meta_title": "Certidão de Óbito 2ª Via Online — E-Registro Brasil LTDA",
                 "meta_desc": (
                     "Solicite a 2ª via da certidão de óbito com praticidade. "
                     "Atendemos cartórios em todo o Brasil."
@@ -129,7 +129,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 10,
                 "featured": False,
-                "meta_title": "Certidão de Interdição Online — E-Registro Brasil",
+                "meta_title": "Certidão de Interdição Online — E-Registro Brasil LTDA",
                 "meta_desc": (
                     "Solicite certidão de interdição do registro civil online. "
                     "Atendemos qualquer cartório do Brasil."
@@ -162,7 +162,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 7,
                 "featured": False,
-                "meta_title": "Certidão de Procuração Online — E-Registro Brasil",
+                "meta_title": "Certidão de Procuração Online — E-Registro Brasil LTDA",
                 "meta_desc": "Solicite certidão de procuração pública em qualquer tabelionato do Brasil.",
             },
             {
@@ -177,7 +177,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 7,
                 "featured": False,
-                "meta_title": "Certidão de Escritura Online — E-Registro Brasil",
+                "meta_title": "Certidão de Escritura Online — E-Registro Brasil LTDA",
                 "meta_desc": "Obtenha certidão de escritura pública do tabelionato de notas online.",
             },
             {
@@ -192,7 +192,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 7,
                 "featured": False,
-                "meta_title": "Certidão de União Estável Online — E-Registro Brasil",
+                "meta_title": "Certidão de União Estável Online — E-Registro Brasil LTDA",
                 "meta_desc": "Certidão de escritura de união estável online, rápido e seguro.",
             },
             {
@@ -208,7 +208,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 7,
                 "featured": False,
-                "meta_title": "Certidão de Ata Notarial Online — E-Registro Brasil",
+                "meta_title": "Certidão de Ata Notarial Online — E-Registro Brasil LTDA",
                 "meta_desc": "Solicite certidão de ata notarial em tabelionatos de todo o Brasil.",
             },
             {
@@ -224,7 +224,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 7,
                 "featured": False,
-                "meta_title": "Certidão de Escritura de Compra e Venda Online — E-Registro Brasil",
+                "meta_title": "Certidão de Escritura de Compra e Venda Online — E-Registro Brasil LTDA",
                 "meta_desc": "Certidão de escritura de compra e venda de imóvel com agilidade.",
             },
             {
@@ -239,7 +239,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 7,
                 "featured": False,
-                "meta_title": "Certidão de Escritura de Divórcio Online — E-Registro Brasil",
+                "meta_title": "Certidão de Escritura de Divórcio Online — E-Registro Brasil LTDA",
                 "meta_desc": "Obtenha certidão de escritura de divórcio extrajudicial online.",
             },
             {
@@ -254,7 +254,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 7,
                 "featured": False,
-                "meta_title": "Certidão de Escritura de Doação Online — E-Registro Brasil",
+                "meta_title": "Certidão de Escritura de Doação Online — E-Registro Brasil LTDA",
                 "meta_desc": "Solicite certidão de escritura de doação em qualquer tabelionato.",
             },
             {
@@ -269,7 +269,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 7,
                 "featured": False,
-                "meta_title": "Certidão de Escritura de Emancipação Online — E-Registro Brasil",
+                "meta_title": "Certidão de Escritura de Emancipação Online — E-Registro Brasil LTDA",
                 "meta_desc": "Certidão de emancipação voluntária lavrada em tabelionato de notas.",
             },
             {
@@ -284,7 +284,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 7,
                 "featured": False,
-                "meta_title": "Certidão de Escritura de Hipoteca Online — E-Registro Brasil",
+                "meta_title": "Certidão de Escritura de Hipoteca Online — E-Registro Brasil LTDA",
                 "meta_desc": "Solicite certidão de hipoteca de imóvel lavrada em cartório de notas.",
             },
             {
@@ -299,7 +299,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 7,
                 "featured": False,
-                "meta_title": "Certidão de Escritura de Inventário Online — E-Registro Brasil",
+                "meta_title": "Certidão de Escritura de Inventário Online — E-Registro Brasil LTDA",
                 "meta_desc": "Certidão de inventário extrajudicial lavrado em tabelionato de notas.",
             },
             {
@@ -314,7 +314,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 7,
                 "featured": False,
-                "meta_title": "Certidão de Pacto Antenupcial Online — E-Registro Brasil",
+                "meta_title": "Certidão de Pacto Antenupcial Online — E-Registro Brasil LTDA",
                 "meta_desc": "Solicite certidão de pacto antenupcial lavrado em tabelionato.",
             },
             {
@@ -329,7 +329,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 7,
                 "featured": False,
-                "meta_title": "Certidão de Escritura de Permuta Online — E-Registro Brasil",
+                "meta_title": "Certidão de Escritura de Permuta Online — E-Registro Brasil LTDA",
                 "meta_desc": "Certidão de escritura de permuta de imóveis em qualquer tabelionato.",
             },
             {
@@ -344,7 +344,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 7,
                 "featured": False,
-                "meta_title": "Certidão de Testamento Online — E-Registro Brasil",
+                "meta_title": "Certidão de Testamento Online — E-Registro Brasil LTDA",
                 "meta_desc": "Solicite certidão de testamento público em tabelionato de notas.",
             },
         ],
@@ -374,7 +374,7 @@ CATEGORIES = [
                 "original_price": "199.90",
                 "days": 5,
                 "featured": True,
-                "meta_title": "Certidão de Imóvel Online — E-Registro Brasil",
+                "meta_title": "Certidão de Imóvel Online — E-Registro Brasil LTDA",
                 "meta_desc": (
                     "Certidões do Registro de Imóveis online: matrícula, ônus reais, vintenária e mais. "
                     "Rápido e seguro em todo o Brasil."
@@ -392,7 +392,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 7,
                 "featured": False,
-                "meta_title": "Certidão de Penhor de Safra Online — E-Registro Brasil",
+                "meta_title": "Certidão de Penhor de Safra Online — E-Registro Brasil LTDA",
                 "meta_desc": "Solicite certidão de penhor de safra do registro de imóveis online.",
             },
             {
@@ -408,7 +408,7 @@ CATEGORIES = [
                 "original_price": "549.90",
                 "days": 7,
                 "featured": True,
-                "meta_title": "Pacote Certidões Compra e Venda de Imóvel — E-Registro Brasil",
+                "meta_title": "Pacote Certidões Compra e Venda de Imóvel — E-Registro Brasil LTDA",
                 "meta_desc": "Pacote completo de certidões para compra e venda de imóvel com segurança.",
             },
             {
@@ -423,7 +423,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 5,
                 "featured": False,
-                "meta_title": "Certidão de Matrícula Atualizada Online — E-Registro Brasil",
+                "meta_title": "Certidão de Matrícula Atualizada Online — E-Registro Brasil LTDA",
                 "meta_desc": "Certidão de matrícula atualizada do Registro de Imóveis online. Rápido e seguro.",
             },
             {
@@ -438,7 +438,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 5,
                 "featured": False,
-                "meta_title": "Certidão de Ônus Reais Online — E-Registro Brasil",
+                "meta_title": "Certidão de Ônus Reais Online — E-Registro Brasil LTDA",
                 "meta_desc": "Certidão de ônus reais do Registro de Imóveis online. Todos os gravames e hipotecas.",
             },
             {
@@ -453,7 +453,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 5,
                 "featured": False,
-                "meta_title": "Certidão Negativa de Alienação Fiduciária Online — E-Registro Brasil",
+                "meta_title": "Certidão Negativa de Alienação Fiduciária Online — E-Registro Brasil LTDA",
                 "meta_desc": "Certidão negativa de alienação fiduciária do Registro de Imóveis online.",
             },
             {
@@ -469,7 +469,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 5,
                 "featured": False,
-                "meta_title": "Pesquisa de Bens Imóveis Online — E-Registro Brasil",
+                "meta_title": "Pesquisa de Bens Imóveis Online — E-Registro Brasil LTDA",
                 "meta_desc": "Pesquisa de bens imóveis registrados em nome de pessoa no Registro de Imóveis.",
             },
         ],
@@ -500,7 +500,7 @@ CATEGORIES = [
                 "original_price": "99.90",
                 "days": 3,
                 "featured": False,
-                "meta_title": "Certidão de Protesto Online — E-Registro Brasil",
+                "meta_title": "Certidão de Protesto Online — E-Registro Brasil LTDA",
                 "meta_desc": "Solicite certidão de protesto de títulos em tabelionatos de todo o Brasil.",
             },
             {
@@ -516,7 +516,7 @@ CATEGORIES = [
                 "original_price": "99.90",
                 "days": 3,
                 "featured": False,
-                "meta_title": "Busca de Protesto Online — E-Registro Brasil",
+                "meta_title": "Busca de Protesto Online — E-Registro Brasil LTDA",
                 "meta_desc": "Solicite busca de protesto em tabelionatos de todo o Brasil com agilidade.",
             },
             {
@@ -532,7 +532,7 @@ CATEGORIES = [
                 "original_price": "79.90",
                 "days": 2,
                 "featured": False,
-                "meta_title": "Pesquisa de Protesto Nacional Online — E-Registro Brasil",
+                "meta_title": "Pesquisa de Protesto Nacional Online — E-Registro Brasil LTDA",
                 "meta_desc": "Pesquisa nacional de protesto via CRA para PF e PJ. Rápido e online.",
             },
         ],
@@ -563,7 +563,7 @@ CATEGORIES = [
                 "days": 1,
                 "featured": False,
                 "has_fixed_price": True,
-                "meta_title": "CND Federal Receita Federal Online — E-Registro Brasil",
+                "meta_title": "CND Federal Receita Federal Online — E-Registro Brasil LTDA",
                 "meta_desc": "Emita a CND Federal da Receita Federal online com agilidade. Apenas R$ 49,90.",
             },
             {
@@ -580,7 +580,7 @@ CATEGORIES = [
                 "days": 1,
                 "featured": False,
                 "has_fixed_price": True,
-                "meta_title": "Certidão FGTS / INSS Online — E-Registro Brasil",
+                "meta_title": "Certidão FGTS / INSS Online — E-Registro Brasil LTDA",
                 "meta_desc": "Obtenha a Certidão de Regularidade do FGTS e INSS online. R$ 49,90.",
             },
             {
@@ -597,7 +597,7 @@ CATEGORIES = [
                 "days": 1,
                 "featured": False,
                 "has_fixed_price": True,
-                "meta_title": "CND Estadual SEFAZ Online — E-Registro Brasil",
+                "meta_title": "CND Estadual SEFAZ Online — E-Registro Brasil LTDA",
                 "meta_desc": "Certidão Negativa Estadual SEFAZ online. Rápido e seguro. R$ 49,90.",
             },
             {
@@ -613,7 +613,7 @@ CATEGORIES = [
                 "days": 1,
                 "featured": False,
                 "has_fixed_price": True,
-                "meta_title": "Certidão Negativa Municipal Online — E-Registro Brasil",
+                "meta_title": "Certidão Negativa Municipal Online — E-Registro Brasil LTDA",
                 "meta_desc": "Certidão Negativa de Débitos Municipal online. R$ 49,90.",
             },
             {
@@ -630,7 +630,7 @@ CATEGORIES = [
                 "days": 1,
                 "featured": False,
                 "has_fixed_price": True,
-                "meta_title": "Certidão CREA Online — E-Registro Brasil",
+                "meta_title": "Certidão CREA Online — E-Registro Brasil LTDA",
                 "meta_desc": "Solicite certidão de regularidade do CREA online. R$ 49,90.",
             },
             {
@@ -646,7 +646,7 @@ CATEGORIES = [
                 "days": 1,
                 "featured": False,
                 "has_fixed_price": True,
-                "meta_title": "Certidão de Antecedentes Criminais Online — E-Registro Brasil",
+                "meta_title": "Certidão de Antecedentes Criminais Online — E-Registro Brasil LTDA",
                 "meta_desc": "Certidão de antecedentes criminais Polícia Federal online. R$ 49,90.",
             },
             {
@@ -664,7 +664,7 @@ CATEGORIES = [
                 "days": 1,
                 "featured": False,
                 "has_fixed_price": True,
-                "meta_title": "Certidão de Quitação Eleitoral TSE Online — E-Registro Brasil",
+                "meta_title": "Certidão de Quitação Eleitoral TSE Online — E-Registro Brasil LTDA",
                 "meta_desc": "Solicite a Certidão de Quitação Eleitoral do TSE online. R$ 49,90.",
             },
             {
@@ -681,7 +681,7 @@ CATEGORIES = [
                 "days": 1,
                 "featured": False,
                 "has_fixed_price": True,
-                "meta_title": "CND ITR Receita Federal Online — E-Registro Brasil",
+                "meta_title": "CND ITR Receita Federal Online — E-Registro Brasil LTDA",
                 "meta_desc": "Solicite a Certidão Negativa de Débitos do ITR online. R$ 49,90.",
             },
             {
@@ -699,7 +699,7 @@ CATEGORIES = [
                 "days": 1,
                 "featured": False,
                 "has_fixed_price": True,
-                "meta_title": "Certidão CNJ Improbidade Administrativa Online — E-Registro Brasil",
+                "meta_title": "Certidão CNJ Improbidade Administrativa Online — E-Registro Brasil LTDA",
                 "meta_desc": "Solicite a certidão CNJ de improbidade administrativa e inelegibilidade online. R$ 49,90.",
             },
         ],
@@ -728,7 +728,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 5,
                 "featured": False,
-                "meta_title": "Busca em Cartórios de Registro Civil — E-Registro Brasil",
+                "meta_title": "Busca em Cartórios de Registro Civil — E-Registro Brasil LTDA",
                 "meta_desc": "Localização de registros em cartórios de registro civil em todo o Brasil.",
             },
             {
@@ -744,7 +744,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 5,
                 "featured": False,
-                "meta_title": "Busca em Tabelionatos de Notas — E-Registro Brasil",
+                "meta_title": "Busca em Tabelionatos de Notas — E-Registro Brasil LTDA",
                 "meta_desc": "Pesquisa de escrituras e procurações em tabelionatos de notas.",
             },
         ],
@@ -774,7 +774,7 @@ CATEGORIES = [
                 "original_price": "249.90",
                 "days": 7,
                 "featured": True,
-                "meta_title": "Apostila de Haia Online — E-Registro Brasil",
+                "meta_title": "Apostila de Haia Online — E-Registro Brasil LTDA",
                 "meta_desc": (
                     "Apostile seus documentos para uso internacional com a Apostila de Haia. "
                     "Rápido, seguro e online."
@@ -793,7 +793,7 @@ CATEGORIES = [
                 "original_price": None,
                 "days": 10,
                 "featured": False,
-                "meta_title": "Tradução Juramentada Online — E-Registro Brasil",
+                "meta_title": "Tradução Juramentada Online — E-Registro Brasil LTDA",
                 "meta_desc": "Tradução juramentada por tradutor público para documentos oficiais.",
             },
         ],

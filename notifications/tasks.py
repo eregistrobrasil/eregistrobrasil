@@ -76,7 +76,7 @@ def enviar_email_status(order_id, status_novo):
         return 'Pedido não encontrado'
 
     templates_assunto = {
-        'novo': f'Pedido #{order.short_id} recebido — E-Registro Brasil',
+        'novo': f'Pedido #{order.short_id} recebido — E-Registro Brasil LTDA',
         'em_processamento': f'Pedido #{order.short_id} em andamento',
         'enviado': f'Pedido #{order.short_id} enviado!',
         'concluido': f'Pedido #{order.short_id} concluído com sucesso!',
@@ -88,7 +88,7 @@ def enviar_email_status(order_id, status_novo):
             f'Olá {order.customer_name},\n\n'
             f'Recebemos seu pedido #{order.short_id}.\n'
             f'Em breve nossa equipe iniciará o processamento.\n\n'
-            f'Obrigado por escolher o E-Registro Brasil!'
+            f'Obrigado por escolher o E-Registro Brasil LTDA!'
         ),
         'em_processamento': (
             f'Olá {order.customer_name},\n\n'
@@ -100,25 +100,25 @@ def enviar_email_status(order_id, status_novo):
             f'Olá {order.customer_name},\n\n'
             f'Seu pedido #{order.short_id} foi enviado!\n'
             f'Em breve você receberá o documento.\n\n'
-            f'Obrigado por usar o E-Registro Brasil!'
+            f'Obrigado por usar o E-Registro Brasil LTDA!'
         ),
         'concluido': (
             f'Olá {order.customer_name},\n\n'
             f'Seu pedido #{order.short_id} foi concluído com sucesso.\n'
-            f'Obrigado por usar o E-Registro Brasil!\n\n'
+            f'Obrigado por usar o E-Registro Brasil LTDA!\n\n'
             f'Avalie nosso serviço em nosso site.'
         ),
         'cancelado': (
             f'Olá {order.customer_name},\n\n'
             f'Seu pedido #{order.short_id} foi cancelado.\n'
             f'Em caso de dúvidas, entre em contato.\n\n'
-            f'E-Registro Brasil'
+            f'E-Registro Brasil LTDA'
         ),
     }
 
     assinatura_privada = (
         '\n\n---\n'
-        'A E-Registro Brasil é uma empresa privada de intermediação de certidões e documentos. '
+        'A E-Registro Brasil LTDA é uma empresa privada de intermediação de certidões e documentos. '
         'Não somos um cartório, órgão público ou entidade governamental — atuamos facilitando '
         'sua solicitação junto ao cartório ou órgão competente.'
     )

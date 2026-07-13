@@ -51,7 +51,7 @@ ARTICLE_1_CONTENT = """
 <h3>1. Identifique o Cartório de Registro</h3>
 <p>O primeiro passo é descobrir em qual cartório o registro foi feito. Normalmente é o cartório do município onde a pessoa nasceu. Com o nome completo, data de nascimento e nome dos pais, é possível localizar o cartório responsável.</p>
 <h3>2. Acesse o Serviço Online</h3>
-<p>Plataformas especializadas como a E-Registro Brasil facilitam todo esse processo. Você preenche os dados solicitados, informa o endereço de entrega e realiza o pagamento online com segurança.</p>
+<p>Plataformas especializadas como a E-Registro Brasil LTDA facilitam todo esse processo. Você preenche os dados solicitados, informa o endereço de entrega e realiza o pagamento online com segurança.</p>
 <h3>3. Acompanhe o Andamento</h3>
 <p>Após a solicitação, você receberá atualizações sobre o andamento do pedido por e-mail. O cartório emite a certidão e a envia para o endereço cadastrado.</p>
 
@@ -91,7 +91,7 @@ ARTICLE_2_CONTENT = """
 
 <h2>Como Obter a Certidão de Ônus Reais</h2>
 <p>A certidão deve ser solicitada no Cartório de Registro de Imóveis da circunscrição onde o imóvel está localizado. Para identificar o cartório correto, é necessário ter o número da matrícula do imóvel ou o endereço completo.</p>
-<p>Plataformas online especializadas, como a E-Registro Brasil, simplificam esse processo: basta informar os dados do imóvel e receber a certidão no endereço desejado, sem burocracia.</p>
+<p>Plataformas online especializadas, como a E-Registro Brasil LTDA, simplificam esse processo: basta informar os dados do imóvel e receber a certidão no endereço desejado, sem burocracia.</p>
 
 <h2>Prazo de Validade</h2>
 <p>A Certidão de Ônus Reais não possui prazo de validade legal fixo. Porém, na prática, a maioria das instituições financeiras e cartórios de notas aceita certidões emitidas com até <strong>30 dias de antecedência</strong>.</p>
@@ -130,7 +130,7 @@ ARTICLE_3_CONTENT = """
 <h3>Passo 1: Verificação do Documento</h3>
 <p>O documento deve ser original ou cópia autenticada em cartório. Documentos particulares precisam ser reconhecidos por tabelião antes de serem apostilados.</p>
 <h3>Passo 2: Solicitação da Apostila</h3>
-<p>A solicitação pode ser feita presencialmente nos cartórios habilitados ou por meio de plataformas online como a E-Registro Brasil, que cuidam de toda a logística junto ao Tribunal competente.</p>
+<p>A solicitação pode ser feita presencialmente nos cartórios habilitados ou por meio de plataformas online como a E-Registro Brasil LTDA, que cuidam de toda a logística junto ao Tribunal competente.</p>
 <h3>Passo 3: Entrega</h3>
 <p>A apostila é uma etiqueta ou carimbo aposto no próprio documento, acompanhado de certificado digital com QR code para verificação online.</p>
 
@@ -216,7 +216,7 @@ class Command(BaseCommand):
                 "excerpt": "Saiba como solicitar a segunda via da certidão de nascimento online de forma rápida e segura. Guia completo com passo a passo.",
                 "content": ARTICLE_1_CONTENT,
                 "tags": "certidão de nascimento, segunda via, registro civil, documentos",
-                "meta_title": "Como Solicitar Segunda Via de Certidão de Nascimento Online — E-Registro Brasil",
+                "meta_title": "Como Solicitar Segunda Via de Certidão de Nascimento Online — E-Registro Brasil LTDA",
                 "meta_description": "Saiba como solicitar a segunda via da certidão de nascimento online de forma rápida e segura. Guia completo com passo a passo.",
                 "is_featured": True,
             },
@@ -227,7 +227,7 @@ class Command(BaseCommand):
                 "excerpt": "Entenda o que é a Certidão de Ônus Reais, quando ela é necessária e como solicitar junto ao Cartório de Registro de Imóveis.",
                 "content": ARTICLE_2_CONTENT,
                 "tags": "ônus reais, registro de imóveis, imóvel, gravames, hipoteca",
-                "meta_title": "Certidão de Ônus Reais: O Que É e Para Que Serve — E-Registro Brasil",
+                "meta_title": "Certidão de Ônus Reais: O Que É e Para Que Serve — E-Registro Brasil LTDA",
                 "meta_description": "Entenda o que é a Certidão de Ônus Reais, quando ela é necessária e como solicitar junto ao Cartório de Registro de Imóveis.",
                 "is_featured": False,
             },
@@ -238,7 +238,7 @@ class Command(BaseCommand):
                 "excerpt": "Saiba o que é a Apostila de Haia, quais países aceitam, quais documentos podem ser apostilados e como funciona o processo no Brasil.",
                 "content": ARTICLE_3_CONTENT,
                 "tags": "apostila de haia, documentos internacionais, legalização, exterior",
-                "meta_title": "Apostila de Haia: Guia Completo para Validar Documentos no Exterior — E-Registro Brasil",
+                "meta_title": "Apostila de Haia: Guia Completo para Validar Documentos no Exterior — E-Registro Brasil LTDA",
                 "meta_description": "Saiba o que é a Apostila de Haia, quais países aceitam, quais documentos podem ser apostilados e como funciona o processo no Brasil.",
                 "is_featured": False,
             },
@@ -249,7 +249,7 @@ class Command(BaseCommand):
                 "excerpt": "Descubra as diferenças entre matrícula de imóvel e certidão de imóvel, quais são os tipos de certidão e quando você precisa de cada uma.",
                 "content": ARTICLE_4_CONTENT,
                 "tags": "matrícula de imóvel, certidão de imóvel, registro de imóveis, documentação",
-                "meta_title": "Matrícula de Imóvel e Certidão de Imóvel: Qual a Diferença? — E-Registro Brasil",
+                "meta_title": "Matrícula de Imóvel e Certidão de Imóvel: Qual a Diferença? — E-Registro Brasil LTDA",
                 "meta_description": "Descubra as diferenças entre matrícula de imóvel e certidão de imóvel, quais são os tipos de certidão e quando você precisa de cada uma.",
                 "is_featured": False,
             },

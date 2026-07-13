@@ -57,7 +57,7 @@
       <!-- Marca -->
       <div class="col-span-2 md:col-span-1">
         <div class="text-white font-bold text-xl mb-3">
-          E-Registro<span class="text-accent-light">Brasil</span>
+          E-Registro<span class="text-accent-light">Brasil</span> <span class="text-sm font-semibold text-gray-400">LTDA</span>
         </div>
         <p class="text-sm text-gray-400 leading-relaxed mb-4">
           Plataforma especializada em certidões online com agilidade, segurança e total transparência.
@@ -120,14 +120,18 @@
   </div>
   </div><!-- /footer-info-content -->
 
+  {% include 'includes/disclaimer_banner.html' %}
+
   <div class="border-t border-gray-800">
     <div class="max-w-7xl mx-auto px-4 py-5 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 gap-4">
-      <span class="text-center md:text-left">© {{ current_year }} E-Registro Brasil. Todos os direitos reservados.</span>
+      <div class="text-center md:text-left space-y-1">
+        <p>© {{ current_year }} E-Registro Brasil LTDA. Todos os direitos reservados.</p>
+        <p>E REGISTRO BRASIL LTDA — CNPJ: 67.081.523/0001-80</p>
+        <p>SC/S QD 1 BL L SL 905, Asa Sul, Brasília - DF</p>
+      </div>
       <div class="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
-
-        <img src="{% static 'img/selo-google-safe.svg' %}" alt="Google Safe Browsing" class="h-9 w-auto object-contain">
         <img src="{% static 'img/icones-safe.svg' %}" alt="100% Seguro — Certificado SSL" class="h-9 w-auto object-contain">
-      <span>CNPJ: 67.081.523/0001-80</span>
+      </div>
     </div>
   </div>
 </footer>

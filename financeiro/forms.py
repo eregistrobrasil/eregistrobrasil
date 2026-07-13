@@ -6,9 +6,11 @@ class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = ['name', 'category', 'tipo', 'description', 'short_description',
-                  'price', 'original_price', 'delivery_days', 'is_active', 'is_featured', 'order']
+                  'price', 'original_price', 'delivery_days', 'is_active', 'is_featured', 'order',
+                  'canal_oficial']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-input'}),
+            'canal_oficial': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Ex: CENSEC/e-notariado'}),
             'description': forms.Textarea(attrs={'class': 'form-input', 'rows': 3}),
             'short_description': forms.TextInput(attrs={'class': 'form-input'}),
             'price': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.01'}),

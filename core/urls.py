@@ -33,8 +33,8 @@ from products.api_views import (
 from registry.views import CartorioAPIView
 from blog.sitemaps import BlogPostSitemap
 
-admin.site.site_header = 'E-Registro Brasil — Administração'
-admin.site.site_title = 'E-Registro Brasil'
+admin.site.site_header = 'E-Registro Brasil LTDA — Administração'
+admin.site.site_title = 'E-Registro Brasil LTDA'
 admin.site.index_title = 'Painel Administrativo'
 
 _sitemaps = {

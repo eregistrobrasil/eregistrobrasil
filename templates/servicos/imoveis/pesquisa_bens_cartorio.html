@@ -55,7 +55,7 @@
     <div id="price-value">
       <p id="price-display" class="text-3xl font-bold text-accent"></p>
       <p id="price-multi-note" class="hidden text-xs text-blue-600 mt-1 font-medium"></p>
-      <p class="text-xs text-gray-500 mt-1">Este valor inclui todas as custas do documento e a taxa de serviço para entrega do E-Registro Brasil.</p>
+      <p class="text-xs text-gray-500 mt-1">Este valor inclui todas as custas do documento e a taxa de serviço para entrega do E-Registro Brasil LTDA.</p>
     </div>
   </div>
 </div>
@@ -138,7 +138,7 @@
     if (checked) {
       $('#cartorio-id-input').val('');
       $('#cartorio-nome-input').val('');
-      $('#select-cartorio').val('').prop('disabled', true);
+      $('#select-cartorio').val('').prop('disabled', true).trigger('change.select2');
     } else {
       $('#select-cartorio').prop('disabled', cartorioCount === 0);
     }

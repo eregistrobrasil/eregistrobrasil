@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block og_tags %}
-<meta property="og:site_name" content="E-Registro Brasil">
+<meta property="og:site_name" content="E-Registro Brasil LTDA">
 <meta property="og:locale" content="pt_BR">
 <meta property="og:type" content="article">
 <meta property="og:title" content="{{ post.meta_title|default:post.title }}">
@@ -33,7 +33,7 @@
   "datePublished": "{{ post.published_at|date:'c' }}",
   "dateModified": "{{ post.updated_at|date:'c' }}",
   "author": { "@type": "Person", "name": "{{ post.author.get_full_name|default:post.author.username|escapejs }}" },
-  "publisher": { "@type": "Organization", "name": "E-Registro Brasil", "url": "{{ request.scheme }}://{{ request.get_host }}" }
+  "publisher": { "@type": "Organization", "name": "E-Registro Brasil LTDA", "url": "{{ request.scheme }}://{{ request.get_host }}" }
   {% if post.cover_image %},"image": "{{ request.scheme }}://{{ request.get_host }}{{ post.cover_image.url }}"{% endif %}
 }
 </script>
@@ -245,7 +245,7 @@
             </div>
             <div>
               <p class="font-bold text-gray-800 text-sm">{{ post.author.get_full_name|default:post.author.username }}</p>
-              <p class="text-xs text-gray-400 mt-0.5">Equipe E-Registro Brasil</p>
+              <p class="text-xs text-gray-400 mt-0.5">Equipe E-Registro Brasil LTDA</p>
             </div>
           </div>
           <p class="text-xs text-gray-500 mt-4 leading-relaxed">

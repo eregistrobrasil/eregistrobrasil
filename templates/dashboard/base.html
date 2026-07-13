@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}{{ title|default:"Painel" }} — E-Registro Brasil{% endblock %}</title>
+  <title>{% block title %}{{ title|default:"Painel" }} — E-Registro Brasil LTDA{% endblock %}</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -83,8 +83,8 @@
 
   {% block extra_head %}{% endblock %}
 </head>
-<body class="h-full bg-gray-50 font-sans text-gray-900 antialiased">
-<div class="flex h-screen overflow-hidden">
+<body class="h-full bg-gray-50 font-sans text-gray-900 antialiased flex flex-col">
+<div class="flex flex-1 min-h-0 overflow-hidden">
 
   <!-- Sidebar desktop -->
   <aside class="hidden w-60 flex-shrink-0 flex-col border-r border-gray-200 bg-white lg:flex">
@@ -192,6 +192,8 @@
     window.location = row.dataset.href;
   });
 </script>
+
+{% include 'includes/disclaimer_banner.html' %}
 
 {% block extra_js %}{% endblock %}
 </body>

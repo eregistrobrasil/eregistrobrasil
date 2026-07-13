@@ -185,7 +185,7 @@ EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'E-Registro Brasil <noreply@eregistrobrasil.com.br>')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'E-Registro Brasil LTDA <noreply@eregistrobrasil.com.br>')
 
 # Mercado Pago
 MERCADOPAGO_PUBLIC_KEY = os.environ.get('MP_PUBLIC_KEY', '')
@@ -195,7 +195,7 @@ MERCADOPAGO_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN', '')
 MERCADOPAGO_PIX_ENABLED = os.environ.get('MP_PIX_ENABLED', 'True') == 'True'
 
 # Site
-SITE_NAME = 'E-Registro Brasil'
+SITE_NAME = 'E-Registro Brasil LTDA'
 SITE_URL = os.environ.get('SITE_URL', 'http://localhost')
 
 # ── Segurança HTTPS (produção) ───────────────────────────────────────────────

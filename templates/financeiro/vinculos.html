@@ -1,0 +1,80 @@
+{% extends "financeiro/base.html" %}
+
+{% block content %}
+
+<div class="mb-6">
+  <div class="bg-fin-50 border border-fin/20 rounded-xl p-4 text-sm text-fin-dark">
+    <p class="font-semibold mb-1">Como funciona</p>
+    <p class="text-xs leading-relaxed">
+      Cada serviço é vinculado a uma <strong>conta de receita</strong> do Plano de Contas.
+      Quando uma venda é paga, o sistema gera automaticamente um lançamento de receita na conta do serviço.
+      Serviços sem vínculo caem na conta <strong>1.1.99 — Outros Serviços</strong>.
+    </p>
+  </div>
+</div>
+
+<!-- Métricas -->
+<div class="grid grid-cols-3 gap-5 mb-6">
+  <div class="bg-white rounded-xl px-5 py-4 shadow-sm border border-gray-100">
+    <p class="text-xs text-gray-500 mb-0.5">Serviços</p>
+    <p class="text-lg font-bold text-gray-800">{{ total_servicos }}</p>
+  </div>
+  <div class="bg-white rounded-xl px-5 py-4 shadow-sm border border-gray-100">
+    <p class="text-xs text-gray-500 mb-0.5">Vinculados</p>
+    <p class="text-lg font-bold text-green-600">{{ vinculados }}</p>
+  </div>
+  <div class="bg-white rounded-xl px-5 py-4 shadow-sm border border-gray-100">
+    <p class="text-xs text-gray-500 mb-0.5">Sem vínculo</p>
+    <p class="text-lg font-bold {% if sem_vinculo > 0 %}text-yellow-600{% else %}text-gray-800{% endif %}">{{ sem_vinculo }}</p>
+  </div>
+</div>
+
+<!-- Tabela de vínculos -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+          <th class="px-6 py-3 text-left">Serviço</th>
+          <th class="px-4 py-3 text-left hidden md:table-cell">Categoria</th>
+          <th class="px-4 py-3 text-left">Conta de Receita</th>
+          <th class="px-6 py-3 text-right">Ação</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for servico in servicos %}
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-6 py-3">
+            <p class="font-medium text-gray-800 text-xs">{{ servico.name }}</p>
+            {% if not servico.is_active %}<span class="badge bg-gray-100 text-gray-400 mt-0.5">inativo</span>{% endif %}
+          </td>
+          <td class="px-4 py-3 hidden md:table-cell">
+            <span class="text-xs text-gray-500">{{ servico.category.name }}</span>
+          </td>
+          <td class="px-4 py-3" colspan="2">
+            <form method="post" class="flex items-center gap-2 justify-between">
+              {% csrf_token %}
+              <input type="hidden" name="service_id" value="{{ servico.pk }}">
+              <select name="conta_id" class="form-input !w-auto flex-1 max-w-md text-xs">
+                <option value="">— Sem vínculo (usa 1.1.99) —</option>
+                {% for conta in contas_receita %}
+                <option value="{{ conta.pk }}"
+                  {% if servico.conta_receita_vinculo and servico.conta_receita_vinculo.conta_id == conta.pk %}selected{% endif %}>
+                  {{ conta.codigo }} — {{ conta.nome }}
+                </option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="px-3 py-1.5 bg-fin hover:bg-fin-dark text-white text-xs font-semibold rounded-lg transition-colors">
+                Salvar
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="px-6 py-10 text-center text-gray-400">Nenhum serviço cadastrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

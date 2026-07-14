@@ -1,0 +1,84 @@
+{% extends "financeiro/base.html" %}
+
+{% block content %}
+<div class="max-w-2xl">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <h2 class="text-base font-semibold text-gray-800 mb-1">
+      {% if acao == 'criar' %}Nova Conta Contábil{% else %}Editar Conta{% endif %}
+    </h2>
+    <p class="text-xs text-gray-400 mb-6">
+      Contas <strong>sintéticas</strong> agrupam subcontas; contas <strong>analíticas</strong> recebem lançamentos.
+    </p>
+
+    {% if form.non_field_errors %}
+    <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+      {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="{{ form.codigo.id_for_label }}" class="block text-xs font-semibold text-gray-600 mb-1">Código *</label>
+          {{ form.codigo }}
+          {% if form.codigo.errors %}<p class="text-xs text-red-500 mt-1">{{ form.codigo.errors.0 }}</p>{% endif %}
+        </div>
+        <div>
+          <label for="{{ form.nome.id_for_label }}" class="block text-xs font-semibold text-gray-600 mb-1">Nome *</label>
+          {{ form.nome }}
+          {% if form.nome.errors %}<p class="text-xs text-red-500 mt-1">{{ form.nome.errors.0 }}</p>{% endif %}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="{{ form.tipo.id_for_label }}" class="block text-xs font-semibold text-gray-600 mb-1">Tipo *</label>
+          {{ form.tipo }}
+          {% if form.tipo.errors %}<p class="text-xs text-red-500 mt-1">{{ form.tipo.errors.0 }}</p>{% endif %}
+        </div>
+        <div>
+          <label for="{{ form.natureza.id_for_label }}" class="block text-xs font-semibold text-gray-600 mb-1">Natureza *</label>
+          {{ form.natureza }}
+          {% if form.natureza.errors %}<p class="text-xs text-red-500 mt-1">{{ form.natureza.errors.0 }}</p>{% endif %}
+        </div>
+      </div>
+
+      <div>
+        <label for="{{ form.parent.id_for_label }}" class="block text-xs font-semibold text-gray-600 mb-1">Conta Pai</label>
+        {{ form.parent }}
+        {% if form.parent.errors %}<p class="text-xs text-red-500 mt-1">{{ form.parent.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div>
+        <label for="{{ form.descricao.id_for_label }}" class="block text-xs font-semibold text-gray-600 mb-1">Descrição</label>
+        {{ form.descricao }}
+      </div>
+
+      <label class="flex items-center gap-2 text-sm text-gray-700">
+        {{ form.is_active }} Conta ativa
+      </label>
+
+      <div class="flex items-center gap-3 pt-4 border-t border-gray-100">
+        <button type="submit" class="px-4 py-2 bg-fin hover:bg-fin-dark text-white text-sm font-semibold rounded-lg transition-colors">
+          {% if acao == 'criar' %}Criar Conta{% else %}Salvar Alterações{% endif %}
+        </button>
+        <a href="{% url 'financeiro:plano_contas' %}" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">Cancelar</a>
+      </div>
+    </form>
+  </div>
+
+  {% if acao == 'editar' and conta.servicos_vinculados.exists %}
+  <div class="mt-6 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <h3 class="text-sm font-semibold text-gray-700 mb-3">Serviços vinculados a esta conta</h3>
+    <div class="flex flex-wrap gap-2">
+      {% for v in conta.servicos_vinculados.all %}
+      <span class="badge bg-fin-50 text-fin">{{ v.service.name }}</span>
+      {% endfor %}
+    </div>
+    <a href="{% url 'financeiro:vinculos' %}" class="inline-block mt-3 text-xs text-fin hover:underline">Gerenciar vínculos →</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

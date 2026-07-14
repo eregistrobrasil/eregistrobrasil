@@ -274,3 +274,120 @@ class ReplicarPrecosForm(forms.Form):
         initial=False,
         widget=forms.CheckboxInput(attrs={'class': 'w-4 h-4 text-fin rounded'})
     )
+
+
+# ─── Formulários da Gestão Financeira (Plano de Contas e Lançamentos) ─────────
+
+from financeiro.models import ContaContabil, Lancamento, ServicoContaReceita
+
+
+class ContaContabilForm(forms.ModelForm):
+    class Meta:
+        model = ContaContabil
+        fields = ['codigo', 'nome', 'tipo', 'natureza', 'parent', 'descricao', 'is_active']
+        widgets = {
+            'codigo': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Ex: 2.2.05'}),
+            'nome': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Ex: Energia Elétrica'}),
+            'tipo': forms.Select(attrs={'class': 'form-input'}),
+            'natureza': forms.Select(attrs={'class': 'form-input'}),
+            'parent': forms.Select(attrs={'class': 'form-input'}),
+            'descricao': forms.Textarea(attrs={'class': 'form-input', 'rows': 2}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'w-4 h-4 text-fin rounded'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        qs = ContaContabil.objects.filter(natureza='sintetica').order_by('codigo')
+        if self.instance.pk:
+            qs = qs.exclude(pk__in=self.instance.get_descendentes_ids())
+        self.fields['parent'].queryset = qs
+        self.fields['parent'].empty_label = 'Sem conta pai (raiz)'
+
+
+class LancamentoForm(forms.ModelForm):
+    class Meta:
+        model = Lancamento
+        fields = [
+            'tipo', 'conta', 'descricao', 'valor', 'data_competencia',
+            'data_pagamento', 'status', 'forma_pagamento', 'observacoes',
+        ]
+        widgets = {
+            'tipo': forms.Select(attrs={'class': 'form-input'}),
+            'conta': forms.Select(attrs={'class': 'form-input'}),
+            'descricao': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Ex: Mensalidade do software X'}),
+            'valor': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.01', 'min': '0.01'}),
+            'data_competencia': forms.DateInput(attrs={'type': 'date', 'class': 'form-input'}, format='%Y-%m-%d'),
+            'data_pagamento': forms.DateInput(attrs={'type': 'date', 'class': 'form-input'}, format='%Y-%m-%d'),
+            'status': forms.Select(attrs={'class': 'form-input'}),
+            'forma_pagamento': forms.Select(attrs={'class': 'form-input'}),
+            'observacoes': forms.Textarea(attrs={'class': 'form-input', 'rows': 2}),
+        }
+
+    def __init__(self, *args, tipo_fixo=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        contas = ContaContabil.objects.filter(natureza='analitica', is_active=True).order_by('codigo')
+        if tipo_fixo in ('receita', 'despesa'):
+            self.fields['tipo'].initial = tipo_fixo
+            contas = contas.filter(tipo=tipo_fixo)
+        self.fields['conta'].queryset = contas
+        self.fields['conta'].label_from_instance = lambda c: f'{c.codigo} — {c.nome}'
+
+
+class LancamentoFilterForm(forms.Form):
+    q = forms.CharField(
+        label='Buscar', required=False,
+        widget=forms.TextInput(attrs={'placeholder': 'Descrição, observação...', 'class': 'form-input'})
+    )
+    tipo = forms.ChoiceField(
+        label='Tipo', required=False,
+        choices=[('', 'Todos')] + list(Lancamento.TIPO_CHOICES),
+        widget=forms.Select(attrs={'class': 'form-input'})
+    )
+    conta = forms.ModelChoiceField(
+        label='Conta', required=False,
+        queryset=ContaContabil.objects.filter(is_active=True).order_by('codigo'),
+        empty_label='Todas as contas',
+        widget=forms.Select(attrs={'class': 'form-input'})
+    )
+    status = forms.ChoiceField(
+        label='Status', required=False,
+        choices=[('', 'Todos')] + list(Lancamento.STATUS_CHOICES),
+        widget=forms.Select(attrs={'class': 'form-input'})
+    )
+    origem = forms.ChoiceField(
+        label='Origem', required=False,
+        choices=[('', 'Todas')] + list(Lancamento.ORIGEM_CHOICES),
+        widget=forms.Select(attrs={'class': 'form-input'})
+    )
+    data_inicio = forms.DateField(
+        label='De', required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-input'})
+    )
+    data_fim = forms.DateField(
+        label='Até', required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-input'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['conta'].label_from_instance = lambda c: f'{c.codigo} — {c.nome}'
+
+
+class VincularServicoContaForm(forms.ModelForm):
+    class Meta:
+        model = ServicoContaReceita
+        fields = ['service', 'conta']
+        widgets = {
+            'service': forms.Select(attrs={'class': 'form-input'}),
+            'conta': forms.Select(attrs={'class': 'form-input'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['service'].queryset = Product.objects.order_by('category__order', 'name')
+        self.fields['conta'].queryset = (
+            ContaContabil.objects
+            .filter(tipo='receita', natureza='analitica', is_active=True)
+            .order_by('codigo')
+        )
+        self.fields['conta'].label_from_instance = lambda c: f'{c.codigo} — {c.nome}'

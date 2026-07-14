@@ -1,0 +1,126 @@
+{% extends "financeiro/base.html" %}
+
+{% block topbar_actions %}
+<a href="{% url 'financeiro:conta_criar' %}"
+   class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-fin hover:bg-fin-dark text-white text-xs font-semibold rounded-lg transition-colors">
+  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+  Nova Conta
+</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Métricas -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
+  <div class="bg-white rounded-xl px-5 py-4 shadow-sm border border-gray-100">
+    <p class="text-xs text-gray-500 mb-0.5">Contas cadastradas</p>
+    <p class="text-lg font-bold text-gray-800">{{ total_contas }}</p>
+  </div>
+  <div class="bg-white rounded-xl px-5 py-4 shadow-sm border border-gray-100">
+    <p class="text-xs text-gray-500 mb-0.5">Receitas no ano</p>
+    <p class="text-lg font-bold text-green-600">R$ {{ total_receitas|floatformat:2 }}</p>
+  </div>
+  <div class="bg-white rounded-xl px-5 py-4 shadow-sm border border-gray-100">
+    <p class="text-xs text-gray-500 mb-0.5">Despesas no ano</p>
+    <p class="text-lg font-bold text-red-500">R$ {{ total_despesas|floatformat:2 }}</p>
+  </div>
+</div>
+
+<!-- Filtro por tipo -->
+<div class="flex items-center gap-2 mb-4">
+  <a href="{% url 'financeiro:plano_contas' %}"
+     class="px-3 py-1.5 text-xs font-semibold rounded-lg {% if not tipo_filtro %}bg-fin text-white{% else %}bg-white text-gray-600 border border-gray-200 hover:bg-gray-50{% endif %}">Todas</a>
+  <a href="{% url 'financeiro:plano_contas' %}?tipo=receita"
+     class="px-3 py-1.5 text-xs font-semibold rounded-lg {% if tipo_filtro == 'receita' %}bg-green-600 text-white{% else %}bg-white text-gray-600 border border-gray-200 hover:bg-gray-50{% endif %}">Receitas</a>
+  <a href="{% url 'financeiro:plano_contas' %}?tipo=despesa"
+     class="px-3 py-1.5 text-xs font-semibold rounded-lg {% if tipo_filtro == 'despesa' %}bg-red-600 text-white{% else %}bg-white text-gray-600 border border-gray-200 hover:bg-gray-50{% endif %}">Despesas</a>
+</div>
+
+<!-- Árvore de contas -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+          <th class="px-6 py-3 text-left">Conta</th>
+          <th class="px-4 py-3 text-left hidden md:table-cell">Natureza</th>
+          <th class="px-4 py-3 text-right">Movimentação no Ano</th>
+          <th class="px-4 py-3 text-center hidden sm:table-cell">Lançamentos</th>
+          <th class="px-4 py-3 text-center">Status</th>
+          <th class="px-6 py-3 text-right">Ações</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for conta in contas %}
+        <tr class="hover:bg-gray-50 transition-colors {% if conta.nivel_cache == 0 %}bg-gray-50/60{% endif %}">
+          <td class="px-6 py-2.5">
+            <div class="flex items-center" style="padding-left: {{ conta.nivel_cache }}rem">
+              {% if conta.nivel_cache > 0 %}<span class="text-gray-300 mr-1.5">└</span>{% endif %}
+              <span class="font-mono text-xs {% if conta.tipo == 'receita' %}text-green-600{% else %}text-red-500{% endif %} font-semibold mr-2">{{ conta.codigo }}</span>
+              <span class="{% if conta.natureza == 'sintetica' %}font-semibold text-gray-800{% else %}text-gray-700{% endif %}">{{ conta.nome }}</span>
+              {% if conta.is_system %}
+              <span class="ml-2 badge bg-gray-100 text-gray-500" title="Conta do sistema">sistema</span>
+              {% endif %}
+            </div>
+          </td>
+          <td class="px-4 py-2.5 hidden md:table-cell">
+            <span class="badge {% if conta.natureza == 'sintetica' %}bg-blue-50 text-blue-600{% else %}bg-purple-50 text-purple-600{% endif %}">
+              {{ conta.get_natureza_display|cut:" (agrupadora)"|cut:" (recebe lançamentos)" }}
+            </span>
+          </td>
+          <td class="px-4 py-2.5 text-right font-semibold whitespace-nowrap {% if conta.tipo == 'receita' %}text-green-600{% else %}text-red-500{% endif %}">
+            {% if conta.total_ano %}R$ {{ conta.total_ano|floatformat:2 }}{% else %}<span class="text-gray-300">—</span>{% endif %}
+          </td>
+          <td class="px-4 py-2.5 text-center text-xs text-gray-500 hidden sm:table-cell">
+            {% if conta.qtd_lancamentos %}{{ conta.qtd_lancamentos }}{% else %}<span class="text-gray-300">—</span>{% endif %}
+          </td>
+          <td class="px-4 py-2.5 text-center">
+            <button type="button" onclick="toggleConta({{ conta.pk }}, this)"
+              class="badge cursor-pointer {% if conta.is_active %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-500{% endif %}">
+              {% if conta.is_active %}Ativa{% else %}Inativa{% endif %}
+            </button>
+          </td>
+          <td class="px-6 py-2.5 text-right whitespace-nowrap">
+            {% if conta.natureza == 'sintetica' %}
+            <a href="{% url 'financeiro:conta_criar' %}?tipo={{ conta.tipo }}&parent={{ conta.pk }}"
+               class="text-xs text-fin hover:underline mr-3" title="Adicionar subconta">+ subconta</a>
+            {% endif %}
+            <a href="{% url 'financeiro:conta_editar' conta.pk %}" class="text-xs text-blue-600 hover:underline mr-3">Editar</a>
+            {% if not conta.is_system %}
+            <form method="post" action="{% url 'financeiro:conta_excluir' conta.pk %}" class="inline"
+                  onsubmit="return confirm('Excluir a conta {{ conta.codigo }} — {{ conta.nome|escapejs }}?')">
+              {% csrf_token %}
+              <button type="submit" class="text-xs text-red-500 hover:underline">Excluir</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="px-6 py-10 text-center text-gray-400">
+          Nenhuma conta cadastrada. <a href="{% url 'financeiro:conta_criar' %}" class="text-fin hover:underline">Criar a primeira conta</a>
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCookie(name) {
+  const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return m ? m.pop() : '';
+}
+function toggleConta(pk, btn) {
+  fetch(`/financeiro/plano-contas/${pk}/toggle/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+  }).then(r => r.json()).then(data => {
+    if (!data.ok) return;
+    btn.textContent = data.is_active ? 'Ativa' : 'Inativa';
+    btn.className = 'badge cursor-pointer ' + (data.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500');
+  });
+}
+</script>
+{% endblock %}

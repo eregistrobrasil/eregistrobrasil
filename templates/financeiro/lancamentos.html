@@ -1,0 +1,183 @@
+{% extends "financeiro/base.html" %}
+
+{% block topbar_actions %}
+<div class="flex items-center gap-2">
+  <a href="?{{ query_params }}{% if query_params %}&{% endif %}exportar=csv"
+     class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 text-xs font-semibold rounded-lg transition-colors">
+    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+    CSV
+  </a>
+  {% if tipo_fixo == 'receita' %}
+  <a href="{% url 'financeiro:lancamento_criar' %}?tipo=receita"
+     class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition-colors">
+    + Nova Receita
+  </a>
+  {% elif tipo_fixo == 'despesa' %}
+  <a href="{% url 'financeiro:lancamento_criar' %}?tipo=despesa"
+     class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg transition-colors">
+    + Nova Despesa
+  </a>
+  {% else %}
+  <a href="{% url 'financeiro:lancamento_criar' %}"
+     class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-fin hover:bg-fin-dark text-white text-xs font-semibold rounded-lg transition-colors">
+    + Novo Lançamento
+  </a>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Resumo -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-5 mb-6">
+  {% if not tipo_fixo or tipo_fixo == 'receita' %}
+  <div class="bg-white rounded-xl px-5 py-4 shadow-sm border border-gray-100">
+    <p class="text-xs text-gray-500 mb-0.5">Receitas (filtro atual)</p>
+    <p class="text-lg font-bold text-green-600">R$ {{ resumo.receitas|floatformat:2 }}</p>
+  </div>
+  {% endif %}
+  {% if not tipo_fixo or tipo_fixo == 'despesa' %}
+  <div class="bg-white rounded-xl px-5 py-4 shadow-sm border border-gray-100">
+    <p class="text-xs text-gray-500 mb-0.5">Despesas (filtro atual)</p>
+    <p class="text-lg font-bold text-red-500">R$ {{ resumo.despesas|floatformat:2 }}</p>
+  </div>
+  {% endif %}
+  {% if not tipo_fixo %}
+  <div class="bg-white rounded-xl px-5 py-4 shadow-sm border border-gray-100">
+    <p class="text-xs text-gray-500 mb-0.5">Saldo</p>
+    <p class="text-lg font-bold {% if resumo.saldo >= 0 %}text-fin{% else %}text-red-500{% endif %}">R$ {{ resumo.saldo|floatformat:2 }}</p>
+  </div>
+  {% endif %}
+  <div class="bg-white rounded-xl px-5 py-4 shadow-sm border border-gray-100">
+    <p class="text-xs text-gray-500 mb-0.5">Lançamentos</p>
+    <p class="text-lg font-bold text-gray-800">{{ total }}</p>
+  </div>
+</div>
+
+<!-- Filtros -->
+<form method="get" class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+  <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
+    <div class="col-span-2">
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Buscar</label>
+      {{ form.q }}
+    </div>
+    {% if not tipo_fixo %}
+    <div>
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Tipo</label>
+      {{ form.tipo }}
+    </div>
+    {% endif %}
+    <div>
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Conta</label>
+      {{ form.conta }}
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Status</label>
+      {{ form.status }}
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Origem</label>
+      {{ form.origem }}
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-gray-500 mb-1">De</label>
+      {{ form.data_inicio }}
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-gray-500 mb-1">Até</label>
+      {{ form.data_fim }}
+    </div>
+  </div>
+  <div class="flex items-center gap-3 mt-3">
+    <button type="submit" class="px-4 py-1.5 bg-fin hover:bg-fin-dark text-white text-xs font-semibold rounded-lg transition-colors">Filtrar</button>
+    <a href="{{ request.path }}" class="text-xs text-gray-400 hover:text-gray-600">Limpar filtros</a>
+  </div>
+</form>
+
+<!-- Tabela -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+          <th class="px-4 py-3 text-left">Data</th>
+          {% if not tipo_fixo %}<th class="px-4 py-3 text-left">Tipo</th>{% endif %}
+          <th class="px-4 py-3 text-left">Descrição</th>
+          <th class="px-4 py-3 text-left hidden lg:table-cell">Conta</th>
+          <th class="px-4 py-3 text-right">Valor</th>
+          <th class="px-4 py-3 text-center">Status</th>
+          <th class="px-4 py-3 text-center hidden sm:table-cell">Origem</th>
+          <th class="px-4 py-3 text-right">Ações</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for l in page_obj %}
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">{{ l.data_competencia|date:"d/m/Y" }}</td>
+          {% if not tipo_fixo %}
+          <td class="px-4 py-3">
+            <span class="badge {% if l.tipo == 'receita' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+              {{ l.get_tipo_display }}
+            </span>
+          </td>
+          {% endif %}
+          <td class="px-4 py-3">
+            <p class="font-medium text-gray-800 text-xs">{{ l.descricao|truncatechars:60 }}</p>
+            {% if l.order %}
+            <p class="text-xs text-gray-400 font-mono">Pedido #{{ l.order.short_id }}</p>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3 hidden lg:table-cell">
+            <span class="text-xs text-gray-500">{{ l.conta.codigo }} — {{ l.conta.nome }}</span>
+          </td>
+          <td class="px-4 py-3 text-right font-semibold whitespace-nowrap {% if l.tipo == 'receita' %}text-green-600{% else %}text-red-500{% endif %} {% if l.status == 'cancelado' %}line-through opacity-40{% endif %}">
+            {% if l.tipo == 'receita' %}+{% else %}−{% endif %} R$ {{ l.valor|floatformat:2 }}
+          </td>
+          <td class="px-4 py-3 text-center">
+            <span class="badge
+              {% if l.status == 'confirmado' %}bg-green-100 text-green-700
+              {% elif l.status == 'pendente' %}bg-yellow-100 text-yellow-700
+              {% else %}bg-gray-100 text-gray-500{% endif %}">
+              {{ l.get_status_display }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-center hidden sm:table-cell">
+            <span class="badge {% if l.origem == 'venda' %}bg-blue-50 text-blue-600{% else %}bg-gray-50 text-gray-500{% endif %}">
+              {% if l.origem == 'venda' %}Venda{% else %}Manual{% endif %}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-right whitespace-nowrap">
+            <a href="{% url 'financeiro:lancamento_editar' l.pk %}" class="text-xs text-blue-600 hover:underline mr-3">Editar</a>
+            <form method="post" action="{% url 'financeiro:lancamento_excluir' l.pk %}" class="inline"
+                  onsubmit="return confirm('Excluir este lançamento de R$ {{ l.valor|floatformat:2 }}?')">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button type="submit" class="text-xs text-red-500 hover:underline">Excluir</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="px-6 py-10 text-center text-gray-400">Nenhum lançamento encontrado com os filtros atuais.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginação -->
+  {% if page_obj.paginator.num_pages > 1 %}
+  <div class="flex items-center justify-between px-6 py-3 border-t border-gray-100 text-xs text-gray-500">
+    <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }} — {{ total }} lançamento(s)</span>
+    <div class="flex gap-2">
+      {% if page_obj.has_previous %}
+      <a href="?{{ query_params }}{% if query_params %}&{% endif %}page={{ page_obj.previous_page_number }}"
+         class="px-3 py-1 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">← Anterior</a>
+      {% endif %}
+      {% if page_obj.has_next %}
+      <a href="?{{ query_params }}{% if query_params %}&{% endif %}page={{ page_obj.next_page_number }}"
+         class="px-3 py-1 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">Próxima →</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

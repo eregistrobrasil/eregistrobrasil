@@ -6,6 +6,25 @@ app_name = 'financeiro'
 urlpatterns = [
     path('', views.FinanceiroDashboardView.as_view(), name='dashboard'),
 
+    # ── Plano de Contas ─────────────────────────────────────────────────────
+    path('plano-contas/', views.PlanoContasView.as_view(), name='plano_contas'),
+    path('plano-contas/nova/', views.ContaCreateView.as_view(), name='conta_criar'),
+    path('plano-contas/<int:pk>/editar/', views.ContaEditView.as_view(), name='conta_editar'),
+    path('plano-contas/<int:pk>/excluir/', views.ContaDeleteView.as_view(), name='conta_excluir'),
+    path('plano-contas/<int:pk>/toggle/', views.ContaToggleView.as_view(), name='conta_toggle'),
+
+    # ── Lançamentos / Receitas / Despesas ───────────────────────────────────
+    path('lancamentos/', views.LancamentoListView.as_view(), name='lancamentos'),
+    path('receitas/', views.LancamentoListView.as_view(tipo_fixo='receita'), name='receitas'),
+    path('despesas/', views.LancamentoListView.as_view(tipo_fixo='despesa'), name='despesas'),
+    path('lancamentos/novo/', views.LancamentoCreateView.as_view(), name='lancamento_criar'),
+    path('lancamentos/<int:pk>/editar/', views.LancamentoEditView.as_view(), name='lancamento_editar'),
+    path('lancamentos/<int:pk>/excluir/', views.LancamentoDeleteView.as_view(), name='lancamento_excluir'),
+    path('lancamentos/<int:pk>/status/', views.LancamentoStatusView.as_view(), name='lancamento_status'),
+
+    # ── Vínculos Serviço → Conta de Receita ─────────────────────────────────
+    path('vinculos/', views.VinculosServicoContaView.as_view(), name='vinculos'),
+
     # ── Serviços ────────────────────────────────────────────────────────────
     path('servicos/', views.ServicoListView.as_view(), name='servicos'),
     path('servicos/novo/', views.ServicoCreateView.as_view(), name='servico_create'),
